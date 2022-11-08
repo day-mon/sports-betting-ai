@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, web};
-use crate::routes::game::Game;
+use crate::models::game::Game;
 
 
 pub async fn predict(

@@ -2,10 +2,8 @@ use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
 use env_logger::Env;
 
-
 mod routes;
-
-struct AppState;
+mod models;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
