@@ -1,17 +1,9 @@
 use actix_web::{HttpResponse, web};
-use serde::{Deserialize, Serialize};
+use crate::routes::game::Game;
 
-#[derive(Deserialize, Serialize)]
-pub struct PredictModel {
-    team_one: String,
-    team_two: String,
-    over_under: f32,
-    team_one_odds: f32,
-    team_two_odds: f32
-}
 
 pub async fn predict(
-    model: web::Json<PredictModel>
+    model: web::Json<Game>
 ) -> HttpResponse {
     HttpResponse::Ok().json(model.into_inner())
 }
