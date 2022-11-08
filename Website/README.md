@@ -1,0 +1,1 @@
+# All files pertaining to the frontend portion of the application stack.
