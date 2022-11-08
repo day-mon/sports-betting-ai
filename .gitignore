@@ -1,1 +1,3 @@
 # Files to ignore
+.idea
+target
