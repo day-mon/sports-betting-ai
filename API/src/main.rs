@@ -5,6 +5,8 @@ use env_logger::Env;
 
 mod routes;
 
+struct AppState;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let endpoint = format!("0.0.0.0:{}", 8080);
@@ -18,6 +20,14 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/sports")
                             .route("/predict", web::post().to(routes::nn::predict))
+            )
+            .service(
+                // add a nested scope
+                web::scope("/mock",).service(
+                    web::scope("/sports")
+                        .route("/predict", web::post().to(routes::nn_mock::predict))
+
+                )
             )
 
     })
