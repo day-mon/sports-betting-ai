@@ -1,7 +1,15 @@
+use std::fs::File;
+use std::sync::Arc;
+
 use actix_web::HttpResponse;
-use tensorflow::{DEFAULT_SERVING_SIGNATURE_DEF_KEY, Graph, PREDICT_INPUTS, PREDICT_OUTPUTS, SavedModelBundle, SessionOptions, Tensor};
+use polars::error::PolarsResult;
+use polars::frame::DataFrame;
+use polars::io::SerReader;
+use polars::prelude::{CsvReader, Schema};
+use tensorflow::{DataType, Graph, SavedModelBundle, Session, SessionOptions, Tensor};
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::team_stats::TeamStats;
+
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
 const TEAM_DATA_URL: &str = "https://jsonget.alexanderjoemc.workers.dev/";
@@ -34,15 +42,17 @@ pub async fn predict(
          return HttpResponse::InternalServerError().json("boo v2");
     };
 
-    let mut team_stats: TeamStats = serde_json::from_str(&*response_body).unwrap();
+    let team_stats: TeamStats = serde_json::from_str(&*response_body).unwrap();
 
     // figure out a way not to always write to csv. We only need to write to a csv everyday
-    let written = write_to_csv(&tids, &mut team_stats);
+    let written = write_to_csv(&tids, &team_stats);
 
     if !written {
         return HttpResponse::InternalServerError().json("Failed parse data to use for model");
     }
 
+
+    call_model(&team_stats);
 
 
     HttpResponse::Ok().json("stats")
@@ -51,7 +61,7 @@ pub async fn predict(
 // write to a csv and put the two teams that are playing against each other in the same row
 // this is so we can use the csv as input to the model
 // return a bool if the csv was written successfully
-fn write_to_csv(matches: &Vec<Match>, team_stats: &mut TeamStats) -> bool {
+fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats) -> bool {
     let mut csv = String::new();
     for i in 0..2
     {
@@ -83,3 +93,49 @@ fn write_to_csv(matches: &Vec<Match>, team_stats: &mut TeamStats) -> bool {
     written.is_ok()
 }
 
+fn call_model(stats: &TeamStats) {
+    // let export_dir = Path::new("./src/model");
+    // let options = &SessionOptions::new();
+    // let tags = &["serve"];
+    // let mut graph = Graph::new();
+    //
+    // let model = SavedModelBundle::load(options, tags, &mut graph, export_dir).unwrap();
+    //
+    let file = File::open("data.csv").unwrap_or_else(|_| panic!("Failed to open file"));
+    // let fields = csv::Reader::from_reader(file).headers().unwrap().into_iter().collect::<Vec<String>>();
+    // let schema : Arc<Schema> = Arc::new (Schema::from(vec![]));
+    let df = CsvReader::new(file)
+        .infer_schema(Some(100))
+        .has_header(true)
+        .finish();
+
+    let tensor = df_to_tensor(df.unwrap());
+
+    println!("{:?}", df.is_ok());
+}
+
+fn df_to_tensor(df: DataFrame)  {
+    let (nrows, ncols) = df.shape();
+    let mut data = vec![0.0; nrows * ncols];
+
+
+    // drop all values from dataframe above
+    let df = df.drop("Unnamed: 0").unwrap();
+    let df = df.drop("Score").unwrap();
+    let df = df.drop("GP").unwrap();
+    let df = df.drop("GP.1").unwrap();
+    let df = df.drop("Home-Team-Win").unwrap();
+    let df = df.drop("TEAM_NAME").unwrap();
+    let df = df.drop("Date").unwrap();
+    let df = df.drop("MIN").unwrap();
+    let df = df.drop("MIN.1").unwrap();
+    let df = df.drop("TEAM_NAME.1").unwrap();
+    let df = df.drop("Date.1").unwrap();
+    let df = df.drop("OU").unwrap();
+    let df = df.drop("OU-Cover").unwrap();
+    let df = df.drop("GP_RANK").unwrap();
+    let df = df.drop("GP_RANK.1").unwrap();
+
+
+
+}
