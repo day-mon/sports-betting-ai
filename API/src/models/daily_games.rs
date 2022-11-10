@@ -2,6 +2,7 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
 
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DailyGames {
@@ -11,8 +12,8 @@ pub struct DailyGames {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Gs {
-    pub gdte: String,
     pub mid: i64,
+    pub gdte: String,
     pub next: String,
     pub g: Vec<G>,
 }
@@ -22,71 +23,73 @@ pub struct Gs {
 pub struct G {
     pub gid: String,
     pub gcode: String,
-    pub p: Value,
-    pub st: String,
+    pub p: i64,
+    pub st: i64,
     pub stt: String,
-    pub cl: Value,
+    pub cl: String,
+    pub seq: i64,
+    pub lm: Lm,
     pub v: V,
     pub h: H,
-    pub lm: Lm,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct V {
-    pub tid: i64,
-    pub q1: String,
-    pub ot1: String,
-    pub s: String,
-    pub ot2: String,
-    pub ot3: String,
-    pub ot4: String,
-    pub ot5: String,
-    pub ot6: String,
-    pub ot7: String,
-    pub ot8: String,
-    pub ot9: String,
-    pub ot10: String,
-    pub q2: String,
-    pub q3: String,
-    pub q4: String,
-    pub ta: String,
-    pub tn: String,
-    pub tc: String,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct H {
-    pub tid: i64,
-    pub q1: String,
-    pub ot1: String,
-    pub s: String,
-    pub ot2: String,
-    pub ot3: String,
-    pub ot4: String,
-    pub ot5: String,
-    pub ot6: String,
-    pub ot7: String,
-    pub ot8: String,
-    pub ot9: String,
-    pub ot10: String,
-    pub q2: String,
-    pub q3: String,
-    pub q4: String,
-    pub ta: String,
-    pub tn: String,
-    pub tc: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Lm {
-    pub gdte: Option<String>,
+    pub gdte: String,
     pub gres: String,
     pub seri: String,
     pub gid: String,
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct V {
+    pub ta: String,
+    pub q1: i64,
+    pub s: i64,
+    pub q2: i64,
+    pub q3: i64,
+    pub q4: i64,
+    pub ot1: i64,
+    pub ot2: i64,
+    pub ot3: i64,
+    pub ot4: i64,
+    pub ot5: i64,
+    pub ot6: i64,
+    pub ot7: i64,
+    pub ot8: i64,
+    pub ot9: i64,
+    pub ot10: i64,
+    pub tn: String,
+    pub tc: String,
+    pub tid: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct H {
+    pub ta: String,
+    pub q1: i64,
+    pub s: i64,
+    pub q2: i64,
+    pub q3: i64,
+    pub q4: i64,
+    pub ot1: i64,
+    pub ot2: i64,
+    pub ot3: i64,
+    pub ot4: i64,
+    pub ot5: i64,
+    pub ot6: i64,
+    pub ot7: i64,
+    pub ot8: i64,
+    pub ot9: i64,
+    pub ot10: i64,
+    pub tn: String,
+    pub tc: String,
+    pub tid: i64,
+}
+
 
 pub struct Match {
     pub home_team_id: i64,

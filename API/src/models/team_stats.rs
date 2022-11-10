@@ -10,6 +10,17 @@ pub struct TeamStats {
     pub result_sets: Vec<ResultSet>,
 }
 
+
+impl TeamStats {
+
+}
+
+
+
+
+
+
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameters {
@@ -81,4 +92,15 @@ pub struct ResultSet {
     pub name: String,
     pub headers: Vec<String>,
     pub row_set: Vec<Vec<Value>>,
+}
+
+impl ResultSet {
+    pub fn get_team_stats(&self, team_id: i64) -> Vec<Vec<Value>> {
+        let team_id_index = 0;
+        self.row_set
+            .iter()
+            .filter(|row| row[team_id_index].as_i64().unwrap_or(1) == team_id)
+            .map(|row| row.clone())
+            .collect()
+    }
 }
