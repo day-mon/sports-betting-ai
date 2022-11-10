@@ -6,7 +6,7 @@ use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::io::SerReader;
 use polars::prelude::{CsvReader, Schema};
-use tensorflow::{DataType, Graph, SavedModelBundle, Session, SessionOptions, Tensor};
+//use tensorflow::{DataType, Graph, SavedModelBundle, Session, SessionOptions, Tensor};
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::team_stats::TeamStats;
 
@@ -109,11 +109,11 @@ fn call_model(stats: &TeamStats) {
         .has_header(true)
         .finish();
 
-    let tensor = df_to_tensor(df.unwrap());
+    //let tensor = df_to_tensor(df.unwrap());
 
     println!("{:?}", df.is_ok());
 }
-
+/*
 fn df_to_tensor(df: DataFrame)  {
     let (nrows, ncols) = df.shape();
     let mut data = vec![0.0; nrows * ncols];
@@ -136,6 +136,5 @@ fn df_to_tensor(df: DataFrame)  {
     let df = df.drop("GP_RANK").unwrap();
     let df = df.drop("GP_RANK.1").unwrap();
 
-
-
 }
+*/
