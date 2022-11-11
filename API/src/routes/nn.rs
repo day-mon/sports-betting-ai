@@ -1,9 +1,11 @@
 use std::fs;
 use std::fs::File;
 use actix_web::HttpResponse;
+use polars::datatypes::DataType;
 use polars::frame::DataFrame;
 use polars::io::SerReader;
-use polars::prelude::CsvReader;
+use polars::prelude::{CsvReader, DateType, Field, IntoVec, Schema};
+use tensorflow::Tensor;
 //use tensorflow::{DataType, Graph, SavedModelBundle, Session, SessionOptions, Tensor};
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::team_stats::TeamStats;
@@ -43,6 +45,17 @@ pub async fn predict(
     };
 
 
+
+    println!("{}", model_data.is_empty());
+    println!("{:?}", model_data.get_column_names());
+
+
+
+
+
+    call_model(&model_data);
+
+
     HttpResponse::Ok().json("daily_stats")
 }
 
@@ -51,13 +64,17 @@ async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataFrame
     let file_name = format!("./src/data/{}.csv", date);
     // check if file exist if it exist return the string of the file
     if let Ok(file) = File::open(file_name) {
-        // convert string to dataframe
-         return Ok(CsvReader::new(file)
-            .infer_schema(Some(100))
+
+
+        // convert written string to dataframe
+        return Ok(drop_columns(CsvReader::new(file)
             .has_header(true)
+            .low_memory(true)
             .finish()
-            .expect("Unable to read csv"));
-    };
+            .expect("Unable to read csv")));
+
+
+    }
 
 
     let Ok(response) = reqwest::get(TEAM_DATA_URL).await else {
@@ -77,13 +94,46 @@ async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataFrame
         Err(e) => return Err(e),
     };
 
-   // convert written string to dataframe
-    return Ok(CsvReader::new(written)
-        .infer_schema(Some(100))
+    Ok(drop_columns(CsvReader::new(written)
+        .infer_schema(None)
         .has_header(true)
+        .low_memory(true)
         .finish()
-        .expect("Unable to read csv"));
+        .expect("Error happend here")))
 }
+
+fn drop_columns(df: DataFrame) -> DataFrame {
+    df.drop("TEAM_NAME")
+        .expect("Unable to drop column TEAM_NAME")
+        .drop("TEAM_ID")
+        .expect("Unable to drop column TEAM_ID")
+        .drop("MIN")
+        .expect("Unable to drop column MIN")
+        .drop("GP")
+        .expect("Unable to drop column GP")
+        .drop("GP_RANK")
+        .expect("Unable to drop column GP_RANK")
+        .drop("CFID")
+        .expect("Unable to drop column CFID")
+        .drop("CFPARAMS")
+        .expect("Unable to drop column CFPARAMS")
+        .drop("MIN_duplicated_0")
+        .expect("Unable to drop column MIN_duplicated_0")
+        .drop("TEAM_NAME_duplicated_0")
+        .expect("Unable to drop column TEAM_NAME_duplicated_0")
+        .drop("TEAM_ID_duplicated_0")
+        .expect("Unable to drop column TEAM_ID_duplicated_0")
+        .drop("GP_duplicated_0")
+        .expect("Unable to drop column GP_duplicated_0")
+        .drop("GP_RANK_duplicated_0")
+        .expect("Unable to drop column GP_RANK_duplicated_0")
+        .drop("CFID_duplicated_0")
+        .expect("Unable to drop column CFID_duplicated_0")
+        .drop("CFPARAMS_duplicated_0")
+        .expect("Unable to drop column CFPARAMS_duplicated_0")
+}
+
+
 
 
 // write to a csv and put the two teams that are playing against each other in the same row
@@ -129,24 +179,25 @@ fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String) -> 
     }
 }
 
-fn call_model(stats: &TeamStats) {
-    // let export_dir = Path::new("./src/model");
-    // let options = &SessionOptions::new();
-    // let tags = &["serve"];
-    // let mut graph = Graph::new();
-    //
-    // let model = SavedModelBundle::load(options, tags, &mut graph, export_dir).unwrap();
-    //
-    let file = File::open("data.csv").unwrap_or_else(|_| panic!("Failed to open file"));
-    // let fields = csv::Reader::from_reader(file).headers().unwrap().into_iter().collect::<Vec<String>>();
-    // let schema : Arc<Schema> = Arc::new (Schema::from(vec![]));
-    let df = CsvReader::new(file)
-        .infer_schema(Some(100))
-        .has_header(true)
-        .finish();
+fn call_model(df: &DataFrame) {
+
+    // convert df to tensor
+    let tensor = Tensor::new(&[2, 2056])
+
+
+    // filteredData.astype(float)
+
+    // convert whole data frame to f32 dataframe
+
+
+    let df = df.dtypes();
+
+    println!("{:?}", df);
+
+
 
     //let tensor = df_to_tensor(df.unwrap());
 
-    println!("{:?}", df.is_ok());
+    // println!("{:?}", df.is_ok());
 }
 
