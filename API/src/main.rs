@@ -4,6 +4,7 @@ use env_logger::Env;
 
 mod routes;
 mod models;
+mod util;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -23,8 +24,8 @@ async fn main() -> std::io::Result<()> {
                 // add a nested scope
                 web::scope("/mock",).service(
                     web::scope("/sports")
-                        .route("/predict", web::post().to(routes::nn_mock::predict))
-                        .route("/games", web::get().to(routes::nn_mock::games))
+                        // .route("/predict", web::post().to(routes::nn_mock::predict))
+                        // .route("/games", web::get().to(routes::nn_mock::games))
 
                 )
             )
