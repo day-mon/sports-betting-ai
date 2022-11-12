@@ -20,24 +20,18 @@ pub struct Test {
     pub outcome: String,
 }
 
-
-
-
-
 pub async fn predict() -> HttpResponse {
-
-
     let Ok(response) = reqwest::get(DAILY_GAMES_URL).await else {
-        return HttpResponse::InternalServerError().json("Booo");
+        return HttpResponse::InternalServerError().json("Failure to get the daily games");
     };
 
     let Ok(response_body) = response.text().await else {
-        return HttpResponse::InternalServerError().json("boo v2");
+        return HttpResponse::InternalServerError().json("Failed to get resposne body of daily games");
     };
 
 
     let Ok(daily_games) = serde_json::from_str::<DailyGames>(&*response_body) else {
-        return HttpResponse::InternalServerError().json("boo v3");
+        return HttpResponse::InternalServerError().json("Couldnt deserialize daily games");
     };
 
 
@@ -45,7 +39,14 @@ pub async fn predict() -> HttpResponse {
         return HttpResponse::NotFound().json("There are no games today");
     }
     let date = daily_games.gs.gdte.to_string().replace("\"", "");
-    let tids: Vec<Match> = daily_games.gs.g.iter().map(|g| Match { home_team_id: g.h.tid, away_team_id: g.v.tid, away_team_name: format!("{} {}", g.v.tc.to_string().replace("\"",""), g.v.tn.to_string().replace("\"","")), home_team_name: format!("{} {}", g.h.tc.to_string().replace("\"",""), g.h.tn.to_string().replace("\"",""))}).collect();
+    let tids: Vec<Match> = daily_games.gs.g.iter().map(|g|
+        Match {
+            home_team_id: g.h.tid,
+            away_team_id: g.v.tid,
+            away_team_name: format!("{} {}", g.v.tc.to_string().replace("\"",""), g.v.tn.to_string().replace("\"","")),
+            home_team_name: format!("{} {}", g.h.tc.to_string().replace("\"",""), g.h.tn.to_string().replace("\"",""))
+        }
+    ).collect();
 
 
     let model_data = match  get_model_data(&tids, &date).await  {

@@ -10,17 +10,6 @@ pub struct TeamStats {
     pub result_sets: Vec<ResultSet>,
 }
 
-
-impl TeamStats {
-
-}
-
-
-
-
-
-
-
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameters {

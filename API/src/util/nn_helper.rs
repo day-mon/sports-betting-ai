@@ -76,7 +76,7 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
             .with_values(&initial_values)
             .expect("Error creating tensor");
         let mut graph = Graph::new();
-        let bundle = SavedModelBundle::load(&SessionOptions::new(), &["serve"], &mut graph,  model_dir).unwrap();
+        let bundle = SavedModelBundle::load(&SessionOptions::new(), &["serve"], &mut graph,  model_dir).expect("Error loading model");
         let session = &bundle.session;
         let signature = bundle
             .meta_graph_def()
@@ -96,7 +96,6 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
         session.run(&mut args).expect("Error running session");
 
         let output = args.fetch::<f32>(output_tensor).expect("Error fetching output");
-        // do a np.argmax(output) to get the index of the highest value
         let mut max = 0f32;
         let mut max_index = 0;
         for (i, val) in output.iter().enumerate()
@@ -107,6 +106,7 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
             }
         }
         let mat = matches.get(row_index).expect("Error getting match");
+
         let wining = if max_index == 1 {
              format!("{} wins", mat.home_team_name)
         } else {
