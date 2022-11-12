@@ -20,9 +20,11 @@ pub struct Test {
     pub outcome: String,
 }
 
-pub async fn predict(
-    // model: web::Json<Game>
-) -> HttpResponse {
+
+
+
+
+pub async fn predict() -> HttpResponse {
 
 
     let Ok(response) = reqwest::get(DAILY_GAMES_URL).await else {
@@ -43,7 +45,7 @@ pub async fn predict(
         return HttpResponse::NotFound().json("There are no games today");
     }
     let date = daily_games.gs.gdte.to_string().replace("\"", "");
-    let tids: Vec<Match> = daily_games.gs.g.iter().map(|g| Match { home_team_id: g.h.tid, away_team_id: g.v.tid }).collect();
+    let tids: Vec<Match> = daily_games.gs.g.iter().map(|g| Match { home_team_id: g.h.tid, away_team_id: g.v.tid, away_team_name: format!("{} {}", g.v.tc.to_string().replace("\"",""), g.v.tn.to_string().replace("\"","")), home_team_name: format!("{} {}", g.h.tc.to_string().replace("\"",""), g.h.tn.to_string().replace("\"",""))}).collect();
 
 
     let model_data = match  get_model_data(&tids, &date).await  {
@@ -52,17 +54,11 @@ pub async fn predict(
     };
 
 
-    let prediction = call_model(&model_data);
-    let actual = prediction.iter().map(|p| {
-        if p.to_i64().unwrap() == 1 {
-            "Home Team wins"
-        } else {
-            "Away Team wins"
-        }
-    }).collect::<Vec<&str>>();
+    let prediction = call_model(&model_data, &tids);
+
 
     // return the prediction array
-    HttpResponse::Ok().json(actual)
+    HttpResponse::Ok().json(prediction)
 }
 
 

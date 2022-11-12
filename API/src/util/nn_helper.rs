@@ -57,7 +57,7 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
 }
 
 
-pub fn call_model(df: &DataFrame) -> Vec<usize> {
+pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
 
     // convert df to tensor
     let model_dir = "./src/model/";
@@ -65,37 +65,37 @@ pub fn call_model(df: &DataFrame) -> Vec<usize> {
     let sig_out_name = "output_layer";
 
     let (rows, _) = df.shape();
-    let mut inputs: Vec<usize> = Vec::with_capacity(rows);
-    for row in 0..rows {
+    let mut inputs: Vec<String> = Vec::with_capacity(rows);
+    for row_index in 0..rows {
         // convert row to list of f64s
-        let row = df.get_row(row);
-        let s = row.0;
-        let z = s.iter().map(|val| val.to_string()).collect::<Vec<String>>();
-        let f = z.iter().map(|val| val.parse::<f32>().unwrap()).collect::<Vec<f32>>();
+        let row = df.get_row(row_index);
+        let any_val = row.0;
+        let conv = any_val.iter().map(|val| val.to_string()).collect::<Vec<String>>();
+        let initial_values = conv.iter().map(|val| val.parse::<f32>().unwrap()).collect::<Vec<f32>>();
         let tensor = Tensor::new(&[1, 98])
-            .with_values(&f)
-            .unwrap();
+            .with_values(&initial_values)
+            .expect("Error creating tensor");
         let mut graph = Graph::new();
         let bundle = SavedModelBundle::load(&SessionOptions::new(), &["serve"], &mut graph,  model_dir).unwrap();
         let session = &bundle.session;
         let signature = bundle
             .meta_graph_def()
             .get_signature("serving_default")
-            .unwrap();
+            .expect("Error getting signature");
 
-        let input_info = signature.get_input(sig_in_name).unwrap();
-        let output_info = signature.get_output(sig_out_name).unwrap();
+        let input_info = signature.get_input(sig_in_name).expect("Input not found");
+        let output_info = signature.get_output(sig_out_name).expect("Output not found");
 
-        let input_op = graph.operation_by_name_required(&input_info.name().name).unwrap();
-        let output_op = graph.operation_by_name_required(&output_info.name().name).unwrap();
+        let input_op = graph.operation_by_name_required(&input_info.name().name).expect("Input op not found");
+        let output_op = graph.operation_by_name_required(&output_info.name().name).expect("Output op not found");
 
         let mut args = SessionRunArgs::new();
         args.add_feed(&input_op, 0, &tensor);
         let output_tensor = args.request_fetch(&output_op, 0);
 
-        session.run(&mut args).unwrap();
+        session.run(&mut args).expect("Error running session");
 
-        let output = args.fetch::<f32>(output_tensor).unwrap();
+        let output = args.fetch::<f32>(output_tensor).expect("Error fetching output");
         // do a np.argmax(output) to get the index of the highest value
         let mut max = 0f32;
         let mut max_index = 0;
@@ -106,9 +106,14 @@ pub fn call_model(df: &DataFrame) -> Vec<usize> {
                 max_index = i;
             }
         }
-        println!("Max index: {}", max_index);
+        let mat = matches.get(row_index).expect("Error getting match");
+        let wining = if max_index == 1 {
+             format!("{} wins", mat.home_team_name)
+        } else {
+            format!("{} wins", mat.away_team_name)
+        };
 
-        inputs.push(max_index);
+        inputs.push(wining);
     }
     return inputs;
 
