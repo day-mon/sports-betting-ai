@@ -1,13 +1,11 @@
-import random
-
+import math
+import multiprocessing
 import tensorflow as tf
-import keras as keras
 import pandas as pd
 import numpy as np
 import keras
 from typing import List, Tuple
 from pandas import DataFrame
-import openpyxl
 
 
 class NNModelRun:
@@ -22,16 +20,7 @@ class NNModelRun:
         if self.model is None:
             raise Exception("Model is not trained")
 
-
-        print("data_out", data_out)
-        print("data_in", data_in)
-
-
-
-        # get width of data
         data_entries = len(data_in)
-
-        print(f"Data entries: {data_entries}")
         expected_output = data_out['Home-Team-Win']
 
         predictions = self.model.predict(data_in)
@@ -39,31 +28,35 @@ class NNModelRun:
             if expected_output[i] == np.argmax(predictions[i]):
                 self.fitness += 1
 
+        self.fitness /= data_entries
+
         # return percentage of correct predictions
+        return self.fitness
 
     def __str__(self):
         return f"Layers: {self.layers}, Nodes: {self.nodes}, Epochs: {self.epoch_count}, Fitness: {self.fitness}"
 
 
-DESIRED_LAYERS = range(1, 10)
-DESIRED_NODES = range(1, 30)
-DESIRED_EPOCHS = range(1, 50)
+DESIRED_LAYERS = range(3, 10)
+DESIRED_NODES = range(3, 30)
+DESIRED_EPOCHS = range(3, 50)
 
 
 def main():
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
     desired_fitness = 100.0
 
-    pop_size = 50
-    mutation_perc = 0.01
+    pop_size = 10
+    mutation_perc = 0.1
     crossover_perc = 0.5
-    generation = 0
+    generation = 1
+    last_best = None
 
     population = init_population(pop_size)
     new_population = []
     filtered_data, raw_data = get_data()
 
-    while desired_fitness != get_best_fitness(population).fitness:
+    while desired_fitness >= get_best_fitness(population).fitness:
         for i in range(pop_size):
             nn_run = population[i]
             train_model(filtered_data, raw_data, nn_run)
@@ -74,11 +67,10 @@ def main():
                 population.append(init_population(1)[0])
                 continue
 
-            print("Finished training model: ", nn_run)
             nn_run.measure_fitness(raw_data, filtered_data)
-            print(f"Fitness: {nn_run.fitness}")
+            print("Finished training model & Measuring fitness: ", nn_run)
 
-        for i in range(pop_size):
+        for i in range(math.floor(pop_size / 2)):
             parent_one = select_parents(population)
             parent_two = select_parents(population)
 
@@ -96,12 +88,18 @@ def main():
             new_population.append(parent_one)
             new_population.append(parent_two)
 
-        print(f"Generation: {generation}, Best Fitness: {get_best_fitness(population).fitness}")
+        best = get_best_fitness(population)
+
+        if last_best is not None:
+            print("Fitness diff", best.fitness - last_best.fitness)
+
+        print(f"Generation: {generation}, Best: {best}")
 
         generation += 1
         population.clear()
-        population = new_population
+        population = new_population.copy()
         new_population.clear()
+        last_best = best
 
 
 def get_best_fitness(population: List[NNModelRun]) -> NNModelRun:
@@ -118,19 +116,21 @@ def mutate(parent: NNModelRun) -> NNModelRun:
 
 
 def crossover(parent_one: NNModelRun, parent_two: NNModelRun) -> (NNModelRun, NNModelRun):
-    # crossover needs to be fixed
-    crossover_point = random.randint(0, parent_one.layers - 1)
-    child_one_one_layers = parent_one.layers[:crossover_point]
-    child_one_two_layers = parent_two.layers[crossover_point:]
+    crossover_point = np.random.randint(1, parent_two.layers - 1)
+    child_one_one_layers = parent_one.nodes[:crossover_point]
+    child_one_two_layers = parent_two.nodes[crossover_point:]
 
-    child_two_one_layers = parent_two.layers[:crossover_point]
-    child_two_two_layers = parent_one.layers[crossover_point:]
+    child_two_one_layers = parent_two.nodes[:crossover_point]
+    child_two_two_layers = parent_one.nodes[crossover_point:]
 
     child_one_layers = child_one_one_layers + child_one_two_layers
     child_two_layers = child_two_one_layers + child_two_two_layers
 
-    parent_one.layers = child_one_layers
-    parent_two.layers = child_two_layers
+    parent_one.nodes = child_one_layers
+    parent_two.nodes = child_two_layers
+
+    parent_two.layers = len(child_two_layers)
+    parent_one.layers = len(child_one_layers)
 
     temp = parent_one.epoch_count
     parent_one.epoch_count = parent_two.epoch_count
@@ -140,7 +140,7 @@ def crossover(parent_one: NNModelRun, parent_two: NNModelRun) -> (NNModelRun, NN
 
 
 def select_parents(population: List[NNModelRun]) -> NNModelRun:
-    parent_pool_size = 10
+    parent_pool_size = int(len(population) * 0.4)
     parent_pool = []
     for i in range(parent_pool_size):
         parent_pool.append(np.random.choice(population))
@@ -155,7 +155,7 @@ def select_parents(population: List[NNModelRun]) -> NNModelRun:
 def init_population(pop_size: int) -> List[NNModelRun]:
     population = []
 
-    for i in range(pop_size):
+    for _ in range(pop_size):
         layers = np.random.choice(DESIRED_LAYERS)
         nodes = []
         for _ in range(layers):
@@ -180,9 +180,20 @@ def train_model(
         model.add(tf.keras.layers.Dense(model_params.nodes[i], activation='relu'))
     model.add(tf.keras.layers.Dense(2, activation='softmax', name="output_layer"))
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    # get amount of workers that could be allowed due to hardware
+    workers = multiprocessing.cpu_count() / 2
     percent_of_epochs = int(model_params.epoch_count * 0.4)
-    model.fit(data_input, data_output, epochs=model_params.epoch_count, callbacks=[
-        tf.keras.callbacks.EarlyStopping(monitor='loss', patience=percent_of_epochs, restore_best_weights=True)])
+    model.fit(
+        data_input,
+        data_output,
+        verbose=0,
+        workers=workers,
+        use_multiprocessing=True,
+        epochs=model_params.epoch_count,
+        callbacks=[
+            tf.keras.callbacks.EarlyStopping(monitor='loss', patience=percent_of_epochs, restore_best_weights=True)
+        ]
+    )
     # check to see if the model returned early
     model_params.model = model if not len(model.history.history['loss']) < model_params.epoch_count else None
 
