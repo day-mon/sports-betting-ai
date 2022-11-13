@@ -118,6 +118,7 @@ def mutate(parent: NNModelRun) -> NNModelRun:
 
 
 def crossover(parent_one: NNModelRun, parent_two: NNModelRun) -> (NNModelRun, NNModelRun):
+    # crossover needs to be fixed
     crossover_point = random.randint(0, parent_one.layers - 1)
     child_one_one_layers = parent_one.layers[:crossover_point]
     child_one_two_layers = parent_two.layers[crossover_point:]
