@@ -1,60 +1,34 @@
-# All files pertaining to the frontend portion of the application stack.
-This is the frontend client of the Sports Betting AI. This is where all user interactions will occur.
+## Usage
 
-# Installation
+Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
 
-## Option 1 (Docker)
-### Dependencies
-* Docker (WSL2 if on Windows)
+This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
 
-### Step 1
-* Since none of the required dependencies are installed locally, there is a command used to get the inital files setup
-* Documentation: https://laravel.com/docs/9.x/sail#installing-composer-dependencies-for-existing-projects
-* This following command will spin up a temporary docker container to install the dependencies
- ```sh
- docker run --rm \
-    -u "$(id -u):$(id -g)" \
-    -v $(pwd):/var/www/html \
-    -w /var/www/html \
-    laravelsail/php81-composer:latest \
-    composer install --ignore-platform-reqs 
+```bash
+$ npm install # or pnpm install or yarn install
 ```
 
-### Step 2
-* Now to run the docker-compose.yml file to bring up the server
-* `./vendor/bin/sail up`
-* This will start all the services and a webserver on `localhost:80`
+### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
 
-### Additional Help
-* The Sail documentation has many more helpful tips to get a better setup running
-* https://laravel.com/docs/9.x/sail
+## Available Scripts
 
-## Option 2 (Standalone)
-### Dependencies
-* PHP 8.1
-    * php8.1-zip
-    * php8.1-gd
-    * php8.1-curl
-    * php8.1-xml
-* Composer (Package Manager)
-* MySql
-* Webserver (Laragon, XAMPP, Valet, Homestead, Other...)
-    * Optionally just for development `php artisan serve` will also work
+In the project directory, you can run:
 
-### Step 1
-* From the Website directory
-* `composer install`
-* This will install all of the dependencies for the application
+### `npm dev` or `npm start`
 
-### Step 2
-* Install NPM dependencies.
-* `npm install`
+Runs the app in the development mode.<br>
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+The page will reload if you make edits.<br>
 
-## Steps are the same for both from here.
----
-### Step 3
-* Compile assets
-* Non-docker - `npm run dev` or `npm run prod`
-* Docker - `./vendor/bin/sail npm run dev`
+### `npm run build`
 
+Builds the app for production to the `dist` folder.<br>
+It correctly bundles Solid in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.<br>
+Your app is ready to be deployed!
+
+## Deployment
+
+You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
