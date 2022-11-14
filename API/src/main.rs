@@ -2,8 +2,9 @@ use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
 use env_logger::Env;
 
-
 mod routes;
+mod models;
+mod util;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -17,11 +18,11 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .service(
                 web::scope("/sports")
-                            .route("/predict", web::post().to(routes::nn::predict))
+                            .route("/predict", web::get().to(routes::nn::predict))
             )
-
     })
         .bind(endpoint)?
         .run()
         .await
 }
+
