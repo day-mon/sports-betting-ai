@@ -1,36 +1,43 @@
-
 name: Rust
 
 on:
   push:
-    branches: [ main, ci-test ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_STABLE: stable
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Cargo Cache
+        uses: actions/cache@v1
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install Rust ${{ env.RUST_STABLE }}
-        uses: actions-rs/toolchain@v1
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
+            ${{ runner.os }}-cargo
+
+      - name: Cargo Target Cache
+        uses: actions/cache@v1
         with:
-          toolchain: ${{ env.RUST_STABLE }}
-          override: true
-      - name: Install Rust
+          path: target
+          key: ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
+            ${{ runner.os }}-cargo-target
+
+      - name: Update Rust
         run: rustup update stable
         working-directory: ./API
+
       - name: Build
-        run: cargo build --verbose --all --features "strict"
+        run: cargo build --verbose --all -j 30
         working-directory: ./API
