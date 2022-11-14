@@ -39,5 +39,5 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: cargo build --verbose
         working-directory: ./API
-      - name: Check
-        run: cargo check --verbose
+      - name: Check Directory
+        run: ls -la
