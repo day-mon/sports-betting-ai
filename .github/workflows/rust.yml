@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Cache Cargo dependencies
-        id: cache-cargo
+        id: cache
         uses: actions/cache@v3
         with:
           path: |
@@ -33,14 +33,14 @@ jobs:
         with:
           toolchain: ${{ env.RUST_STABLE }}
           override: true
-      - name: Checking if there will be a cache hit
+      - name: Show Context
         run: |
-          echo "Cache hit: ${{ steps.cache-cargo.outputs.cache-hit }}"
+          echo "$GITHUB_CONTEXT"
       - name: Install Rust
         run: rustup update stable
         working-directory: ./API
       - name: Build
-        if: steps.cache-cargo.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cargo build --verbose -j 32
         working-directory: ./API
       - name: Check
