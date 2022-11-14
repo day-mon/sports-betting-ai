@@ -33,6 +33,8 @@ jobs:
         with:
           toolchain: ${{ env.RUST_STABLE }}
           override: true
+      - name: Checking if there will be a cache hit
+        echo "Cache hit: ${{ steps.cache-cargo.outputs.cache-hit }}"
       - name: Install Rust
         run: rustup update stable
         working-directory: ./API
@@ -41,4 +43,4 @@ jobs:
         run: cargo build --verbose -j 32
         working-directory: ./API
       - name: Check
-        run: cargoc check --verbose -j 32
+        run: cargo check --verbose -j 32
