@@ -20,16 +20,6 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/sports")
                             .route("/predict", web::get().to(routes::nn::predict))
             )
-            .service(
-                // add a nested scope
-                web::scope("/mock",).service(
-                    web::scope("/sports")
-                        // .route("/predict", web::post().to(routes::nn_mock::predict))
-                        // .route("/games", web::get().to(routes::nn_mock::games))
-
-                )
-            )
-
     })
         .bind(endpoint)?
         .run()
