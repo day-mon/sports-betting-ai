@@ -16,32 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Cache Cargo dependencies
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install Rust ${{ env.RUST_STABLE }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_STABLE }}
-          override: true
-      - name: Show Context
-        run: |
-          echo "$GITHUB_CONTEXT"
       - name: Install Rust
         run: rustup update stable
         working-directory: ./API
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cargo build --verbose -j 32
+        run: cargo check --verbose
         working-directory: ./API
-      - name: Check
-        run: cargo check --verbose -j 32
