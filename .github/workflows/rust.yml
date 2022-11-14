@@ -2,19 +2,43 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, ci-test ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_STABLE: stable
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+
+      - name: Cache Cargo dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo
+            target
+          key: ${{ runner.os }}-cargo-cache-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust ${{ env.RUST_STABLE }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_STABLE }}
+          override: true
+      - name: Show Context
+        run: |
+          echo "$GITHUB_CONTEXT"
+      - name: Install Rust
+        run: rustup update stable
+        working-directory: ./API
       - name: Build
-        run: cargo build -j 10 --verbose
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo build --verbose
+        working-directory: ./API
+      - name: Check
+        run: cargo check --verbose
         working-directory: ./API
