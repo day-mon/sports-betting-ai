@@ -47,6 +47,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/sports")
                             .route("/predict", web::get().to(routes::nn::predict))
+                            .route("/games", web::get().to(routes::nn::games))
             )
     })
         .bind(endpoint)?
