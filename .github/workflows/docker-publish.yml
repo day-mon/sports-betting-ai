@@ -7,7 +7,7 @@ name: Docker
 
 on:
   push:
-    branches: [ "main", "day-mon-patch-3", "ci-test" ]
+    branches: [ "main", "day-mon-patch-2", "ci-test" ]
   pull_request:
     branches: [ "main" ]
 
