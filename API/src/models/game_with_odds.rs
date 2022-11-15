@@ -6,6 +6,7 @@ use {
 #[derive(Deserialize, Serialize)]
 pub struct GameWithOdds {
     pub game_id: String,
+    pub start_time: String,
     pub home_team_name: String,
     pub away_team_name: String,
     pub home_team_id: i64,

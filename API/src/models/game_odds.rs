@@ -24,7 +24,7 @@ pub struct Game {
 pub struct Market {
     pub name: String,
     #[serde(rename = "odds_type_id")]
-    pub odds_type_id: i64,
+    pub odds_type_id: Option<i64>,
     #[serde(rename = "group_name")]
     pub group_name: String,
     pub books: Vec<Book>,
