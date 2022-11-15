@@ -14,13 +14,13 @@ reqwest = "0.11.12"
 env_logger = "0.9.3"
 csv = "1.1.6"
 polars = "0.25.1"
-#tensorflow = "0.16.0"
+tensorflow = "0.16.0"
 protobuf = "3.2.0"
 log = "0.4.17"
 structopt = "0.3.23"
 
-#[dev-dependencies]
-## I dont know if the deployed version will have a gpu or not, so I'm going to assume it doesn't
+[dev-dependencies]
+# I dont know if the deployed version will have a gpu or not, so I'm going to assume it doesn't
 #tensorflow = { version = "0.19.1", features = ["tensorflow_gpu"] }
 
 

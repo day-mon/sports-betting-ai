@@ -1,13 +1,11 @@
 
 use actix_web::HttpResponse;
-use log::{info, warn};
-use polars::prelude::{DateType, Field, Schema};
-// use tensorflow::{SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
+use log::warn;
 use {serde::{Deserialize, Serialize}};
 use crate::models::daily_games::{DailyGames, Match, V};
-use crate::models::game_odds::{Game, GameOdds, Market};
+use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::{GameWithOdds, Odds};
-// use crate::util::nn_helper::{call_model, get_model_data};
+use crate::util::nn_helper::{call_model, get_model_data};
 
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
@@ -52,17 +50,17 @@ pub async fn predict() -> HttpResponse {
     ).collect();
 
 
-    // let model_data = match get_model_data(&tids, &date).await  {
-    //     Ok(data) => data,
-    //     Err(e) => return HttpResponse::InternalServerError().json(e.to_string())
-    // };
-    //
-    //
-    // let prediction = call_model(&model_data, &tids);
+    let model_data = match get_model_data(&tids, &date).await  {
+        Ok(data) => data,
+        Err(e) => return HttpResponse::InternalServerError().json(e.to_string())
+    };
+
+
+    let prediction = call_model(&model_data, &tids);
 
 
     // return the prediction array
-    HttpResponse::Ok().json("prediction")
+    HttpResponse::Ok().json(prediction)
 }
 
 pub async fn games() -> HttpResponse {
