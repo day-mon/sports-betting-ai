@@ -1,6 +1,5 @@
 
 use actix_web::HttpResponse;
-use polars::export::num::ToPrimitive;
 use polars::prelude::{DateType, Field, Schema};
 use tensorflow::{SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 use {serde::{Deserialize, Serialize}};
@@ -21,8 +20,9 @@ pub struct Test {
 }
 
 pub async fn predict() -> HttpResponse {
-    let Ok(response) = reqwest::get(DAILY_GAMES_URL).await else {
-        return HttpResponse::InternalServerError().json("Failure to get the daily games");
+    let response = match reqwest::get(DAILY_GAMES_URL).await  {
+        Ok(response) => response,
+        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
     };
 
     let Ok(response_body) = response.text().await else {
@@ -49,7 +49,7 @@ pub async fn predict() -> HttpResponse {
     ).collect();
 
 
-    let model_data = match  get_model_data(&tids, &date).await  {
+    let model_data = match get_model_data(&tids, &date).await  {
         Ok(data) => data,
         Err(e) => return HttpResponse::InternalServerError().json(e.to_string())
     };

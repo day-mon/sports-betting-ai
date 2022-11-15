@@ -1,9 +1,11 @@
-use std::fs;
+use std::{env, fs};
 use std::fs::File;
+use std::path::Path;
 use crate::models::daily_games::Match;
 use crate::models::team_stats::TeamStats;
 
 pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String) -> Result<File, String> {
+    let data_dir = env::var("DATA_DIR").unwrap();
     let mut csv = String::new();
     for i in 0..2
     {
@@ -32,11 +34,21 @@ pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String)
         csv.push_str("\n");
     }
 
+    let actual_path = format!("{}", data_dir);
 
-    let written = fs::write( format!("./src/data/{}.csv", date), csv);
+    if !Path::new(&actual_path).exists() {
+         let _ = match fs::create_dir_all(actual_path) {
+             Ok(ret) => ret,
+             Err(err) => return Err(err.to_string())
+        };
+    }
+
+
+
+    let written = fs::write( format!("{}/{}.csv", data_dir, date), csv);
     if written.is_err() {
-        return Err("Failed to write to csv".to_owned());
+        return Err(written.err().unwrap().to_string());
     } else {
-        Ok(File::open(format!("./src/data/{}.csv", date)).expect("File couldnt be opened? Idk how this happened"))
+        Ok(File::open(format!("{}/{}.csv", data_dir, date)).expect("File couldnt be opened? Idk how this happened"))
     }
 }
