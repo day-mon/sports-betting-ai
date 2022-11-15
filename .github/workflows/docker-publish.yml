@@ -2,7 +2,7 @@ name: Docker Build
 
 on:
   push:
-    branches: [ master, ci-test ]
+    branches: [ main , ci-test ]
 
 env:
   IMAGE_NAME: api
