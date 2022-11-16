@@ -35,7 +35,7 @@ pub struct Market {
 pub struct Book {
     pub id: String,
     pub name: String,
-    pub outcomes: Vec<Outcome>,
+    pub outcomes: Option<Vec<Outcome>>,
     pub url: String,
     pub country_code: String,
 }

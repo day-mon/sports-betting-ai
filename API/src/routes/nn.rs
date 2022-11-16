@@ -1,6 +1,6 @@
 
 use actix_web::HttpResponse;
-use log::warn;
+use log::{error, info, warn};
 use {serde::{Deserialize, Serialize}};
 use crate::models::daily_games::{DailyGames, Match, V};
 use crate::models::game_odds::GameOdds;
@@ -66,16 +66,22 @@ pub async fn predict() -> HttpResponse {
 pub async fn games() -> HttpResponse {
     let response = match reqwest::get(DAILY_ODDS_URL).await  {
         Ok(response) => response,
-        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
+        Err(err) => return {
+            error!("Error occurred while trying to get the daily odds");
+            HttpResponse::InternalServerError().json(err.to_string())
+        },
     };
 
     let Ok(response_body) = response.text().await else {
-        return HttpResponse::InternalServerError().json("Failed to get resposne body of daily games");
+        return HttpResponse::InternalServerError().json("Failed to get response body of daily games");
     };
 
     let game_odds =  match serde_json::from_str::<GameOdds>(&*response_body) {
         Ok(res) => res,
-        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
+        Err(err) => return {
+            error!("Error occurred while trying to deserialize the daily odds");
+            HttpResponse::InternalServerError().json(err.to_string())
+        }
     };
 
     let game = game_odds.games;
@@ -86,43 +92,49 @@ pub async fn games() -> HttpResponse {
 
     for (_, g) in game.iter().enumerate() {
         if g.markets.len() > 2 { continue; };
-        let n_g = g.clone();
 
 
 
-        let Some(book_odds) = n_g.markets.into_iter().find(|m| m.name == "2way") else {
-            warn!("Two way odds not found for {}", &n_g.game_id);
+        let Some(mut book_odds) = g.markets.clone().into_iter().find(|m| m.name == "2way") else {
+            warn!("Two way odds not found for {}", &g.game_id);
             continue
         };
 
-        if book_odds.books.iter().find(|bk| bk.country_code == "US".to_string()).is_none() {
+        if book_odds.books.iter().find(|bk| bk.country_code == "US").is_none() {
             continue
         }
 
+        book_odds.books.retain(|bk| bk.outcomes.is_some());
+
         game_with_odds.push(
             GameWithOdds {
-                game_id: n_g.game_id,
-                away_team_id: n_g.away_team_id.parse().unwrap_or(-1),
-                home_team_id: n_g.home_team_id.parse().unwrap_or(-1),
+                game_id: g.game_id.clone(),
+                away_team_id: g.away_team_id.clone().parse().unwrap_or(-1),
+                home_team_id: g.home_team_id.clone().parse().unwrap_or(-1),
                 home_team_name: "".to_string(),
                 away_team_name: "".to_string(),
                 start_time: "".to_string(),
                 // map over the g.odds and return a vector of odds
-                odds: book_odds.books.iter().map(|book| {
+                odds: book_odds.books.iter().enumerate().map(|(_, book)| {
+
                     let book = book.clone();
                     // just in case they would ever be out of order
 
-                    let home_team_index = book.outcomes.iter().position(|o| o.type_field == "home").unwrap();
-                    let away_team_index = book.outcomes.iter().position(|o| o.type_field == "away").unwrap();
+
+
+                    let outcomes = &book.outcomes.unwrap();
+
+                    let home_team_index = outcomes.iter().position(|o| o.type_field == "home").unwrap();
+                    let away_team_index = outcomes.iter().position(|o| o.type_field == "away").unwrap();
 
                     return Odds {
                         book_name: book.name,
-                        home_team_odds: book.outcomes[home_team_index].odds.parse::<f64>().unwrap_or(-1.0),
-                        home_team_opening_odds: book.outcomes[home_team_index].opening_odds.parse::<f64>().unwrap_or(-1.0),
-                        away_team_odds: book.outcomes[away_team_index].odds.parse::<f64>().unwrap(),
-                        away_team_opening_odds: book.outcomes[away_team_index].opening_odds.parse::<f64>().unwrap_or(-1.0),
-                        home_team_odds_trend: book.outcomes[home_team_index].odds_trend.to_string(),
-                        away_team_odds_trend: book.outcomes[away_team_index].odds_trend.to_string(),
+                        home_team_odds: outcomes[home_team_index].odds.parse::<f64>().unwrap_or(-1.0),
+                        home_team_opening_odds: outcomes[home_team_index].opening_odds.parse::<f64>().unwrap_or(-1.0),
+                        away_team_odds: outcomes[away_team_index].odds.parse::<f64>().unwrap(),
+                        away_team_opening_odds: outcomes[away_team_index].opening_odds.parse::<f64>().unwrap_or(-1.0),
+                        home_team_odds_trend:  outcomes[home_team_index].odds_trend.to_string(),
+                        away_team_odds_trend: outcomes[away_team_index].odds_trend.to_string(),
                     }
                 }).collect()
             }
@@ -162,11 +174,9 @@ pub async fn games() -> HttpResponse {
         game.start_time = g.stt.to_string().replace("\"","")
     }
 
+    game_with_odds.retain(|gm| gm.home_team_name != "" || gm.away_team_name != "");
+
     HttpResponse::Ok().json(game_with_odds)
-
-
-
-
 }
 
 
