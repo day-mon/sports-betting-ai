@@ -11,7 +11,7 @@ const Navbar: Component = () => {
       <nav class="px-2 sm:px-4 py-2.5">
         <div class="container flex flex-wrap justify-between items-center mx-auto">
           <A href="/" class="flex items-center">
-            <span class="self-center text-xl font-bold whitespace-nowrap text-white">
+            <span class="self-center text-2xl font-bold whitespace-nowrap text-white">
               Accuribet
             </span>
           </A>
