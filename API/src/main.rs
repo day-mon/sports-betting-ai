@@ -3,9 +3,9 @@ use std::path::Path;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
-use actix_web::middleware::cors::Cors;
 use env_logger::Env;
 use log::{error, info};
+use routes::nn;
 
 mod routes;
 mod models;
@@ -49,9 +49,9 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .service(
                 web::scope("/sports")
-                            .route("/predict/all", web::get().to(routes::nn::predict_all))
-                            .route("/predict", web::get().to(routes::nn::predict))
-                            .route("/games", web::get().to(routes::nn::games))
+                            .route("/predict/all", web::get().to(nn::predict_all))
+                            .route("/predict", web::get().to(nn::predict))
+                            .route("/games", web::get().to(nn::games))
             )
     })
         .bind(endpoint)?

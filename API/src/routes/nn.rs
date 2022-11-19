@@ -1,6 +1,6 @@
 
-use actix_web::HttpResponse;
-use log::{error, info, warn};
+use actix_web::{HttpResponse, web};
+use log::{error, warn};
 use {serde::{Deserialize, Serialize}};
 use crate::models::daily_games::{DailyGames, Match, V};
 use crate::models::game_odds::GameOdds;
@@ -20,7 +20,7 @@ pub struct Test {
     pub outcome: String,
 }
 
-pub async fn predict() -> HttpResponse {
+pub async fn predict_all() -> HttpResponse {
     let response = match reqwest::get(DAILY_GAMES_URL).await  {
         Ok(response) => response,
         Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
@@ -90,7 +90,7 @@ pub async fn games() -> HttpResponse {
 
 
 
-    for (_, g) in game.iter().enumerate() {
+    for g in game.iter() {
         if g.markets.len() > 2 { continue; };
 
 
@@ -160,7 +160,7 @@ pub async fn games() -> HttpResponse {
 
     let games = daily_games.gs.g;
 
-    for (_, g) in games.iter().enumerate() {
+    for g in games.iter() {
 
         let home_team_name = format!("{} {}", g.h.tc.to_string().replace("\"",""), g.h.tn.to_string().replace("\"",""));
         let away_team_name = format!("{} {}", g.v.tc.to_string().replace("\"",""), g.v.tn.to_string().replace("\"",""));
@@ -177,6 +177,20 @@ pub async fn games() -> HttpResponse {
     game_with_odds.retain(|gm| gm.home_team_name != "" || gm.away_team_name != "");
 
     HttpResponse::Ok().json(game_with_odds)
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PredictModel {
+    gid: String
+}
+
+pub async fn predict(
+    model: web::Query<PredictModel>
+) -> HttpResponse {
+    let predict_model = model.into_inner();
+
+
+    HttpResponse::Ok().json("")
 }
 
 
