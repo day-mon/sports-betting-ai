@@ -1,16 +1,16 @@
 use std::env;
-use std::ops::Not;
 use std::path::Path;
+use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
+use actix_web::middleware::cors::Cors;
 use env_logger::Env;
-use log::{debug, error, log_enabled, info, Level};
+use log::{error, info};
 
 mod routes;
 mod models;
 mod util;
 
-use structopt::StructOpt;
 
 
 
@@ -40,12 +40,16 @@ async fn main() -> std::io::Result<()> {
     info!("Model directory: {}", std::env::var("MODEL_DIR").unwrap());
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
+    let cors = Cors::default().allow_any_origin().send_wildcard();
+
 
     HttpServer::new(move || {
         App::new()
+            .wrap(Cors::permissive())
             .wrap(Logger::default())
             .service(
                 web::scope("/sports")
+                            .route("/predict/all", web::get().to(routes::nn::predict_all))
                             .route("/predict", web::get().to(routes::nn::predict))
                             .route("/games", web::get().to(routes::nn::games))
             )
@@ -53,5 +57,6 @@ async fn main() -> std::io::Result<()> {
         .bind(endpoint)?
         .run()
         .await
+
 }
 
