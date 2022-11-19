@@ -10,11 +10,11 @@ const App: Component = () => {
     <>
       <div
         id="wrapper"
-        class="bg-gray-900"
+        class="bg-gray-900 h-screen"
         style="font-family: 'JetBrains Mono', sans-serif;"
       >
         <Navbar />
-        <div id="content" class="container mx-auto px-4 h-screen pb-4">
+        <div id="content" class="container mx-auto px-4 pb-4">
           <Routes>
             <Route path="/" component={Home} />
             <Route path="/bets" component={Bets} />

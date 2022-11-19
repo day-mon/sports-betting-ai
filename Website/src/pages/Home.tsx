@@ -6,7 +6,7 @@ const Home: Component = () => {
     // just doing this for fun change if needed
     return (
     <>
-        <section class="py-24 flex items-center min-h-screen justify-center">
+        <section class="py-24 flex items-center justify-center">
             <div class="mx-auto max-w-[43rem]">
                 <div class="text-center ">
                     <h1 class="mt-1 text-[3.0rem] font-bold leading-[4rem] tracking-tight text-white">Accuribet</h1>
