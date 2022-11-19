@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'JetBrains Mono';
+  font-family: "JetBrains Mono";
   font-style: normal;
-  src: url('@/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  src: url("@/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+}
+
+.active {
+  @apply underline underline-offset-4 text-white;
 }

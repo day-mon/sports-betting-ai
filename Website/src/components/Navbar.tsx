@@ -1,11 +1,13 @@
 import type { Component } from "solid-js";
 import { lazy } from "solid-js";
-import { Routes, Route, A } from "@solidjs/router";
+import { A, useLocation } from "@solidjs/router";
 import NavbarLink from "./NavbarLink";
 const Bets = lazy(() => import("../pages/Bets"));
 const Home = lazy(() => import("../pages/Home"));
 
 const Navbar: Component = () => {
+  const location = useLocation();
+
   return (
     <>
       <nav class="px-2 sm:px-4 py-2.5">
@@ -39,9 +41,21 @@ const Navbar: Component = () => {
           </button>
           <div class="hidden w-full md:block md:w-auto" id="navbar-default">
             <ul class="flex flex-col p-4 mt-4 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0">
-              <NavbarLink href="/" linkText="Home" current={true} />
-              <NavbarLink href="/bets" linkText="Bets" current={false} />
-              <NavbarLink href="/login" linkText="Login" current={false} />
+              <NavbarLink
+                href="/"
+                linkText="Home"
+                current={location.pathname != "/"}
+              />
+              <NavbarLink
+                href="/bets"
+                linkText="Bets"
+                current={location.pathname != "/bets"}
+              />
+              <NavbarLink
+                href="/login"
+                linkText="Login"
+                current={location.pathname != "/login"}
+              />
             </ul>
           </div>
         </div>
