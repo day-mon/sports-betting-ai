@@ -92,6 +92,7 @@ pub struct H {
 
 
 pub struct Match {
+    pub game_id: String,
     pub home_team_id: i64,
     pub home_team_name: String,
     pub away_team_id : i64,
