@@ -40,17 +40,14 @@ async fn main() -> std::io::Result<()> {
     info!("Model directory: {}", std::env::var("MODEL_DIR").unwrap());
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
-    let cors = Cors::default().allow_any_origin().send_wildcard();
 
-
-    HttpServer::new(move || {
+    HttpServer::new(|| {
         App::new()
             .wrap(Cors::permissive())
             .wrap(Logger::default())
             .service(
                 web::scope("/sports")
                             .route("/predict/all", web::get().to(nn::predict_all))
-                            .route("/predict", web::get().to(nn::predict))
                             .route("/games", web::get().to(nn::games))
             )
     })

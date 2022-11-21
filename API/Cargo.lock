@@ -2282,6 +2282,7 @@ dependencies = [
  "serde_json",
  "structopt",
  "tensorflow",
+ "thiserror",
 ]
 
 [[package]]

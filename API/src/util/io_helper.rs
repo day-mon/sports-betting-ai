@@ -1,19 +1,21 @@
 use std::{env, fs};
 use std::fs::File;
 use std::path::Path;
+use log::error;
+use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
 use crate::models::team_stats::TeamStats;
 
-pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String) -> Result<File, String> {
+pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String) -> Result<File, ApiError> {
     let data_dir = env::var("DATA_DIR").unwrap();
     let mut csv = String::new();
     for i in 0..2
     {
-        if i == 1 { csv.push_str(","); }
+        if i == 1 { csv.push(','); }
         csv.push_str(team_stats.result_sets[0].headers.join(",").as_str());
     }
 
-    csv.push_str("\n");
+    csv.push('\n');
 
     for mat in matches
     {
@@ -26,20 +28,26 @@ pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String)
                 .map(|val| val.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(","))
                 .collect();
 
-            if csv_data.is_empty() { return Err("Failed to find team stats".to_owned()); }
+            if csv_data.is_empty() {
+                error!("Unable to find team stats for team: {}", team);
+                return Err(ApiError::DependencyError)
+            }
 
             csv.push_str(csv_data.as_str());
-            if team == mat.home_team_id { csv.push_str(","); }
+            if team == mat.home_team_id { csv.push(','); }
         }
-        csv.push_str("\n");
+        csv.push('\n');
     }
 
-    let actual_path = format!("{}", data_dir);
+    let actual_path = data_dir.to_string();
 
     if !Path::new(&actual_path).exists() {
-         let _ = match fs::create_dir_all(actual_path) {
+         match fs::create_dir_all(actual_path) {
              Ok(ret) => ret,
-             Err(err) => return Err(err.to_string())
+             Err(err) => {
+                 error!("Error creating data directory: {}", err);
+                 return Err(ApiError::IOError)
+             }
         };
     }
 
@@ -47,7 +55,8 @@ pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String)
 
     let written = fs::write( format!("{}/{}.csv", data_dir, date), csv);
     if written.is_err() {
-        return Err(written.err().unwrap().to_string());
+        error!("Error writing to csv: {}", written.err().unwrap());
+        Err(ApiError::IOError)
     } else {
         Ok(File::open(format!("{}/{}.csv", data_dir, date)).expect("File couldnt be opened? Idk how this happened"))
     }

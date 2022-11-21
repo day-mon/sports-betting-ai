@@ -19,6 +19,7 @@ tensorflow = "0.16.0"
 protobuf = "3.2.0"
 log = "0.4.17"
 structopt = "0.3.23"
+thiserror = "1.0.37"
 
 [dev-dependencies]
 # I dont know if the deployed version will have a gpu or not, so I'm going to assume it doesn't
