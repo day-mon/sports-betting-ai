@@ -1,18 +1,21 @@
+FROM node:14-slim
 
-FROM node:14-alpine
+WORKDIR /app
 
-WORKDIR /usr/src/app
+# Setup a path for using local npm packages
+RUN mkdir -p /opt/node_modules
 
-COPY package*.json ./
+COPY ./package.json /app
+COPY ./package-lock.json /app
 
-RUN npm install
+RUN npm ci
 
-COPY ./src ./src
+COPY ./ /app
 
-RUN npm build
+# server build needs to run after client build because the client build using Vite
+# removes the dist/ folder before compiling its code
+RUN npm run build
 
 EXPOSE 3000
 
-ENV HOST=0.0.0.0
-
-CMD [ "npm", "start" ]
+CMD ["npm", "startprod"] 
