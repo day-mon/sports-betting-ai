@@ -10,7 +10,7 @@ const App: Component = () => {
     <>
       <div
         id="wrapper"
-        class="bg-gray-900 h-screen"
+        class="bg-gray-900 min-h-screen"
         style="font-family: 'JetBrains Mono', sans-serif;"
       >
         <Navbar />

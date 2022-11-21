@@ -4,7 +4,10 @@ export interface Game {
     home_team_name: string
     away_team_name: string
     home_team_id: number
+    projected_winner?: string
     away_team_id: number
+    home_team_score: string
+    away_team_score: string
     odds: Odd[]
 }
 
@@ -16,4 +19,9 @@ export interface Odd {
     away_team_odds_trend: string
     home_team_opening_odds: number
     away_team_opening_odds: number
+}
+
+export interface Prediction  {
+    game_id: string
+    predicted_winner: string
 }
