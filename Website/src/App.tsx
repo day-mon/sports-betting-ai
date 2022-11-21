@@ -1,9 +1,9 @@
-import type { Component } from "solid-js";
-import Navbar from "./components/Navbar";
-import { Routes, Route } from "@solidjs/router";
-import { lazy } from "solid-js";
-const Bets = lazy(() => import("./pages/Bets"));
-const Home = lazy(() => import("./pages/Home"));
+import type { Component } from 'solid-js';
+import Navbar from './components/Navbar';
+import { Routes, Route } from '@solidjs/router';
+import { lazy } from 'solid-js';
+const Bets = lazy(() => import('./pages/Bets'));
+const Home = lazy(() => import('./pages/Home'));
 
 const App: Component = () => {
   return (
@@ -11,8 +11,7 @@ const App: Component = () => {
       <div
         id="wrapper"
         class="bg-gray-900 min-h-screen"
-        style="font-family: 'JetBrains Mono', sans-serif;"
-      >
+        style="font-family: 'JetBrains Mono', sans-serif;">
         <Navbar />
         <div id="content" class="container mx-auto px-4 pb-4">
           <Routes>
