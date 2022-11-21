@@ -9,7 +9,7 @@ import {fetchHelper} from "../util/fetchHelper";
 
 const getBaseUrl = (useRemote?: boolean) => {
     // check if current url is localhost
-    const remoteUrl = "https://api.accuribet.win/sports/games";
+    const remoteUrl = "https://api.accuribet.win";
     if (useRemote) return remoteUrl
     return window.location.href.includes("localhost") ? "http://localhost:8080" : remoteUrl;
 
