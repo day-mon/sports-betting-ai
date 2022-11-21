@@ -1,4 +1,4 @@
-
+use std::env;
 use std::fs::File;
 use polars::frame::DataFrame;
 use polars::io::SerReader;
@@ -13,7 +13,9 @@ const TEAM_DATA_URL: &str = "https://lively-fire-943d.alexanderjoemc.workers.dev
 
 
 pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataFrame, String> {
-    let file_name = format!("./src/data/{}.csv", date);
+    let data_dir = env::var("DATA_DIR").unwrap();
+
+    let file_name = format!("{}/{}.csv", data_dir, date);
     if let Ok(file) = File::open(file_name) {
 
         let mut df = drop_columns(CsvReader::new(file)
@@ -49,7 +51,7 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
         .has_header(true)
         .low_memory(true)
         .finish()
-        .expect("Error happend here"));
+        .expect("Error happened here"));
 
     convert_rows_to_f64(&mut df);
 
@@ -60,7 +62,7 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
 pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
 
     // convert df to tensor
-    let model_dir = "./src/model/";
+    let model_dir = env::var("MODEL_DIR").unwrap();
     let sig_in_name = "input_layer_input";
     let sig_out_name = "output_layer";
 
@@ -76,7 +78,7 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
             .with_values(&initial_values)
             .expect("Error creating tensor");
         let mut graph = Graph::new();
-        let bundle = SavedModelBundle::load(&SessionOptions::new(), &["serve"], &mut graph,  model_dir).expect("Error loading model");
+        let bundle = SavedModelBundle::load(&SessionOptions::new(), &["serve"], &mut graph,  &model_dir).expect("Error loading model");
         let session = &bundle.session;
         let signature = bundle
             .meta_graph_def()
@@ -105,7 +107,8 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
                 max_index = i;
             }
         }
-        let mat = matches.get(row_index).expect("Error getting match");
+        let mat = matches.get(row_index)
+            .expect("Error getting match");
 
         let wining = if max_index == 1 {
              format!("{} wins", mat.home_team_name)
