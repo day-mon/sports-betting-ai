@@ -9,8 +9,9 @@ import {fetchHelper} from "../util/fetchHelper";
 
 const getBaseUrl = (useRemote?: boolean) => {
     // check if current url is localhost
-    if (useRemote) return "https://sports.schoolbot.dev"
-    return window.location.href.includes("localhost") ? "http://localhost:8080" : "https://sports.schoolbot.dev";
+    const remoteUrl = "https://api.accuribet.win/sports/games";
+    if (useRemote) return remoteUrl
+    return window.location.href.includes("localhost") ? "http://localhost:8080" : remoteUrl;
 
 }
 
