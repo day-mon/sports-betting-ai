@@ -11,3 +11,15 @@
 .active {
   @apply underline underline-offset-4 text-white;
 }
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-fade-exit-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter,
+.slide-fade-exit-to {
+  transform: translateX(10px);
+  opacity: 0;
+}

@@ -1,12 +1,24 @@
-import { Component, createSignal } from 'solid-js';
+import { Component, createSignal, onMount } from 'solid-js';
 import { lazy } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
+import { Transition, TransitionGroup } from 'solid-transition-group';
 import NavbarLink from './NavbarLink';
 const Bets = lazy(() => import('../pages/Bets'));
 const Home = lazy(() => import('../pages/Home'));
 
 const Navbar: Component = () => {
   const location = useLocation();
+  const [dropdown, setDropdown] = createSignal(true);
+
+  onMount(() => {
+    hideDropdown();
+  });
+
+  const hideDropdown = () => {
+    if (window.innerWidth < 768) {
+      setDropdown(false);
+    }
+  };
 
   return (
     <>
@@ -22,7 +34,8 @@ const Navbar: Component = () => {
             type="button"
             class="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden focus:outline-none focus:ring-2 focus:ring-gray-200"
             aria-controls="navbar-default"
-            aria-expanded="false">
+            aria-expanded="false"
+            onClick={() => setDropdown(!dropdown())}>
             <span class="sr-only">Open main menu</span>
             <svg
               class="w-6 h-6"
@@ -36,12 +49,17 @@ const Navbar: Component = () => {
                 clip-rule="evenodd"></path>
             </svg>
           </button>
-          <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-            <ul class="flex flex-col p-4 mt-4 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0">
-              <NavbarLink href="/" linkText="Home" current={location.pathname != '/'} />
-              <NavbarLink href="/bets" linkText="Bets" current={location.pathname != '/bets'} />
-              <NavbarLink href="/login" linkText="Login" current={location.pathname != '/login'} />
-            </ul>
+          <div
+            class={`w-full md:block md:w-auto ${dropdown() ? '' : 'hidden'}`}
+            id="navbar-default">
+            <Transition name="slide-fade" mode="inout">
+              {dropdown() && (
+                <ul class="flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+                  <NavbarLink href="/" linkText="Home" current={location.pathname != '/'} />
+                  <NavbarLink href="/bets" linkText="Bets" current={location.pathname != '/bets'} />
+                </ul>
+              )}
+            </Transition>
           </div>
         </div>
       </nav>
