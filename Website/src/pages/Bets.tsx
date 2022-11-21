@@ -22,27 +22,16 @@ const Bets: Component = () => {
     const [loading, setLoading] = createSignal(true);
     const [books, setBooks] = createSignal([] as string[]);
     const [error, setError] = createSignal(false);
+    const [predictions, setPredictions] = createSignal([] as Prediction[]);
 
     const fetchPredictions = async () => {
-       if (bets().every((bet) => bet.projected_winner)) return;
-
         const BASE_URL = getBaseUrl(true);
         const response = await fetchHelper(`${BASE_URL}/sports/predict/all`);
         if (!response) {
             return
         }
         const data = await response.json() as Prediction[];
-
-        const games = bets();
-        console.log(games)
-        data.forEach((prediction) => {
-            const game = games.find((game) => game.game_id === prediction.game_id);
-            if (game) {
-                game.projected_winner = prediction.predicted_winner;
-            }
-        })
-        console.log(data)
-        setBets(games);
+        setPredictions(data);
     }
 
     const fetchBets = async (refresh?: boolean) => {
@@ -64,6 +53,7 @@ const Bets: Component = () => {
             setLoading(false);
             return;
         }
+
         setError(false);
 
         const data = await response.json() as Game[];
@@ -74,7 +64,7 @@ const Bets: Component = () => {
     }
 
 
-
+    const findPrediction = (game: Game): Prediction | undefined =>  predictions().find((prediction) => prediction.game_id === game.game_id)
 
     onMount(async () => {
         await fetchBets();
@@ -84,6 +74,8 @@ const Bets: Component = () => {
     setInterval(async () => {
         await fetchBets(true);
     }, 45_000);
+
+
 
     return (
         <>
@@ -106,7 +98,7 @@ const Bets: Component = () => {
                                 class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">Predict all games</button>
                         </div>
                     </div>
-                    <For each={bets()}>{(game) => <Card game={game}/>}</For>
+                    <For each={bets()}>{(game) => <Card prediction={findPrediction(game)} game={game}/>}</For>
                 </Show>
             </Suspense>
         </>
