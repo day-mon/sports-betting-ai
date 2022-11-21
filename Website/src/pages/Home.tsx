@@ -16,7 +16,6 @@ const Home: Component = () => {
 
                 <div class="mt-6 flex items-center justify-center gap-4">
                     <a href="https://github.com/day-mon/sports-betting-ai" class="transform rounded-md bg-white px-5 py-3 font-medium text- transition-colors hover:bg-indigo-700">View Code</a>
-                    {/*<a href="#" class="transform rounded-md border border-slate-200 px-5 py-3 font-medium text-white transition-colors hover:bg-slate-50"> Request a demo </a>*/}
                 </div>
             </div>
         </section>
