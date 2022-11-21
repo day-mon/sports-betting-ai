@@ -21,10 +21,11 @@ pub async fn predict_all() -> Result<HttpResponse, ApiError> {
     let date = remove_quotes(&daily_games.gs.gdte);
     let tids: Vec<Match> = daily_games.gs.g.iter().map(|g|
         Match {
+            game_id: remove_quotes(&g.gid),
             home_team_id: g.h.tid,
             away_team_id: g.v.tid,
             home_team_name: format!("{} {}", remove_quotes(&g.h.tc), remove_quotes(&g.h.tn)),
-            away_team_name:  format!("{} {}", remove_quotes(&g.v.tc), remove_quotes(&g.v.tn))
+            away_team_name: format!("{} {}", remove_quotes(&g.v.tc), remove_quotes(&g.v.tn))
         }
     ).collect();
 

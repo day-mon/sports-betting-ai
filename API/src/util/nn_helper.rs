@@ -7,6 +7,7 @@ use polars::prelude::{CsvReader, IdxCa};
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
+use crate::models::prediction::Prediction;
 use crate::models::team_stats::TeamStats;
 use crate::util::io_helper::write_to_csv;
 use crate::util::polars_helper::{convert_rows_to_f64, drop_columns};
@@ -27,21 +28,6 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
             .expect("Unable to read csv");
 
 
-        // only get the rows where the teams passed in are playing
-        let mut indexs: Vec<u32> = vec![];
-        let (r, _) = df.shape();
-        for row in 0..r {
-            for (i, row) in df.get_row(row).0.iter().enumerate() {
-                for m in matches {
-                    if m.home_team_name == row.to_string() || m.away_team_name == row.to_string() {
-                        indexs.push(i as u32);
-                    }
-                }
-            }
-        }
-
-        let idx = IdxCa::new_vec("idx", indexs);
-        df = df.take(&idx).expect("Unable to take rows");
         convert_rows_to_f64(&mut df);
 
         return Ok(drop_columns(df));
@@ -86,7 +72,7 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
 }
 
 
-pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
+pub fn call_model(df: &DataFrame, matches: &[Match]) -> Vec<Prediction> {
 
     // convert df to tensor
     let model_dir = env::var("MODEL_DIR").unwrap();
@@ -95,7 +81,7 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
 
     let (rows, ..) = df.shape();
 
-    let mut inputs: Vec<String> = Vec::with_capacity(rows);
+    let mut inputs: Vec<Prediction> = Vec::with_capacity(rows);
 
     for row_index in 0..rows {
         // convert row to list of f64s
@@ -140,13 +126,20 @@ pub fn call_model(df: &DataFrame, matches: &Vec<Match>) -> Vec<String> {
         let mat = matches.get(row_index)
             .expect("Error getting match");
 
-        let wining = if max_index == 1 {
-             format!("{} wins", mat.home_team_name)
+        let winning = if max_index == 1 {
+            Prediction {
+                predicted_winner: mat.home_team_name.clone(),
+                game_id: mat.game_id.clone(),
+            }
         } else {
-            format!("{} wins", mat.away_team_name)
+            Prediction {
+                predicted_winner: mat.away_team_name.clone(),
+                game_id: mat.game_id.clone(),
+            }
         };
 
-        inputs.push(wining);
+
+        inputs.push(winning);
     }
     inputs
 }
