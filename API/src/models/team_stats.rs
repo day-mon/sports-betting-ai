@@ -89,7 +89,7 @@ impl ResultSet {
         self.row_set
             .iter()
             .filter(|row| row[team_id_index].as_i64().unwrap_or(1) == team_id)
-            .map(|row| row.clone())
+            .cloned()
             .collect()
     }
 }
