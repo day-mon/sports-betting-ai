@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: [ main, ci-test ]
+    branches: [ main, ci-test, 30-api-make-an-endpoint-for-the-games ]
   pull_request:
     branches: [ main ]
 

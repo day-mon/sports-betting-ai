@@ -11,7 +11,7 @@ pub fn convert_rows_to_f64(df: &mut DataFrame) -> &mut DataFrame {
         // replace column with new column
         df.replace_at_idx(i, s).expect("Unable to replace column");
     }
-    return df;
+    df
 }
 
 

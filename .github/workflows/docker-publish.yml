@@ -2,7 +2,7 @@ name: Docker Build
 
 on:
   push:
-    branches: [ master, ci-test, day-mon-patch-2 ]
+    branches: [ master, ci-test, day-mon-patch-2, 30-api-make-an-endpoint-for-the-games ]
 
 env:
   IMAGE_NAME: api
