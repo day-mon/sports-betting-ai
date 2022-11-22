@@ -5,14 +5,11 @@ use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
 use env_logger::Env;
 use log::{error, info};
-use routes::nn;
+use routes::{nn, nn_mock};
 
 mod routes;
 mod models;
 mod util;
-
-
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -50,10 +47,17 @@ async fn main() -> std::io::Result<()> {
                             .route("/predict/all", web::get().to(nn::predict_all))
                             .route("/games", web::get().to(nn::games))
             )
+            .service(
+                web::scope("/mock")
+                    .service(
+                    web::scope("/sports")
+                        .route("/games", web::get().to(nn_mock::games))
+                        .route("/predict/all", web::get().to(nn_mock::predict_all))
+                    )
+            )
     })
         .bind(endpoint)?
         .run()
         .await
 
 }
-
