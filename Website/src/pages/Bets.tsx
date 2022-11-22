@@ -5,6 +5,7 @@ import { Card } from '../components/Card';
 import { Loading } from '../components/Loading';
 import { NoData } from '../components/NoData';
 import { fetchHelper } from '../util/fetchHelper';
+import { LoadingButton } from '../components/LoadingButton';
 
 const getBaseUrl = (useRemote?: boolean) => {
   // check if current url is localhost
@@ -58,15 +59,12 @@ const Bets: Component = () => {
     setError(false);
 
     const data = (await response.json()) as Game[];
-    const book = data
-      .flatMap((game) => game.odds.map((odd) => odd.book_name))
-      .filter((book, index, self) => self.indexOf(book) === index);
+    const book = data.flatMap((game) => game.odds.map((odd) => odd.book_name)).filter((book, index, self) => self.indexOf(book) === index);
     setBooks(book);
     setBets(data);
   };
 
-  const findPrediction = (game: Game): Prediction | undefined =>
-    predictions().find((prediction) => prediction.game_id === game.game_id);
+  const findPrediction = (game: Game) => predictions().find((prediction) => prediction.game_id === game.game_id);
 
   onMount(async () => {
     await fetchBets();
@@ -94,22 +92,12 @@ const Bets: Component = () => {
           <NoData message={'There are no games at the moment'} />
         </Show>
         <Show when={bets().length > 0} keyed>
-          {/* Add button to : button*/}
           <div class="flex flex-col justify-center items-center">
             <div class="flex flex-row justify-center items-center">
-              <button
-                onclick={() => fetchPredictions()}
-                disabled={disabled()}
-                class={`${
-                  disabled() ? 'bg-red-400' : 'bg-gray-800'
-                } max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 hover:hover:bg-gray-700/10 text-white`}>
-                Predict all games
-              </button>
+              <LoadingButton disabled={disabled()} onClick={fetchPredictions}>Predict all games</LoadingButton>
             </div>
           </div>
-          <For each={bets()}>
-            {(game) => <Card prediction={findPrediction(game)} game={game} />}
-          </For>
+          <For each={bets()}>{(game) => <Card prediction={findPrediction(game)} game={game} />}</For>
         </Show>
       </Suspense>
     </>
