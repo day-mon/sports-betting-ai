@@ -102,6 +102,13 @@ const Bets: Component = () => {
           <For each={bets()}>{(game) => <Card prediction={findPrediction(game)} game={game} />}</For>
         </Show>
       </Suspense>
+      <div class="flex flex-col justify-center items-center">
+        <div class="flex flex-row justify-center items-center">
+          <p class="text-xs text-gray-500">
+            <span class="font-bold">Disclaimer:</span> The model we wrote is not aware of injuries, suspensions or any thing of that nature. Take the predictions with a grain of salt. 😊
+          </p>
+        </div>
+      </div>
     </>
   );
 };

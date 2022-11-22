@@ -36,7 +36,7 @@ const Navbar: Component = () => {
           <div class={`w-full md:block md:w-auto ${dropdown() ? '' : 'hidden'}`} id="navbar-default">
             <Transition name="slide-fade" mode="inout">
               {dropdown() && (
-                <ul class="flex flex-col p-4 mt-4 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0">
+                <ul class="flex flex-col p-4 mt-10 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0">
                   <NavbarLink href="/" linkText="Home" current={location.pathname != '/'} />
                   <NavbarLink href="/bets" linkText="Bets" current={location.pathname != '/bets'} />
                 </ul>
