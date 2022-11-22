@@ -94,7 +94,9 @@ const Bets: Component = () => {
         <Show when={bets().length > 0} keyed>
           <div class="flex flex-col justify-center items-center">
             <div class="flex flex-row justify-center items-center">
-              <LoadingButton disabled={disabled()} onClick={fetchPredictions}>Predict all games</LoadingButton>
+              <LoadingButton disabled={disabled()} onClick={fetchPredictions}>
+                Predict all games
+              </LoadingButton>
             </div>
           </div>
           <For each={bets()}>{(game) => <Card prediction={findPrediction(game)} game={game} />}</For>

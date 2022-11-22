@@ -1,5 +1,5 @@
 import { Component } from 'solid-js';
-import { createSignal, Show } from 'solid-js';
+import { Show } from 'solid-js';
 
 interface ILoadingButtonProps {
   onClick: () => void;
