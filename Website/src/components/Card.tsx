@@ -32,7 +32,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
             return (
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-green-500"
+                    class="h-6 w-6 text-green-500 justify-center items-center"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -40,6 +40,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
+                        class={"text-center"}
                         d="M5 15l7-7 7 7"
                     />
                 </svg>
@@ -48,7 +49,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
             return (
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-red-500"
+                    class="h-6 w-6 text-red-500 justify-center items-center"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -62,11 +63,10 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
             );
 
         } else {
-            // grey minus sign
             return (
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-gray-500"
+                    class="h-6 w-6 text-gray-500 justify-center items-center"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -86,10 +86,15 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
             class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
             <h5 class="flex mb-1 text-2xl flex-row justify-center items-center"
                 onClick={() => setShowDropdown(!showDropdown())}>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 hover:text-gray-400 cursor-pointer"
-                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
+                <Show when={!game.start_time.includes("Final")} keyed>
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-6 w-6 text-gray-500 hover:text-gray-400 cursor-pointer"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </Show>
                 {`${game.home_team_name} vs ${game.away_team_name}`}
             </h5>
             <Show when={game.home_team_score != '' || game.away_team_score != ''} keyed>
@@ -104,8 +109,11 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
             <div
                 class="flex flex-row justify-center ">{game.start_time.includes('ET') ? `Starting @ ${game.start_time}` : game.start_time.includes('Final') ? game.start_time : `Current Quarter: ${game.start_time}`}</div>
             <Show when={props.prediction} keyed>
-                <div
-                    class="flex font-extrabold flex-row justify-center">{`Our Projected Winner: ${props.prediction?.predicted_winner} `}</div>
+                <div class="flex font-extrabold flex-row justify-center ">{`Our Projected Winner:`}
+                    <span class={`flex flex-col pl-2 text-s ${!props.game.start_time.includes("Final") ?  'text-white' : `${ props.prediction?.predicted_winner === getWinner(game) && game.start_time.includes("Final") ? 'text-green-500' : 'text-red-500'}`}`}>
+                        {` ${props.prediction?.predicted_winner}`}
+                    </span>
+                </div>
             </Show>
             <Show when={game.start_time.includes('Final')} keyed>
                 <div class="flex flex-row justify-center">{`Winner: ${getWinner(game)}`}</div>
@@ -115,33 +123,28 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                     <div class="overflow-x-auto relative mt-4">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead
-                                class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
+                                class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
+                            <tr class="order-b dark:bg-gray-800 dark:border-gray-700">
                                 <For each={game.odds.length > 0 && Object.keys(game.odds[0])}>{(key) => <th
-                                    class="px-4 py-3">{key.replace('home_team', game.home_team_name).replace('away_team', game.away_team_name).replace(/_/g, ' ')}</th>}</For>
-                                <Show when={props.prediction} keyed>
-                                    <th class="px-4 py-3">Our bet</th>
+                                    class="px-4 text-white py-3">{key.replace('home_team', game.home_team_name).replace('away_team', game.away_team_name).replace(/_/g, ' ')}</th>}</For>
+                                <Show when={props.prediction && game.odds.length !== 0} keyed>
+                                    <th class="px-4 text-white text-center py-3">Our bet</th>
                                 </Show>
                             </tr>
                             </thead>
                             <tbody>
                             <For each={game.odds}>
                                 {(odd) => (
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                        <th class="py-4 px-6">{odd.book_name}</th>
-                                        <th class="py-4 px-6">{odd.home_team_odds}</th>
-                                        <th class="py-4 px-6">{odd.away_team_odds}</th>
-                                        {/*<th class="py-4 px-6">{odd.home_team_odds_trend}</th>*/}
-                                        {/*<th class="py-4 px-6">{odd.away_team_odds_trend}</th>*/}
-                                        {/* Show up arrow if up down arrow if down negative sign if neutral */}
+                                    <tr class=" order-b dark:bg-gray-800 dark:border-gray-700">
+                                        <th class="py-4 text-white px-6">{odd.book_name}</th>
+                                        <th class="py-4 text-white px-6">{odd.home_team_odds}</th>
+                                        <th class="py-4 text-white px-6">{odd.away_team_odds}</th>
                                         <th class="py-4 px-6">{getSvgForDirection(odd.home_team_odds_trend)}</th>
                                         <th class="py-4 px-6">{getSvgForDirection(odd.away_team_odds_trend)}</th>
-
-                                        {/*<th class="py-4 px-6">{odd.home_team_odds_trend > 0 ? <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"> : odd.home_team_odds_trend < 0 ? <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"> : <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /> </svg> </th>*/}
-                                        <th class="py-4 px-6">{odd.home_team_opening_odds}</th>
-                                        <th class="py-4 px-6">{odd.away_team_opening_odds}</th>
-                                        <Show when={props.prediction} keyed>
-                                            <th class="py-4 px-6">{getPredictionAgainstOdds(odd!, props.prediction!)}</th>
+                                        <th class="py-4 text-white px-6">{odd.home_team_opening_odds}</th>
+                                        <th class="py-4 text-white px-6">{odd.away_team_opening_odds}</th>
+                                        <Show when={props.prediction && game.odds.length !== 0} keyed>
+                                            <th class="py-4 text-white px-6">{getPredictionAgainstOdds(odd!, props.prediction!)}</th>
                                         </Show>
                                     </tr>
                                 )}
