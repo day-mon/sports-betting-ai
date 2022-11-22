@@ -25,7 +25,16 @@ const Bets: Component = () => {
   const [disabled, setDisabled] = createSignal(false);
 
   const fetchPredictions = async () => {
-    setDisabled(true);
+    let predictions = localStorage.getItem('predictions');
+    if (predictions) {
+      let parsedPredictions = JSON.parse(predictions) as Prediction[];
+      let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
+      if (allGamesInPredictions) {
+        setPredictions(parsedPredictions);
+        return;
+      }
+    }
+
     const BASE_URL = getBaseUrl(true);
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all`);
     if (!response) {
@@ -33,6 +42,7 @@ const Bets: Component = () => {
     }
     const data = (await response.json()) as Prediction[];
     setPredictions(data);
+    localStorage.setItem('predictions', JSON.stringify(data));
     setDisabled(false);
   };
 
@@ -95,7 +105,7 @@ const Bets: Component = () => {
           <div class="flex flex-col justify-center items-center">
             <div class="flex flex-row justify-center items-center">
               <LoadingButton disabled={disabled()} onClick={fetchPredictions}>
-                Predict all games
+                Fetch our predictions
               </LoadingButton>
             </div>
           </div>
