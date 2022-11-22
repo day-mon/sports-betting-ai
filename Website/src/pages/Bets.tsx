@@ -35,6 +35,7 @@ const Bets: Component = () => {
       }
     }
 
+    setDisabled(true)
     const BASE_URL = getBaseUrl(true);
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all`);
     if (!response) {
