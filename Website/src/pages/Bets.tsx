@@ -105,7 +105,7 @@ const Bets: Component = () => {
           <div class="flex flex-col justify-center items-center">
             <div class="flex flex-row justify-center items-center">
               <LoadingButton disabled={disabled()} onClick={fetchPredictions}>
-                Fetch predictions
+                Fetch our predictions
               </LoadingButton>
             </div>
           </div>

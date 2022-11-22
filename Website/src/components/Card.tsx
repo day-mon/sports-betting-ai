@@ -110,7 +110,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                 class="flex flex-row justify-center ">{game.start_time.includes('ET') ? `Starting @ ${game.start_time}` : game.start_time.includes('Final') ? game.start_time : `Current Quarter: ${game.start_time}`}</div>
             <Show when={props.prediction} keyed>
                 <div class="flex font-extrabold flex-row justify-center ">{`Our Projected Winner:`}
-                    <span class={`flex flex-col pl-2 text-s ${ props.prediction?.predicted_winner === getWinner(game) ? 'text-green-500' : 'text-red-500'}`}>
+                    <span class={`flex flex-col pl-2 text-s ${!props.game.start_time.includes("Final") ?  'text-white' : `${ props.prediction?.predicted_winner === getWinner(game) && game.start_time.includes("Final") ? 'text-green-500' : 'text-red-500'}`}`}>
                         {` ${props.prediction?.predicted_winner}`}
                     </span>
                 </div>
@@ -128,7 +128,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                                 <For each={game.odds.length > 0 && Object.keys(game.odds[0])}>{(key) => <th
                                     class="px-4 text-white py-3">{key.replace('home_team', game.home_team_name).replace('away_team', game.away_team_name).replace(/_/g, ' ')}</th>}</For>
                                 <Show when={props.prediction && game.odds.length !== 0} keyed>
-                                    <th class="px-4 py-3">Our bet</th>
+                                    <th class="px-4 text-white text-center py-3">Our bet</th>
                                 </Show>
                             </tr>
                             </thead>
