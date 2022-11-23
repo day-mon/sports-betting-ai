@@ -1,7 +1,8 @@
 use std::{env, fs};
 use std::fs::File;
 use std::path::Path;
-use log::error;
+use log::{error, info};
+use serde::de::DeserializeOwned;
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
 use crate::models::team_stats::TeamStats;
@@ -61,3 +62,32 @@ pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String)
         Ok(File::open(format!("{}/{}.csv", data_dir, date)).expect("File couldnt be opened? Idk how this happened"))
     }
 }
+
+
+pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
+    let response = match reqwest::get(source).await {
+        Ok(res) => res,
+        Err(err) => return {
+            error!("Error has occurred while making the request | {}", err.to_string());
+            Err(ApiError::DependencyError)
+        }
+    };
+
+    let response_body = match response.text().await {
+        Ok(res) => res,
+        Err(err) => return {
+            error!("Error has occurred while getting body | {}", err.to_string());
+            Err(ApiError::DeserializationError)
+        }
+    };
+
+    let generic = match serde_json::from_str::<T>(&response_body) {
+        Ok(t) => t,
+        Err(err) => return {
+            error!("Error has occurred while deserializing | {}", err.to_string());
+            Err(ApiError::DeserializationError)
+        }
+    };
+    Ok(generic)
+}
+

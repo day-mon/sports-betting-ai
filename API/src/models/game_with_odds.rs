@@ -30,6 +30,10 @@ impl GameWithOdds {
             odds: Vec::new()
         }
     }
+    
+    pub fn is_finished(&self) -> bool {
+        self.start_time == "Final"
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -41,8 +45,4 @@ pub struct Odds {
     pub away_team_odds_trend: String,
     pub home_team_opening_odds: f64,
     pub away_team_opening_odds: f64,
-}
-
-impl Odds {
-
 }

@@ -1,18 +1,19 @@
 use actix_web::HttpResponse;
 use log::{error};
-use serde::de::DeserializeOwned;
+
 use crate::models::daily_games::{Match, DailyGames};
 use crate::util::nn_helper::{get_model_data, call_model};
 use crate::{util::string::remove_quotes};
 use crate::models::api_error::ApiError;
 use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::GameWithOdds;
+use crate::util::io_helper::get_t_from_source;
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
 const DAILY_ODDS_URL: &str = "https://cdn.nba.com/static/json/liveData/odds/odds_todaysGames.json";
 
 pub async fn predict_all() -> Result<HttpResponse, ApiError> {
-    let daily_games =  get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
+    let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
     if daily_games.gs.g.is_empty() {
         return Err(ApiError::GamesNotFound)
@@ -54,7 +55,6 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
 
         let gwo_game_opt = g_w_o.iter_mut().find(|g| g.game_id == game.game_id);
         if gwo_game_opt.is_none() {
-            error!("Game with odds not found for {}", &game.game_id);
             continue;
         }
 
@@ -64,33 +64,6 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     }
 
     Ok(HttpResponse::Ok().json(g_w_o))
-}
-
-async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
-    let response = match reqwest::get(source).await {
-        Ok(res) => res,
-        Err(err) => return {
-            error!("Error has occurred... | {}", err.to_string());
-            Err(ApiError::DependencyError)
-        }
-    };
-
-    let response_body = match response.text().await {
-        Ok(res) => res,
-        Err(err) => return {
-            error!("Error has occurred... | {}", err.to_string());
-            Err(ApiError::DeserializationError)
-        }
-    };
-
-    let generic = match serde_json::from_str::<T>(&response_body) {
-        Ok(t) => t,
-        Err(err) => return {
-            error!("Error has occurred... | {}", err.to_string());
-            Err(ApiError::DeserializationError)
-        }
-    };
-    Ok(generic)
 }
 
 

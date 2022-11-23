@@ -10,8 +10,7 @@ use routes::nn;
 mod routes;
 mod models;
 mod util;
-
-
+mod services;
 
 
 #[actix_web::main]
@@ -40,6 +39,7 @@ async fn main() -> std::io::Result<()> {
     info!("Model directory: {}", std::env::var("MODEL_DIR").unwrap());
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
+    actix_rt::spawn(async { services::history_service::run().await });
 
     HttpServer::new(|| {
         App::new()
