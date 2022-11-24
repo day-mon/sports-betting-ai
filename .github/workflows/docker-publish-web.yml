@@ -2,7 +2,7 @@ name: Docker Build
 
 on:
   push:
-    branches: [ main, ci-test ]
+    branches: [ main, ci-test, mock ]
 
 env:
   IMAGE_NAME: website
