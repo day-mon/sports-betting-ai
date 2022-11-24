@@ -1,6 +1,7 @@
 use actix_web::{HttpResponse, error::ResponseError, http::StatusCode};
 
 use serde::{Serialize};
+use tensorflow::Status;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -13,6 +14,8 @@ pub enum ApiError {
     DeserializationError,
     #[error("Error occurred while calling the model")]
     ModelError,
+    #[error("Model not found")]
+    ModelNotFound,
     #[error("IO Error has occurred")]
     IOError,
     #[error("A website we rely on returned a invalid response")]
@@ -30,6 +33,7 @@ impl ApiError {
             Self::IOError => "An Error occurred during IO".to_string(),
             Self::DependencyError => "A website we rely on returned a invalid response".to_string(),
             Self::Unknown => "Unknown".to_string(),
+            Self::ModelNotFound => "There is no model with that name".to_string()
         }
     }
 }
@@ -41,6 +45,7 @@ impl ResponseError for ApiError {
             Self::ParamNotFound => StatusCode::BAD_REQUEST,
             Self::DeserializationError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::IOError => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::ModelNotFound => StatusCode::NOT_FOUND,
             Self::ModelError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::DependencyError => StatusCode::FAILED_DEPENDENCY,
             Self::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
@@ -64,6 +69,7 @@ fn map_io_error(e: std::io::Error) -> ApiError {
         _ => ApiError::Unknown,
     }
 }
+
 
 #[derive(Serialize)]
 struct ErrorResponse {
