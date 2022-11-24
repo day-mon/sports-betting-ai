@@ -42,7 +42,3 @@ pub struct Odds {
     pub home_team_opening_odds: f64,
     pub away_team_opening_odds: f64,
 }
-
-impl Odds {
-
-}

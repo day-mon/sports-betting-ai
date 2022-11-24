@@ -6,6 +6,7 @@ use polars::io::SerReader;
 use polars::prelude::{CsvReader, IdxCa};
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 use crate::models::api_error::ApiError;
+use crate::models::api_error::ApiError::ModelNotFound;
 use crate::models::daily_games::Match;
 use crate::models::prediction::Prediction;
 use crate::models::team_stats::TeamStats;
@@ -72,10 +73,9 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
 }
 
 
-pub fn call_model(df: &DataFrame, matches: &[Match]) -> Vec<Prediction> {
-
-    // convert df to tensor
+pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Result<Vec<Prediction>, ApiError> {
     let model_dir = env::var("MODEL_DIR").unwrap();
+    let model_path = format!("{}/{}", model_dir, model_name);
     let sig_in_name = "input_layer_input";
     let sig_out_name = "output_layer";
 
@@ -83,36 +83,92 @@ pub fn call_model(df: &DataFrame, matches: &[Match]) -> Vec<Prediction> {
 
     let mut inputs: Vec<Prediction> = Vec::with_capacity(rows);
 
-    for row_index in 0..rows {
-        // convert row to list of f64s
+    for row_index in 0..rows
+    {
         let row = df.get_row(row_index);
         let any_val = row.0;
         let conv = any_val.iter().map(|val| val.to_string()).collect::<Vec<String>>();
         let initial_values = conv.iter().map(|val| val.parse::<f32>().unwrap()).collect::<Vec<f32>>();
-        let tensor = Tensor::new(&[1, 98])
-            .with_values(&initial_values)
-            .expect("Error creating tensor");
+        let tensor = match Tensor::new(&[1, 98])
+            .with_values(&initial_values) {
+            Ok(tensor) => tensor,
+            Err(err) => {
+                error!("Error occurred trying to create tensor: {}", err);
+                return Err(ApiError::ModelError)
+            }
+        };
+
         let mut graph = Graph::new();
-        let bundle = SavedModelBundle::load(&SessionOptions::new(), ["serve"], &mut graph,  &model_dir).expect("Error loading model");
+        let bundle = match SavedModelBundle::load(&SessionOptions::new(), ["serve"], &mut graph,  &model_path) {
+            Ok(bundle) => bundle,
+            Err(err) => {
+                error!("Error occurred trying to load model: {}", err);
+                return Err(ApiError::ModelError)
+            }
+        };
+
+
         let session = &bundle.session;
-        let signature = bundle
+        let signature = match bundle
             .meta_graph_def()
-            .get_signature("serving_default")
-            .expect("Error getting signature");
+            .get_signature("serving_default") {
+            Ok(sig) => sig,
+            Err(e) => {
+                error!("Error occurred trying to get signature. {}", e);
+                return Err(ApiError::ModelError)
+            }
+        };
 
-        let input_info = signature.get_input(sig_in_name).expect("Input not found");
-        let output_info = signature.get_output(sig_out_name).expect("Output not found");
+        let input_info = match signature.get_input(sig_in_name) {
+            Ok(info) => info,
+            Err(e) => {
+                error!("Error occurred trying to get input info.");
+                return Err(ApiError::ModelError)
+            }
+        };
+        let output_info = match signature.get_output(sig_out_name) {
+            Ok(info) => info,
+            Err(e) => {
+                error!("Error occurred trying to get output info | Error: {}", e);
+                return Err(ApiError::ModelError)
+            }
+        };
 
-        let input_op = graph.operation_by_name_required(&input_info.name().name).expect("Input op not found");
-        let output_op = graph.operation_by_name_required(&output_info.name().name).expect("Output op not found");
+        let input_op = match graph.operation_by_name_required(&input_info.name().name) {
+            Ok(op) => op,
+            Err(e) => {
+                error!("Error occurred trying to get input op | Error: {}", e);
+                return Err(ApiError::ModelError)
+            }
+        };
+        let output_op = match graph.operation_by_name_required(&output_info.name().name) {
+            Ok(op) => op,
+            Err(e) => {
+                error!("Error occurred trying to get output op | Error: {}", e);
+                return Err(ApiError::ModelError)
+            }
+        };
 
         let mut args = SessionRunArgs::new();
         args.add_feed(&input_op, 0, &tensor);
         let output_tensor = args.request_fetch(&output_op, 0);
 
-        session.run(&mut args).expect("Error running session");
+        match session.run(&mut args) {
+            Ok(_) => {},
+            Err(e) => {
+                error!("Error occurred trying to run session | Error: {}", e);
+                return Err(ApiError::ModelError)
+            }
+        };
 
-        let output = args.fetch::<f32>(output_tensor).expect("Error fetching output");
+        let output = match args.fetch::<f32>(output_tensor) {
+            Ok(output) => output,
+            Err(e) => {
+                error!("Error occurred trying to fetch output | Error: {}", e);
+                return Err(ApiError::ModelError)
+            }
+        };
+
         let mut max = 0f32;
         let mut max_index = 0;
         for (i, val) in output.iter().enumerate()
@@ -123,8 +179,15 @@ pub fn call_model(df: &DataFrame, matches: &[Match]) -> Vec<Prediction> {
             }
         }
 
-        let mat = matches.get(row_index)
-            .expect("Error getting match");
+        let mat = match matches.get(row_index) {
+            Some(mat) => mat,
+            None => {
+                error!("Error occurred trying to get match");
+                return Err(ApiError::ModelError)
+            }
+        };
+
+
 
         let winning = if max_index == 1 {
             Prediction {
@@ -141,5 +204,5 @@ pub fn call_model(df: &DataFrame, matches: &[Match]) -> Vec<Prediction> {
 
         inputs.push(winning);
     }
-    inputs
+    Ok(inputs)
 }

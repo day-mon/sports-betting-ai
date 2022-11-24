@@ -61,3 +61,8 @@ pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String)
         Ok(File::open(format!("{}/{}.csv", data_dir, date)).expect("File couldnt be opened? Idk how this happened"))
     }
 }
+
+
+pub fn directory_exists(path: &String) -> bool {
+    Path::new(path).exists()
+}
