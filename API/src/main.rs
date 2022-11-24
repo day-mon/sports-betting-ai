@@ -37,6 +37,8 @@ async fn main() -> std::io::Result<()> {
     info!("Models directory: {}", std::env::var("MODEL_DIR").unwrap());
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
+    // change tensor flow logging level
+    env::set_var("TF_CPP_MIN_LOG_LEVEL", "3");
 
     HttpServer::new(|| {
         App::new()

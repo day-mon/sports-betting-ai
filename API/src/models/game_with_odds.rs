@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use crate::{util::string::remove_quotes, models::daily_games::G};
-
+use crate::models::daily_games::Match;
 
 
 #[derive(Deserialize, Serialize)]
@@ -28,6 +28,16 @@ impl GameWithOdds {
             home_team_score: remove_quotes(&match_up.h.s),
             away_team_score: remove_quotes(&match_up.v.s),
             odds: Vec::new()
+        }
+    }
+
+    pub fn into_match(self) -> Match {
+        Match {
+            game_id: self.game_id,
+            home_team_name: self.home_team_name,
+            away_team_name: self.away_team_name,
+            home_team_id: self.home_team_id,
+            away_team_id: self.away_team_id,
         }
     }
 }

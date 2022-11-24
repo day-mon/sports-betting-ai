@@ -85,6 +85,7 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
 
     for row_index in 0..rows
     {
+        info!("Predicting for {} vs {}", matches[row_index].home_team_name, matches[row_index].away_team_name);
         let row = df.get_row(row_index);
         let any_val = row.0;
         let conv = any_val.iter().map(|val| val.to_string()).collect::<Vec<String>>();
@@ -122,7 +123,7 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
         let input_info = match signature.get_input(sig_in_name) {
             Ok(info) => info,
             Err(e) => {
-                error!("Error occurred trying to get input info.");
+                error!("Error occurred trying to get input info. | Error: {}", e);
                 return Err(ApiError::ModelError)
             }
         };
@@ -186,8 +187,6 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
                 return Err(ApiError::ModelError)
             }
         };
-
-
 
         let winning = if max_index == 1 {
             Prediction {
