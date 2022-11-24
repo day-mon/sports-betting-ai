@@ -9,9 +9,9 @@ import { LoadingButton } from '../components/LoadingButton';
 
 const getBaseUrl = (useRemote?: boolean) => {
   // check if current url is localhost
-  const remoteUrl = 'https://api.accuribet.win';
+  const remoteUrl = 'https://mapi.accuribet.win/mock';
   if (useRemote) return remoteUrl;
-  return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
+  return window.location.href.includes('localhost') ? 'http://localhost:8080/mock' : remoteUrl;
 };
 
 // just doing this for fun change if needed
