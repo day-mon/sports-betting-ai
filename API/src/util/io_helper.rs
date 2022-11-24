@@ -1,7 +1,7 @@
 use std::{env, fs};
 use std::fs::File;
 use std::path::Path;
-use log::{error, info};
+use log::{error};
 use serde::de::DeserializeOwned;
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;

@@ -4,3 +4,4 @@ pub mod daily_games;
 pub mod team_stats;
 pub mod game_odds;
 pub mod api_error;
+pub mod schema;

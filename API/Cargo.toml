@@ -21,7 +21,7 @@ protobuf = "3.2.0"
 log = "0.4.17"
 structopt = "0.3.23"
 thiserror = "1.0.37"
-diesel = { version = "2.0.0", features = ["postgres"] }
+diesel = { version = "2.0.2", features = ["postgres", "r2d2"] }
 dotenvy = "0.15"
 
 [dev-dependencies]

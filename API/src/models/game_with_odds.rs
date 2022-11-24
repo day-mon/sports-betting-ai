@@ -1,7 +1,8 @@
+use diesel::{Insertable, PgConnection, Queryable};
 use serde::{Deserialize, Serialize};
 use crate::{util::string::remove_quotes, models::daily_games::G};
-
-
+use diesel::prelude::*;
+use crate::models::schema::game;
 
 #[derive(Deserialize, Serialize)]
 pub struct GameWithOdds {
@@ -30,7 +31,61 @@ impl GameWithOdds {
             odds: Vec::new()
         }
     }
-    
+
+    pub fn into_game(self) -> Game {
+        Game {
+            game_id: self.game_id,
+            start_time: self.start_time,
+            home_team_name: self.home_team_name,
+            home_team_score: self.home_team_score,
+            away_team_name: self.away_team_name,
+            away_team_score: self.away_team_score,
+            home_team_id: self.home_team_id as i32,
+            away_team_id: self.away_team_id as i32
+        }
+    }
+
+    pub fn is_finished(&self) -> bool {
+        self.start_time == "Final"
+    }
+}
+
+
+#[derive(Deserialize, Queryable, Serialize, Insertable)]
+#[diesel(table_name = game)]
+pub struct Game {
+    pub game_id: String,
+    pub start_time: String,
+    pub home_team_name: String,
+    pub home_team_score: String,
+    pub away_team_name: String,
+    pub away_team_score: String,
+    pub home_team_id: i32,
+    pub away_team_id: i32
+}
+
+impl Game {
+    pub fn insert(&self, conn: &PgConnection) -> bool {
+        diesel::insert_into(game::table)
+            .values(self)
+            .execute(conn)
+            .is_ok()
+    }
+
+    pub fn is_saved(&self, conn: &mut PgConnection) -> Result<Game ,diesel::result::Error> {
+
+        game::table
+            .filter(game::game_id.eq(&self.game_id))
+            .first::<Game>(conn)
+    }
+
+    pub fn save_all(games: &Vec<Game>, conn: &PgConnection) -> Result<(), diesel::result::Error> {
+        for game in games {
+            game.save(conn)?;
+        }
+        Ok(())
+    }
+
     pub fn is_finished(&self) -> bool {
         self.start_time == "Final"
     }

@@ -3,6 +3,8 @@ use std::path::Path;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
+use diesel::{PgConnection, r2d2};
+use diesel::r2d2::ConnectionManager;
 use env_logger::Env;
 use log::{error, info};
 use routes::nn;
@@ -35,11 +37,25 @@ async fn main() -> std::io::Result<()> {
         std::process::exit(1);
     });
 
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+        // exit the process
+        error!("DATABASE_URL environment variable not set");
+        std::process::exit(1);
+    });
+
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+
+    let pool = r2d2::Pool::builder()
+        .max_size(5)
+        .build(manager)
+        .expect("Failed to create pool.");
+
     info!("Running server at {}", endpoint);
     info!("Model directory: {}", std::env::var("MODEL_DIR").unwrap());
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
-    actix_rt::spawn(async { services::history_service::run().await });
+    actix_rt::spawn(async move { services::history_service::run(pool).await });
+
 
     HttpServer::new(|| {
         App::new()

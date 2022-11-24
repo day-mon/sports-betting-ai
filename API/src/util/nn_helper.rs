@@ -100,6 +100,8 @@ pub fn call_model(df: &DataFrame, matches: &[Match]) -> Vec<Prediction> {
             .get_signature("serving_default")
             .expect("Error getting signature");
 
+
+
         let input_info = signature.get_input(sig_in_name).expect("Input not found");
         let output_info = signature.get_output(sig_out_name).expect("Output not found");
 
