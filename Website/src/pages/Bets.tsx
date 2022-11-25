@@ -37,8 +37,9 @@ const Bets: Component = () => {
 
     setDisabled(true)
     const BASE_URL = getBaseUrl(true);
-    const response = await fetchHelper(`${BASE_URL}/sports/predict/all`);
+    const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
+      setDisabled(false);
       return;
     }
     const data = (await response.json()) as Prediction[];
