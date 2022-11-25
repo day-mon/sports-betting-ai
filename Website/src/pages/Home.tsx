@@ -34,7 +34,7 @@ const Home: Component = () => {
           <div class="bg-white rounded-lg shadow-lg p-4">
             <h2 class="text-2xl font-bold text-gray-900">Website</h2>
             <p class="text-gray-600">
-              This website was built using SolidJS, which is a lightweight alterative to the React framework.
+              This website was built using SolidJS, which is a lightweight alternative to the React framework.
             </p>
           </div>
           <div class="bg-white rounded-lg shadow-lg p-4">
@@ -46,7 +46,7 @@ const Home: Component = () => {
           <div class="bg-white rounded-lg shadow-lg p-4">
             <h2 class="text-2xl font-bold text-gray-900">Model</h2>
             <p class="text-gray-600">
-              Our model was built using TensorFlow and Keras. With the use of past game data and 98 unique data points we can predict a games outcome with around 80-90% accuracy.
+              Our model was built using TensorFlow and Keras. With the use of past game data and 98 unique data points we can predict a games outcome with around 60-65% accuracy.
             </p>
           </div>
         </div>

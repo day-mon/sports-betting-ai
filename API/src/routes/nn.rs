@@ -1,18 +1,18 @@
 use actix_web::{HttpResponse, web};
-use log::{error};
+use log::{error, info, warn};
 use serde::de::DeserializeOwned;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use crate::models::daily_games::{Match, DailyGames};
+use crate::models::daily_games::{Match, DailyGames, V};
 use crate::util::nn_helper::{get_model_data, call_model};
 use crate::{util::string::remove_quotes};
 use crate::models::api_error::ApiError;
-use crate::models::game_odds::GameOdds;
+use crate::models::game_odds::{GameOdds, OddsTable, OddsTableModel};
 use crate::models::game_with_odds::GameWithOdds;
 use crate::util::io_helper::directory_exists;
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
-const DAILY_ODDS_URL: &str = "https://cdn.nba.com/static/json/liveData/odds/odds_todaysGames.json";
+const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lsfgDuEdROF0tkMgysmKK/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
 
 #[derive(Deserialize, Serialize)]
 pub struct PredictQueryParams {
@@ -60,27 +60,22 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let games = game_odds.gs.g;
     let mut g_w_o = games.iter().map(GameWithOdds::from_g).collect::<Vec<GameWithOdds>>();
     let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await?;
+    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
+        warn!("Returned early. No odds available.");
+        return Ok(HttpResponse::Ok().json(g_w_o));
+    };
 
-    for game in game_odds.games {
-        let Some(mut book_odds) = game.markets.into_iter().find(|mk| mk.has_2way()) else {
-            continue;
+    let odds_table_model = nba_odds.odds_table_model;
+
+    for item in odds_table_model.game_rows.into_iter() {
+        let game_view = item.game_view;
+        let Some(mut game_to_edit) = g_w_o.iter_mut().find(|gwo| gwo.home_team_name == game_view.home_team.full_name || gwo.away_team_name == game_view.away_team.full_name) else {
+            warn!("Couldnt find a game for {}", game_view.home_team.full_name);
+            continue
         };
 
-        if !book_odds.has_american_books() {
-            continue;
-        };
-
-        book_odds.books.retain(|bk| bk.outcomes.is_some());
-
-        let gwo_game_opt = g_w_o.iter_mut().find(|g| g.game_id == game.game_id);
-        if gwo_game_opt.is_none() {
-            error!("Game with odds not found for {}", &game.game_id);
-            continue;
-        }
-
-        let gwo_game = gwo_game_opt.unwrap();
-        gwo_game.odds = book_odds.books.iter().map(|bk| bk.to_odds()).collect()
-
+        game_to_edit.venue = game_view.venue_name;
+        game_to_edit.odds = item.odds_views.into_iter().map(|go| go.into_odds()).collect();
     }
 
     Ok(HttpResponse::Ok().json(g_w_o))
