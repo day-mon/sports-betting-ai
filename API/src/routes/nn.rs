@@ -1,17 +1,38 @@
-use actix_web::HttpResponse;
+use actix_web::{HttpResponse, web};
 use log::{error};
 use serde::de::DeserializeOwned;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use crate::models::daily_games::{Match, DailyGames};
 use crate::util::nn_helper::{get_model_data, call_model};
 use crate::{util::string::remove_quotes};
 use crate::models::api_error::ApiError;
 use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::GameWithOdds;
+use crate::util::io_helper::directory_exists;
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
 const DAILY_ODDS_URL: &str = "https://cdn.nba.com/static/json/liveData/odds/odds_todaysGames.json";
 
-pub async fn predict_all() -> Result<HttpResponse, ApiError> {
+#[derive(Deserialize, Serialize)]
+pub struct PredictQueryParams {
+    pub model_name: String,
+}
+
+pub async fn predict_all(
+    params: web::Query<PredictQueryParams>,
+) -> Result<HttpResponse, ApiError> {
+    let inner = params.into_inner();
+    let model_name = inner.model_name;
+    let dir = std::env::var("MODEL_DIR").unwrap();
+    let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
+    if !model_exist {
+        error!("Could find model with the name {}", model_name);
+        return Err(ApiError::ModelNotFound)
+    }
+
+
+
     let daily_games =  get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
     if daily_games.gs.g.is_empty() {
@@ -30,8 +51,7 @@ pub async fn predict_all() -> Result<HttpResponse, ApiError> {
     ).collect();
 
     let model_data = get_model_data(&tids, &date).await?;
-    let prediction = call_model(&model_data, &tids);
-
+    let prediction = call_model(&model_data, &tids, &model_name)?;
     Ok(HttpResponse::Ok().json(prediction))
 }
 
