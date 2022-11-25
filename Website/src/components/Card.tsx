@@ -22,64 +22,12 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
     };
 
     const getPredictionAgainstOdds = (odd: Odd, prediction: Prediction) => {
-        let home_team_winning = odd.home_team_odds > odd.away_team_odds;
+        let home_team_winning = odd.home_team_odds > 0;
         let our_prediction = prediction.predicted_winner === game.home_team_name;
         return home_team_winning === our_prediction ? 'WITH ODDS' : 'AGAINST ODDS';
     };
 
-    const getSvgForDirection = (odds: string) => {
-        if (odds == 'up') {
-            return (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-green-500 justify-center items-center"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        class={"text-center"}
-                        d="M5 15l7-7 7 7"
-                    />
-                </svg>
-            );
-        } else if (odds == 'down') {
-            return (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-red-500 justify-center items-center"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            );
 
-        } else {
-            return (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-gray-500 justify-center items-center"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M18 12H6"
-                    />
-                </svg>
-            );
-        }
-    }
 
     return (
         <div
@@ -106,8 +54,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                     </Show>
                 </div>
             </Show>
-            <div
-                class="flex flex-row justify-center ">{game.start_time.includes('ET') ? `Starting @ ${game.start_time}` : game.start_time.includes('Final') ? game.start_time : `Current Quarter: ${game.start_time}`}</div>
+            <div class="flex flex-row justify-center ">{game.start_time.includes('ET') ? `Starting @ ${game.start_time}` : game.start_time.includes('Final') ? game.start_time : `Current Quarter: ${game.start_time}`}</div>
             <Show when={props.prediction} keyed>
                 <div class="flex font-extrabold flex-row justify-center ">{`Our Projected Winner:`}
                     <span class={`flex flex-col pl-2 text-s ${!props.game.start_time.includes("Final") ?  'text-white' : `${ props.prediction?.predicted_winner === getWinner(game) && game.start_time.includes("Final") ? 'text-green-500' : 'text-red-500'}`}`}>
@@ -126,9 +73,9 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                                 class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
                             <tr class="order-b dark:bg-gray-800 dark:border-gray-700">
                                 <For each={game.odds.length > 0 && Object.keys(game.odds[0])}>{(key) => <th
-                                    class="px-4 text-white py-3">{key.replace('home_team', game.home_team_name).replace('away_team', game.away_team_name).replace(/_/g, ' ')}</th>}</For>
+                                    class="px-4 text-center text-white py-3">{key.replace('home_team', game.home_team_name).replace('away_team', game.away_team_name).replace(/_/g, ' ')}</th>}</For>
                                 <Show when={props.prediction && game.odds.length !== 0} keyed>
-                                    <th class="px-4 text-white text-center py-3">Our bet</th>
+                                    <th class="px-4 text-white text-center text-center py-3">Our bet</th>
                                 </Show>
                             </tr>
                             </thead>
@@ -136,15 +83,13 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                             <For each={game.odds}>
                                 {(odd) => (
                                     <tr class=" order-b dark:bg-gray-800 dark:border-gray-700">
-                                        <th class="py-4 text-white px-6">{odd.book_name}</th>
-                                        <th class="py-4 text-white px-6">{odd.home_team_odds}</th>
-                                        <th class="py-4 text-white px-6">{odd.away_team_odds}</th>
-                                        <th class="py-4 px-6">{getSvgForDirection(odd.home_team_odds_trend)}</th>
-                                        <th class="py-4 px-6">{getSvgForDirection(odd.away_team_odds_trend)}</th>
-                                        <th class="py-4 text-white px-6">{odd.home_team_opening_odds}</th>
-                                        <th class="py-4 text-white px-6">{odd.away_team_opening_odds}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.book_name.replace(/_/g, ' ').toUpperCase()}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.home_team_odds > 0 ? '+' + odd.home_team_odds : odd.home_team_odds}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.away_team_odds > 0 ? '+' + odd.away_team_odds : odd.away_team_odds}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.home_team_opening_odds > 0 ? '+' + odd.home_team_opening_odds : odd.home_team_opening_odds}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.away_team_opening_odds > 0 ? '+' + odd.away_team_opening_odds : odd.away_team_opening_odds}</th>
                                         <Show when={props.prediction && game.odds.length !== 0} keyed>
-                                            <th class="py-4 text-white px-6">{getPredictionAgainstOdds(odd!, props.prediction!)}</th>
+                                            <th class="py-4 text-center text-white px-6">{getPredictionAgainstOdds(odd!, props.prediction!)}</th>
                                         </Show>
                                     </tr>
                                 )}

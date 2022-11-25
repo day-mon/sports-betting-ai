@@ -6,6 +6,7 @@ use crate::{util::string::remove_quotes, models::daily_games::G};
 #[derive(Deserialize, Serialize)]
 pub struct GameWithOdds {
     pub game_id: String,
+    pub venue: String,
     pub start_time: String,
     pub home_team_name: String,
     pub home_team_score: String,
@@ -20,6 +21,7 @@ impl GameWithOdds {
     pub fn from_g(match_up: &G) -> GameWithOdds {
         GameWithOdds {
             game_id: remove_quotes(&match_up.gid),
+            venue: "".to_string(),
             start_time:  remove_quotes(&match_up.stt),
             home_team_name: format!("{} {}", remove_quotes(&match_up.h.tc), remove_quotes(&match_up.h.tn)),
             away_team_name: format!("{} {}", remove_quotes(&match_up.v.tc), remove_quotes(&match_up.v.tn)),
@@ -35,10 +37,8 @@ impl GameWithOdds {
 #[derive(Deserialize, Serialize)]
 pub struct Odds {
     pub book_name: String,
-    pub home_team_odds: f64,
-    pub away_team_odds: f64,
-    pub home_team_odds_trend: String,
-    pub away_team_odds_trend: String,
-    pub home_team_opening_odds: f64,
-    pub away_team_opening_odds: f64,
+    pub home_team_odds: i32,
+    pub away_team_odds: i32,
+    pub home_team_opening_odds: i32,
+    pub away_team_opening_odds: i32,
 }
