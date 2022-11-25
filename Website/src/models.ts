@@ -1,6 +1,7 @@
 export interface Game {
   game_id: string;
   start_time: string;
+  venue: string;
   home_team_name: string;
   away_team_name: string;
   home_team_id: number;

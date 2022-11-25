@@ -1,18 +1,19 @@
 use actix_web::{HttpResponse, error::ResponseError, http::StatusCode};
 
 use serde::{Serialize};
+use tensorflow::Status;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("Requested file was not found")]
-    ParamNotFound,
     #[error("No games found for today")]
     GamesNotFound,
     #[error("Error deserializing response")]
     DeserializationError,
     #[error("Error occurred while calling the model")]
     ModelError,
+    #[error("Model not found")]
+    ModelNotFound,
     #[error("IO Error has occurred")]
     IOError,
     #[error("A website we rely on returned a invalid response")]
@@ -25,11 +26,11 @@ impl ApiError {
         match self {
             Self::GamesNotFound => "Games not found".to_string(),
             Self::DeserializationError => "Failed to deserialize".to_string(),
-            Self::ParamNotFound => "Query Param not found".to_string(),
             Self::ModelError => "Error occurred while calling the model".to_string(),
             Self::IOError => "An Error occurred during IO".to_string(),
             Self::DependencyError => "A website we rely on returned a invalid response".to_string(),
             Self::Unknown => "Unknown".to_string(),
+            Self::ModelNotFound => "There is no model with that name".to_string()
         }
     }
 }
@@ -38,9 +39,9 @@ impl ResponseError for ApiError {
     fn status_code(&self) -> StatusCode {
         match *self {
             Self::GamesNotFound  => StatusCode::NOT_FOUND,
-            Self::ParamNotFound => StatusCode::BAD_REQUEST,
             Self::DeserializationError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::IOError => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::ModelNotFound => StatusCode::NOT_FOUND,
             Self::ModelError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::DependencyError => StatusCode::FAILED_DEPENDENCY,
             Self::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
@@ -58,12 +59,6 @@ impl ResponseError for ApiError {
     }
 }
 
-fn map_io_error(e: std::io::Error) -> ApiError {
-    match e.kind() {
-        std::io::ErrorKind::PermissionDenied => ApiError::IOError,
-        _ => ApiError::Unknown,
-    }
-}
 
 #[derive(Serialize)]
 struct ErrorResponse {

@@ -51,7 +51,7 @@ async fn main() -> std::io::Result<()> {
         .expect("Failed to create pool.");
 
     info!("Running server at {}", endpoint);
-    info!("Model directory: {}", std::env::var("MODEL_DIR").unwrap());
+    info!("Models directory: {}", std::env::var("MODEL_DIR").unwrap());
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
     actix_rt::spawn(async move { services::history_service::run(pool).await });

@@ -64,6 +64,10 @@ pub fn write_to_csv(matches: &Vec<Match>, team_stats: &TeamStats, date: &String)
 }
 
 
+pub fn directory_exists(path: &String) -> bool {
+    Path::new(path).exists()
+}
+
 pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
     let response = match reqwest::get(source).await {
         Ok(res) => res,

@@ -19,7 +19,6 @@ const getBaseUrl = (useRemote?: boolean) => {
 const Bets: Component = () => {
   const [bets, setBets] = createSignal([] as Game[]);
   const [loading, setLoading] = createSignal(true);
-  const [books, setBooks] = createSignal([] as string[]);
   const [error, setError] = createSignal(false);
   const [predictions, setPredictions] = createSignal([] as Prediction[]);
   const [disabled, setDisabled] = createSignal(false);
@@ -36,9 +35,10 @@ const Bets: Component = () => {
     }
 
     setDisabled(true)
-    const BASE_URL = getBaseUrl(true);
-    const response = await fetchHelper(`${BASE_URL}/sports/predict/all`);
+    const BASE_URL = getBaseUrl();
+    const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
+      setDisabled(false);
       return;
     }
     const data = (await response.json()) as Prediction[];
@@ -49,7 +49,7 @@ const Bets: Component = () => {
 
   const fetchBets = async (refresh?: boolean) => {
     if (!refresh) setLoading(true);
-    const BASE_URL = getBaseUrl(true);
+    const BASE_URL = getBaseUrl();
 
     const res = await fetchHelper(`${BASE_URL}/sports/games`);
 
@@ -70,8 +70,6 @@ const Bets: Component = () => {
     setError(false);
 
     const data = (await response.json()) as Game[];
-    const book = data.flatMap((game) => game.odds.map((odd) => odd.book_name)).filter((book, index, self) => self.indexOf(book) === index);
-    setBooks(book);
     setBets(data);
   };
 
@@ -85,6 +83,39 @@ const Bets: Component = () => {
   const betInterval = setInterval(async () => {
     await fetchBets(true);
   }, 45_000);
+
+
+
+  // sort the games by games that have qtr in the string first games the games that arent started by time second and games with final in the time last
+  const sortedBetsByTime = (games: Game[]) => games.sort((a, b) => {
+    if (a.start_time.includes('Qtr')) return -1;
+    if (b.start_time.includes('Qtr')) return 1;
+
+
+    if (a.start_time.includes('Final')) return 1;
+    if (b.start_time.includes('Final')) return -1;
+
+    // parse time to 08:00 ET time
+    const aTime = a.start_time.split(' ')[0].split(':');
+    const bTime = b.start_time.split(' ')[0].split(':');
+    const aHour = parseInt(aTime[0]);
+    const bHour = parseInt(bTime[0]);
+    const aMinute = parseInt(aTime[1]);
+    const bMinute = parseInt(bTime[1]);
+
+    // if the hours are the same compare the minutes
+    if (aHour === bHour) {
+      if (aMinute < bMinute) return -1;
+      if (aMinute > bMinute) return 1;
+      return 0;
+    } else  {
+      if (aHour < bHour) return -1;
+      if (aHour > bHour) return 1;
+      return 0;
+    }
+  });
+
+
 
   onCleanup(() => {
     clearInterval(betInterval);
@@ -110,7 +141,7 @@ const Bets: Component = () => {
               </LoadingButton>
             </div>
           </div>
-          <For each={bets()}>{(game) => <Card prediction={findPrediction(game)} game={game} />}</For>
+          <For each={sortedBetsByTime(bets())}>{(game) => <Card prediction={findPrediction(game)} game={game} />}</For>
         </Show>
       </Suspense>
       <div class="flex flex-col justify-center items-center">
