@@ -60,14 +60,15 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let games = game_odds.gs.g;
     let mut g_w_o = games.iter().map(GameWithOdds::from_g).collect::<Vec<GameWithOdds>>();
     let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await?;
-    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
+    // game_odds.page_props.odds_tables.retain(|go| go.is_some());
+   let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
         warn!("Returned early. No odds available.");
         return Ok(HttpResponse::Ok().json(g_w_o));
     };
 
     let odds_table_model = nba_odds.odds_table_model;
 
-    for item in odds_table_model.game_rows.into_iter() {
+    for mut item in odds_table_model.game_rows.into_iter() {
         let game_view = item.game_view;
         let Some(mut game_to_edit) = g_w_o.iter_mut().find(|gwo| gwo.home_team_name == game_view.home_team.full_name || gwo.away_team_name == game_view.away_team.full_name) else {
             warn!("Couldnt find a game for {}", game_view.home_team.full_name);
@@ -75,7 +76,8 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         };
 
         game_to_edit.venue = game_view.venue_name;
-        game_to_edit.odds = item.odds_views.into_iter().map(|go| go.into_odds()).collect();
+        item.odds_views.retain(|o| o.is_some());
+        game_to_edit.odds = item.odds_views.into_iter().map(|go| go.unwrap().into_odds()).collect();
     }
 
     Ok(HttpResponse::Ok().json(g_w_o))
@@ -85,7 +87,7 @@ async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiEr
     let response = match reqwest::get(source).await {
         Ok(res) => res,
         Err(err) => return {
-            error!("Error has occurred... | {}", err.to_string());
+            error!("Error has occurred while getting the request | {}", err.to_string());
             Err(ApiError::DependencyError)
         }
     };
@@ -93,7 +95,7 @@ async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiEr
     let response_body = match response.text().await {
         Ok(res) => res,
         Err(err) => return {
-            error!("Error has occurred... | {}", err.to_string());
+            error!("Error has occurred while getting the response body | {}", err.to_string());
             Err(ApiError::DeserializationError)
         }
     };
@@ -101,7 +103,7 @@ async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiEr
     let generic = match serde_json::from_str::<T>(&response_body) {
         Ok(t) => t,
         Err(err) => return {
-            error!("Error has occurred... | {}", err.to_string());
+            error!("Error has occurred attempting to deserialize the response body | {}", err.to_string());
             Err(ApiError::DeserializationError)
         }
     };

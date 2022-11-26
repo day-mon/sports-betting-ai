@@ -45,7 +45,7 @@ pub struct OddsTableModel {
 #[serde(rename_all = "camelCase")]
 pub struct GameRow {
     pub game_view: GameView,
-    pub odds_views: Vec<OddsView>,
+    pub odds_views: Vec<Option<OddsView>>,
     pub opening_line_views: Vec<OpeningLineView>,
     pub live_score_views: LiveScoreViews,
 }
@@ -70,7 +70,7 @@ pub struct GameView {
     pub city: String,
     pub state: String,
     pub country: String,
-    pub consensus: Consensus,
+    pub consensus: Option<Consensus>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -118,18 +118,6 @@ pub struct OddsView {
     pub money_line_history: Value,
     pub spread_history: Value,
     pub total_history: Value,
-}
-
-impl OddsView {
-    pub fn into_odds(self) -> Odds {
-        Odds {
-            book_name: self.sportsbook,
-            home_team_odds: self.current_line.home_odds as i32,
-            away_team_odds: self.current_line.away_odds as i32,
-            home_team_opening_odds: self.opening_line.home_odds as i32,
-            away_team_opening_odds: self.opening_line.away_odds as i32,
-        }
-    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -352,4 +340,16 @@ pub struct Breadcrumb {
     pub breadcrumb_name: String,
     #[serde(rename = "breadcrumbURL")]
     pub breadcrumb_url: String,
+}
+
+impl OddsView {
+    pub fn into_odds(self) -> Odds {
+        Odds {
+            book_name: self.sportsbook,
+            home_team_odds: self.current_line.home_odds as i32,
+            away_team_odds: self.current_line.away_odds as i32,
+            home_team_opening_odds: self.opening_line.home_odds as i32,
+            away_team_opening_odds: self.opening_line.away_odds as i32,
+        }
+    }
 }
