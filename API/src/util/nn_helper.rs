@@ -1,12 +1,11 @@
 use std::env;
 use std::fs::File;
-use log::{error, info};
+use log::{error};
 use polars::frame::DataFrame;
 use polars::io::SerReader;
-use polars::prelude::{CsvReader, IdxCa};
+use polars::prelude::{CsvReader};
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 use crate::models::api_error::ApiError;
-use crate::models::api_error::ApiError::ModelNotFound;
 use crate::models::daily_games::Match;
 use crate::models::prediction::Prediction;
 use crate::models::team_stats::TeamStats;
@@ -122,7 +121,7 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
         let input_info = match signature.get_input(sig_in_name) {
             Ok(info) => info,
             Err(e) => {
-                error!("Error occurred trying to get input info.");
+                error!("Error occurred trying to get input info. | Error: {}", e);
                 return Err(ApiError::ModelError)
             }
         };
