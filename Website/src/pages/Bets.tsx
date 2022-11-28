@@ -86,16 +86,33 @@ const Bets: Component = () => {
 
 
 
-  // sort the games by games that have qtr in the string first games the games that arent started by time second and games with final in the time last
   const sortedBetsByTime = (games: Game[]) => games.sort((a, b) => {
-    if (a.start_time.includes('Qtr')) return -1;
-    if (b.start_time.includes('Qtr')) return 1;
-
+    if (a.start_time.includes('Qtr') || a.start_time.includes("Halftime")) {
+        if (a.start_time.includes('Qtr') && b.start_time.includes('Qtr')) {
+            return parseInt(a.start_time.split(' ')[1]) - parseInt(b.start_time.split(' ')[1]);
+        } else if (a.start_time.includes('Qtr') && b.start_time.includes('Halftime')) {
+            return -1;
+        } else if (a.start_time.includes('Halftime') && b.start_time.includes('Qtr')) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    if (b.start_time.includes('Qtr') || b.start_time.includes("Halftime")) {
+        if (b.start_time.includes('Qtr') && a.start_time.includes('Qtr')) {
+            return parseInt(b.start_time.split(' ')[1]) - parseInt(a.start_time.split(' ')[1]);
+        } else if (b.start_time.includes('Qtr') && a.start_time.includes('Halftime')) {
+            return 1;
+        } else if (b.start_time.includes('Halftime') && a.start_time.includes('Qtr')) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
 
     if (a.start_time.includes('Final')) return 1;
     if (b.start_time.includes('Final')) return -1;
 
-    // parse time to 08:00 ET time
     const aTime = a.start_time.split(' ')[0].split(':');
     const bTime = b.start_time.split(' ')[0].split(':');
     const aHour = parseInt(aTime[0]);
@@ -103,7 +120,6 @@ const Bets: Component = () => {
     const aMinute = parseInt(aTime[1]);
     const bMinute = parseInt(bTime[1]);
 
-    // if the hours are the same compare the minutes
     if (aHour === bHour) {
       if (aMinute < bMinute) return -1;
       if (aMinute > bMinute) return 1;

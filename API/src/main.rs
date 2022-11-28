@@ -58,7 +58,6 @@ async fn main() -> std::io::Result<()> {
     info!("Data directory: {}", std::env::var("DATA_DIR").unwrap());
 
     let history_pool = pool.clone();
-
     actix_rt::spawn(async move { services::history_service::run(history_pool).await } );
 
 
