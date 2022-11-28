@@ -24,7 +24,7 @@ const History: Component = () => {
 
 
     onMount(async () => {
-        let url = `${getBaseUrl(true)}/sports/history/dates`;
+        let url = `${getBaseUrl()}/sports/history/dates`;
         let response = await fetchHelper(url);
 
         if (!response) {

@@ -1,5 +1,5 @@
-import { Component, onCleanup } from 'solid-js';
-import { createSignal, For, onMount, Show, Suspense } from 'solid-js';
+import {Component, Index, onCleanup} from 'solid-js';
+import { createSignal, onMount, Show, Suspense } from 'solid-js';
 import { Game, Prediction } from '../models';
 import { GameCard } from '../components/GameCard';
 import { Loading } from '../components/Loading';
@@ -14,7 +14,6 @@ const getBaseUrl = (useRemote?: boolean) => {
   return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
 };
 
-// just doing this for fun change if needed
 
 const Bets: Component = () => {
   const [bets, setBets] = createSignal([] as Game[]);
@@ -22,6 +21,7 @@ const Bets: Component = () => {
   const [error, setError] = createSignal(false);
   const [predictions, setPredictions] = createSignal([] as Prediction[]);
   const [disabled, setDisabled] = createSignal(false);
+  const [cardsShow, setCardsShow] = createSignal([] as boolean[]);
 
   const fetchPredictions = async () => {
     let predictions = localStorage.getItem('predictions');
@@ -35,7 +35,7 @@ const Bets: Component = () => {
     }
 
     setDisabled(true)
-    const BASE_URL = getBaseUrl();
+    const BASE_URL = getBaseUrl(true);
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
       setDisabled(false);
@@ -49,7 +49,7 @@ const Bets: Component = () => {
 
   const fetchBets = async (refresh?: boolean) => {
     if (!refresh) setLoading(true);
-    const BASE_URL = getBaseUrl();
+    const BASE_URL = getBaseUrl(true);
 
     const res = await fetchHelper(`${BASE_URL}/sports/games`);
 
@@ -132,6 +132,11 @@ const Bets: Component = () => {
   });
 
 
+  const changeCardShow = (index: number) => {
+    let newCardsShow = cardsShow().slice();
+    newCardsShow[index] = !newCardsShow[index];
+    setCardsShow(newCardsShow);
+  }
 
   onCleanup(() => {
     clearInterval(betInterval);
@@ -157,7 +162,7 @@ const Bets: Component = () => {
               </LoadingButton>
             </div>
           </div>
-          <For each={sortedBetsByTime(bets())}>{(game) => <GameCard prediction={findPrediction(game)} game={game} />}</For>
+          <Index each={sortedBetsByTime(bets())}>{(game, index) => <GameCard showDropdown={cardsShow()[index]} setShowDropdown={() => changeCardShow(index)} prediction={findPrediction(game())} game={game()} />}</Index>
         </Show>
       </Suspense>
       <div class="flex flex-col justify-center items-center">
