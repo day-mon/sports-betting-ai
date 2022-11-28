@@ -1,7 +1,7 @@
 import { Component, onCleanup } from 'solid-js';
 import { createSignal, For, onMount, Show, Suspense } from 'solid-js';
 import { Game, Prediction } from '../models';
-import { Card } from '../components/Card';
+import { GameCard } from '../components/GameCard';
 import { Loading } from '../components/Loading';
 import { NoData } from '../components/NoData';
 import { fetchHelper } from '../util/fetchHelper';
@@ -157,7 +157,7 @@ const Bets: Component = () => {
               </LoadingButton>
             </div>
           </div>
-          <For each={sortedBetsByTime(bets())}>{(game) => <Card prediction={findPrediction(game)} game={game} />}</For>
+          <For each={sortedBetsByTime(bets())}>{(game) => <GameCard prediction={findPrediction(game)} game={game} />}</For>
         </Show>
       </Suspense>
       <div class="flex flex-col justify-center items-center">

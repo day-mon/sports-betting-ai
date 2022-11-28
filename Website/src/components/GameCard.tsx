@@ -7,7 +7,7 @@ interface IBetCards {
     prediction?: Prediction;
 }
 
-export const Card: Component<IBetCards> = (props: IBetCards) => {
+export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     let game = props.game;
     const [showDropdown, setShowDropdown] = createSignal(false);
 
@@ -31,8 +31,7 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
 
 
     return (
-        <div
-            class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
+        <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
             <h5 class="flex mb-1 text-2xl flex-row justify-center items-center"
                 onClick={() => setShowDropdown(!showDropdown())}>
                     <svg xmlns="http://www.w3.org/2000/svg"
