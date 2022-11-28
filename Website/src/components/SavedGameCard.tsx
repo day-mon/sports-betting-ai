@@ -8,6 +8,14 @@ interface ISavedGameCardProps {
 
 const SavedGameCard: Component<ISavedGameCardProps> = (props: ISavedGameCardProps) => {
     const { game } = props;
+
+    const getWinner = (game?: SavedGame) => {
+        if (!game) {
+            return "Couldn't find a projected winner"
+        }
+        return game.home_team_name > game.away_team_score ? game.home_team_name : game.away_team_name;
+    }
+
     return (
         <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
             <h5 class="flex mb-1 text-2xl flex-row justify-center items-center">
@@ -19,13 +27,13 @@ const SavedGameCard: Component<ISavedGameCardProps> = (props: ISavedGameCardProp
                 <h6 class="text-s">{game.away_team_score}</h6>
             </div>
             <div class="flex font-extrabold flex-row justify-center ">{`Our Projected Winner:`}
-                <span class={`flex flex-col pl-2 text-s ${ props.game.winner == props.game.our_projected_winner ? 'text-green-500' : 'text-red-500'}`}>
+                <span class={`flex flex-col pl-2 text-s ${ getWinner(game) == props.game.our_projected_winner ? 'text-green-500' : 'text-red-500'}`}>
                         {` ${props.game?.our_projected_winner}`}
                     </span>
             </div>
             <div class="flex font-extrabold flex-row justify-center ">{`Actual Winner:`}
                 <span class="flex flex col pl-2 text-s text-white">
-                        {` ${props.game?.winner}`}
+                        {` ${getWinner(game)}`}
                     </span>
             </div>
         </div>

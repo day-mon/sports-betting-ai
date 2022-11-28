@@ -13,7 +13,7 @@ const History: Component = () => {
     const [dates, setDates] = createSignal([] as Date[]);
     const [history, setHistory] = createSignal([] as SavedGame[]);
     const [date, setDate] = createSignal(undefined as Date | undefined);
-
+    const [funcRan, setFuncRan] = createSignal(0);
 
     const getBaseUrl = (useRemote?: boolean) => {
         // check if current url is localhost
@@ -24,7 +24,7 @@ const History: Component = () => {
 
 
     onMount(async () => {
-        let url = `${getBaseUrl()}/sports/history/dates`;
+        let url = `${getBaseUrl(true)}/sports/history/dates`;
         let response = await fetchHelper(url);
 
         if (!response) {
@@ -80,7 +80,7 @@ const History: Component = () => {
         }
 
         setHistoryLoading(true);
-        let url = `${getBaseUrl()}/sports/history?date=${formattedDate}`;
+        let url = `${getBaseUrl(true)}/sports/history?date=${formattedDate}`;
         let response = await fetchHelper(url);
 
         if (!response) {
@@ -97,6 +97,7 @@ const History: Component = () => {
         const games = await response.json() as SavedGame[];
         localStorage.setItem(formattedDate, JSON.stringify(games));
         setHistory(games);
+        setFuncRan(funcRan() + 1);
         setHistoryLoading(false)
     }
 
@@ -138,7 +139,7 @@ const History: Component = () => {
                         currentDate={date()!}
                         calendarResponse={async (props) => {
                             props.setCalendarState(false)
-                            if (date()?.toDateString() == props.currentDate?.toDateString()) return;
+                            if (date()?.toDateString() == props.currentDate?.toDateString() && funcRan() !== 0) return;
                             setDate(props.currentDate)
                             props.currentDate = date();
                             await getGamesOnDate(props.currentDate)
