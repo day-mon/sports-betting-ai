@@ -102,9 +102,13 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let games = game_odds.gs.g;
     let date = remove_quotes(&game_odds.gs.gdte);
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
-    let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await else {
-         warn!("Could not get game odds");
-         Ok(HttpResponse::Ok().json(g_w_o))
+    let game_odds = match get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await {
+        Ok(odds) => odds,
+        Err(_) => {
+            warn!("Could not get odds");
+            return Ok(HttpResponse::Ok().json(g_w_o))
+        }
+
     };
     // game_odds.page_props.odds_tables.retain(|go| go.is_some());
    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
