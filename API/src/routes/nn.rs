@@ -16,7 +16,7 @@ use crate::util::io_helper::get_t_from_source;
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
-const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lsfgDuEdROF0tkMgysmKK/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
+const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lvqyIHzLaFraGFTybxNeO/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
 
 
 #[derive(Deserialize)]
@@ -102,7 +102,10 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let games = game_odds.gs.g;
     let date = remove_quotes(&game_odds.gs.gdte);
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
-    let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await?;
+    let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await else {
+         warn!("Could not get game odds");
+         Ok(HttpResponse::Ok().json(g_w_o))
+    };
     // game_odds.page_props.odds_tables.retain(|go| go.is_some());
    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
         warn!("Returned early. No odds available.");
