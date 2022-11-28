@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 actix-web = { version= "4.2.1" }
 actix-cors = "0.6.4"
+actix-rt = "2.7.0"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
 serde_derive = "1.0.147"
@@ -20,6 +21,8 @@ protobuf = "3.2.0"
 log = "0.4.17"
 structopt = "0.3.23"
 thiserror = "1.0.37"
+diesel = { version = "2.0.2", features = ["postgres", "r2d2"] }
+dotenvy = "0.15"
 
 [dev-dependencies]
 # I dont know if the deployed version will have a gpu or not, so I'm going to assume it doesn't

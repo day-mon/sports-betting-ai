@@ -4,6 +4,8 @@ import { Routes, Route } from '@solidjs/router';
 import { lazy } from 'solid-js';
 const Bets = lazy(() => import('./pages/Bets'));
 const Home = lazy(() => import('./pages/Home'));
+const History = lazy(() => import('./pages/History'));
+
 
 const App: Component = () => {
   return (
@@ -17,6 +19,7 @@ const App: Component = () => {
           <Routes>
             <Route path="/" component={Home} />
             <Route path="/bets" component={Bets} />
+            <Route path={"/history"} component={History} />
           </Routes>
         </div>
       </div>

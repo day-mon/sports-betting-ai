@@ -7,7 +7,7 @@ interface IBetCards {
     prediction?: Prediction;
 }
 
-export const Card: Component<IBetCards> = (props: IBetCards) => {
+export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     let game = props.game;
     const [showDropdown, setShowDropdown] = createSignal(false);
 
@@ -22,19 +22,18 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
     };
 
     const getPredictionAgainstOdds = (odd: Odd, prediction: Prediction) => {
-        let home_team_winning = odd.home_team_odds > 0;
+        // in betting is negative number or positive number better
+        let home_team_winning = Math.min(odd.home_team_odds, odd.away_team_odds) === odd.home_team_odds;
         let our_prediction = prediction.predicted_winner === game.home_team_name;
-        return home_team_winning === our_prediction ? 'WITH ODDS' : 'AGAINST ODDS';
+        return (home_team_winning === our_prediction) ? 'WITH ODDS' : 'AGAINST ODDS';
     };
 
 
 
     return (
-        <div
-            class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
+        <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
             <h5 class="flex mb-1 text-2xl flex-row justify-center items-center"
                 onClick={() => setShowDropdown(!showDropdown())}>
-                <Show when={!game.start_time.includes("Final")} keyed>
                     <svg xmlns="http://www.w3.org/2000/svg"
                          class="h-6 w-6 text-gray-500 hover:text-gray-400 cursor-pointer"
                          fill="none"
@@ -42,7 +41,6 @@ export const Card: Component<IBetCards> = (props: IBetCards) => {
                          stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
-                </Show>
                 {`${game.home_team_name} vs ${game.away_team_name}`}
             </h5>
             <Show when={game.home_team_score != '' || game.away_team_score != ''} keyed>

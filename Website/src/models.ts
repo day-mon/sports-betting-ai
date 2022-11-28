@@ -25,3 +25,15 @@ export interface Prediction {
   game_id: string;
   predicted_winner: string;
 }
+
+
+export interface SavedGame {
+  game_id: string
+  home_team_name: string
+  home_team_score: string
+  away_team_name: string
+  away_team_score: string
+  winner: string
+  our_projected_winner: string
+  date: string
+}

@@ -1,20 +1,25 @@
+use std::ops::DerefMut;
+
 use actix_web::{HttpResponse, web};
-use log::{error, info, warn};
-use serde::de::DeserializeOwned;
+use diesel::{PgConnection, r2d2};
+use diesel::r2d2::ConnectionManager;
+use log::{error, warn};
 use serde_derive::Deserialize;
-use serde_derive::Serialize;
-use crate::models::daily_games::{Match, DailyGames, V};
-use crate::util::nn_helper::{get_model_data, call_model};
-use crate::{util::string::remove_quotes};
+
+use crate::util::string::remove_quotes;
+use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_exists}};
 use crate::models::api_error::ApiError;
-use crate::models::game_odds::{GameOdds, OddsTable, OddsTableModel};
-use crate::models::game_with_odds::GameWithOdds;
-use crate::util::io_helper::directory_exists;
+use crate::models::daily_games::{DailyGames, Match};
+use crate::models::game_odds::GameOdds;
+use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date};
+use crate::util::io_helper::get_t_from_source;
+use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
 const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lsfgDuEdROF0tkMgysmKK/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
 
-#[derive(Deserialize, Serialize)]
+
+#[derive(Deserialize)]
 pub struct PredictQueryParams {
     pub model_name: String,
 }
@@ -25,13 +30,13 @@ pub async fn predict_all(
     let inner = params.into_inner();
     let model_name = inner.model_name;
     let dir = std::env::var("MODEL_DIR").unwrap();
+
     let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
     if !model_exist {
+
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
-
-
 
     let daily_games =  get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
@@ -54,11 +59,49 @@ pub async fn predict_all(
     let prediction = call_model(&model_data, &tids, &model_name)?;
     Ok(HttpResponse::Ok().json(prediction))
 }
+#[derive(Deserialize)]
+pub struct HistoryQueryParams {
+    pub date: String
+}
+
+pub async fn history(
+     params: web::Query<HistoryQueryParams>,
+     pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
+) -> Result<HttpResponse, ApiError> {
+    let param = params.into_inner();
+    let date = param.date;
+    let mut pooled_conn = match pool.get() {
+        Ok(pool) => pool,
+        Err(e) => {
+            warn!("Could not get connection from pool {}", e);
+            return Err(ApiError::DatabaseError)
+        }
+    };
+    let connection = pooled_conn.deref_mut();
+    let games = get_saved_games_by_date(&date, connection)?;
+    Ok(HttpResponse::Ok().json(games))
+}
+
+pub async fn history_dates(
+    pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
+) -> Result<HttpResponse, ApiError> {
+    let mut pooled_conn = match pool.get() {
+        Ok(pool) => pool,
+        Err(e) => {
+            warn!("Could not get connection from pool {}", e);
+            return Err(ApiError::DatabaseError)
+        }
+    };
+    let connection = pooled_conn.deref_mut();
+    let dates  = get_data_dates(connection)?;
+    Ok(HttpResponse::Ok().json(dates))
+}
 
 pub async fn games() -> Result<HttpResponse, ApiError> {
     let game_odds = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
     let games = game_odds.gs.g;
-    let mut g_w_o = games.iter().map(GameWithOdds::from_g).collect::<Vec<GameWithOdds>>();
+    let date = remove_quotes(&game_odds.gs.gdte);
+    let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
     let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await?;
     // game_odds.page_props.odds_tables.retain(|go| go.is_some());
    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
@@ -82,32 +125,4 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
 
     Ok(HttpResponse::Ok().json(g_w_o))
 }
-
-async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
-    let response = match reqwest::get(source).await {
-        Ok(res) => res,
-        Err(err) => return {
-            error!("Error has occurred while getting the request | {}", err.to_string());
-            Err(ApiError::DependencyError)
-        }
-    };
-
-    let response_body = match response.text().await {
-        Ok(res) => res,
-        Err(err) => return {
-            error!("Error has occurred while getting the response body | {}", err.to_string());
-            Err(ApiError::DeserializationError)
-        }
-    };
-
-    let generic = match serde_json::from_str::<T>(&response_body) {
-        Ok(t) => t,
-        Err(err) => return {
-            error!("Error has occurred attempting to deserialize the response body | {}", err.to_string());
-            Err(ApiError::DeserializationError)
-        }
-    };
-    Ok(generic)
-}
-
 
