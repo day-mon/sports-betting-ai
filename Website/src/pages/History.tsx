@@ -13,7 +13,7 @@ const History: Component = () => {
     const [dates, setDates] = createSignal([] as Date[]);
     const [history, setHistory] = createSignal([] as SavedGame[]);
     const [date, setDate] = createSignal(undefined as Date | undefined);
-
+    const [funcRan, setFuncRan] = createSignal(0);
 
     const getBaseUrl = (useRemote?: boolean) => {
         // check if current url is localhost
@@ -24,7 +24,7 @@ const History: Component = () => {
 
 
     onMount(async () => {
-        let url = `${getBaseUrl()}/sports/history/dates`;
+        let url = `${getBaseUrl(true)}/sports/history/dates`;
         let response = await fetchHelper(url);
 
         if (!response) {
@@ -97,22 +97,34 @@ const History: Component = () => {
         const games = await response.json() as SavedGame[];
         localStorage.setItem(formattedDate, JSON.stringify(games));
         setHistory(games);
+        setFuncRan(funcRan() + 1);
         setHistoryLoading(false)
     }
 
 
     const sortByWinner = (games: SavedGame[]) => {
         return games.sort((a, b) => {
-            let _1 = a.winner == a.our_projected_winner;
-            let _2 = b.winner == b.our_projected_winner;
+            let _1 = getWinner(a) == a.our_projected_winner;
+            let _2 = getWinner(b) == b.our_projected_winner;
             if (_1 && !_2) return -1;
             if (!_1 && _2) return 1;
             return 0;
         });
     }
 
+    const getWinner = (game?: SavedGame) => {
+        if (!game) {
+            return "Couldn't find a projected winner"
+        }
+        const home_score = parseInt(game.home_team_score);
+        const away_score = parseInt(game.away_team_score);
+
+        return home_score > away_score ? game.home_team_name : game.away_team_name;
+
+    }
+
     const getWinPercentage = (games: SavedGame[]) => {
-        let won = games.filter((game) => game.winner == game.our_projected_winner).length;
+        let won = games.filter((game) => getWinner(game) == game.our_projected_winner).length;
         return Math.round(won / games.length * 100);
     }
 
@@ -138,7 +150,7 @@ const History: Component = () => {
                         currentDate={date()!}
                         calendarResponse={async (props) => {
                             props.setCalendarState(false)
-                            if (date()?.toDateString() == props.currentDate?.toDateString()) return;
+                            if (date()?.toDateString() == props.currentDate?.toDateString() && funcRan() !== 0) return;
                             setDate(props.currentDate)
                             props.currentDate = date();
                             await getGamesOnDate(props.currentDate)
