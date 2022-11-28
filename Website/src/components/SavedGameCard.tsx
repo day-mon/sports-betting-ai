@@ -13,7 +13,11 @@ const SavedGameCard: Component<ISavedGameCardProps> = (props: ISavedGameCardProp
         if (!game) {
             return "Couldn't find a projected winner"
         }
-        return game.home_team_name > game.away_team_score ? game.home_team_name : game.away_team_name;
+        const home_score = parseInt(game.home_team_score);
+        const away_score = parseInt(game.away_team_score);
+
+        return home_score > away_score ? game.home_team_name : game.away_team_name;
+
     }
 
     return (
