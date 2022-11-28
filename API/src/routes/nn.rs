@@ -7,11 +7,12 @@ use log::{error, warn};
 use serde_derive::Deserialize;
 
 use crate::util::string::remove_quotes;
-use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_exists, get_t_from_source}};
+use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_exists}};
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date};
+use crate::util::io_helper::get_t_from_source;
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
@@ -125,30 +126,3 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     Ok(HttpResponse::Ok().json(g_w_o))
 }
 
-
-async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
-    let response = match reqwest::get(source).await {
-        Ok(res) => res,
-        Err(err) => return {
-            error!("Error has occurred while getting the request | {}", err.to_string());
-            Err(ApiError::DependencyError)
-        }
-    };
-
-    let response_body = match response.text().await {
-        Ok(res) => res,
-        Err(err) => return {
-            error!("Error has occurred while getting the response body | {}", err.to_string());
-            Err(ApiError::DeserializationError)
-        }
-    };
-
-    let generic = match serde_json::from_str::<T>(&response_body) {
-        Ok(t) => t,
-        Err(err) => return {
-            error!("Error has occurred attempting to deserialize the response body | {}", err.to_string());
-            Err(ApiError::DeserializationError)
-        }
-    };
-    Ok(generic)
-}
