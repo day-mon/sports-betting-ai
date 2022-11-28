@@ -102,7 +102,8 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let date = remove_quotes(&game_odds.gs.gdte);
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
     let game_odds = get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await?;
-    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
+    // game_odds.page_props.odds_tables.retain(|go| go.is_some());
+   let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
         warn!("Returned early. No odds available.");
         return Ok(HttpResponse::Ok().json(g_w_o));
     };
@@ -125,3 +126,29 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
 }
 
 
+async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
+    let response = match reqwest::get(source).await {
+        Ok(res) => res,
+        Err(err) => return {
+            error!("Error has occurred while getting the request | {}", err.to_string());
+            Err(ApiError::DependencyError)
+        }
+    };
+
+    let response_body = match response.text().await {
+        Ok(res) => res,
+        Err(err) => return {
+            error!("Error has occurred while getting the response body | {}", err.to_string());
+            Err(ApiError::DeserializationError)
+        }
+    };
+
+    let generic = match serde_json::from_str::<T>(&response_body) {
+        Ok(t) => t,
+        Err(err) => return {
+            error!("Error has occurred attempting to deserialize the response body | {}", err.to_string());
+            Err(ApiError::DeserializationError)
+        }
+    };
+    Ok(generic)
+}
