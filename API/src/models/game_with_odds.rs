@@ -39,10 +39,12 @@ impl GameWithOdds {
     }
 
     pub fn into_saved_game(self, our_winner: Option<String>) -> SavedGame {
+        let home_team_score = self.home_team_score.parse::<i32>().unwrap_or(0);
+        let away_team_score = self.away_team_score.parse::<i32>().unwrap_or(0);
         SavedGame {
             game_id: self.game_id,
             date: self.date,
-            winner: if self.home_team_score > self.away_team_score {
+            winner: if home_team_score > away_team_score {
                 self.home_team_name.clone()
             } else {
                 self.away_team_name.clone()
