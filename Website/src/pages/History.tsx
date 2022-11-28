@@ -80,7 +80,7 @@ const History: Component = () => {
         }
 
         setHistoryLoading(true);
-        let url = `${getBaseUrl(true)}/sports/history?date=${formattedDate}`;
+        let url = `${getBaseUrl()}/sports/history?date=${formattedDate}`;
         let response = await fetchHelper(url);
 
         if (!response) {
