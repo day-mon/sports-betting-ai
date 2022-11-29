@@ -2,6 +2,7 @@ import {Component, createSignal, For, Show} from 'solid-js';
 import {Game, Injury, Odd, Prediction} from '../models';
 import {Transition} from 'solid-transition-group';
 import Modal from "./Modal";
+import InjuryModal from "./modals/InjuryModal";
 
 interface IBetCards {
     game: Game;
@@ -23,57 +24,25 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
         return home_score_int > away_score_int ? game.home_team_name : game.away_team_name;
     };
 
+    const getInjuries = (): Injury[] => {
+        const arr = []
+        if (props.game.home_team_injuries) {
+            arr.push(...props.game.home_team_injuries)
+        }
+
+        if (props.game.away_team_injuries) {
+            arr.push(...props.game.away_team_injuries)
+        }
+
+        return arr;
+    }
+
     const getPredictionAgainstOdds = (odd: Odd, prediction: Prediction) => {
         // in betting is negative number or positive number better
         let home_team_winning = Math.min(odd.home_team_odds, odd.away_team_odds) === odd.home_team_odds;
         let our_prediction = prediction.predicted_winner === props.game.home_team_name;
         return (home_team_winning === our_prediction) ? 'WITH ODDS' : 'AGAINST ODDS';
     };
-
-    const injuryReportModal = (injuries: Injury[]) => {
-        const keys = Object.keys(injuries[0]);
-        let game_id_index = keys.indexOf('gameId');
-        keys.splice(game_id_index, 1);
-
-        injuries.sort((a, b) => {
-            if (a.team === b.team) {
-                return 0;
-            } else if (a.team) {
-                return -1;
-            } else {
-                return 1;
-            }
-        });
-
-        return (
-            <Modal show={showInjury()} onClose={() => setShowInjury(false)}>
-                <h3 class="text-yellow-300 text-center">We show you this because our model does not take into account injuries, suspensions or anything of that nature. If a prediction seems off this is most likely the reason.</h3>
-                <div class="overflow-x-auto border-white relative mt-4">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
-                        <tr class="order-b dark:bg-gray-800 dark:border-gray-700">
-                            <For each={keys}>{(key) =>
-                                <th class="text-center text-white py-3">{key}</th>}
-                            </For>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <For each={injuries}>
-                            {(odd) => (
-                                <tr class="border-b border-gray-500 dark:border-gray-700 dark:bg-gray-800">
-                                    <For each={keys}>{(key) =>
-                                        <td class="px-4 text-center text-white py-3">{odd[key] as string}</td>}
-                                    </For>
-                                </tr>
-                            )}
-                        </For>
-                        </tbody>
-                    </table>
-                </div>
-            </Modal>
-        )
-    }
-
 
     // why use props.game? instead of just game?
     // we lose reactivity if we don't use props.game, so don't change it or figure out a better way to do it
@@ -153,7 +122,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 {/* put view injury report in bottom middle of card */}
                 <div class="flex flex-row justify-center">
                     <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300 dark:text-gray-400">⚠️ View Injury Report</span>
-                    {injuryReportModal(props.game.home_team_injuries!.concat(props.game.away_team_injuries!))}
+                    <InjuryModal injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)}/>
                 </div>
             </Show>
         </div>

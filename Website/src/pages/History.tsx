@@ -102,10 +102,10 @@ const History: Component = () => {
     }
 
 
-    const sortByWinner = (games: SavedGame[]) => {
+    const sortByWinner = (games: SavedHistory[]) => {
         return games.sort((a, b) => {
-            let _1 = getWinner(a) == a.our_projected_winner;
-            let _2 = getWinner(b) == b.our_projected_winner;
+            let _1 = getWinner(a.game) == a.game.our_projected_winner;
+            let _2 = getWinner(b.game) == b.game.our_projected_winner;
             if (_1 && !_2) return -1;
             if (!_1 && _2) return 1;
             return 0;
@@ -166,7 +166,7 @@ const History: Component = () => {
                             </h5>
                         </Show>
                     </div>
-                    <For each={sortByWinner(history())}>{(game) => (<SavedGameCard game={game}/>)}</For>
+                    <For each={sortByWinner(history())}>{(game) => <SavedGameCard savedHistory={game}/>}</For>
                 </Show>
             </Show>
         </Suspense>

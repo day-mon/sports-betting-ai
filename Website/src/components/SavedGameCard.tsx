@@ -1,6 +1,7 @@
 import {Injury, SavedGame, SavedHistory} from "../models";
 import {Component, createSignal, For, Show} from "solid-js";
 import Modal from "./Modal";
+import InjuryModal from "./modals/InjuryModal";
 
 interface ISavedGameCardProps {
     savedHistory: SavedHistory
@@ -22,48 +23,7 @@ const SavedGameCard: Component<ISavedGameCardProps> = (props: ISavedGameCardProp
         return home_score > away_score ? game.home_team_name : game.away_team_name;
     }
 
-    const injuryReportModal = (injuries: Injury[]) => {
-        const keys = Object.keys(injuries[0]);
-        let game_id_index = keys.indexOf('gameId');
-        keys.splice(game_id_index, 1);
 
-        injuries.sort((a, b) => {
-            if (a.team === b.team) {
-                return 0;
-            } else if (a.team) {
-                return -1;
-            } else {
-                return 1;
-            }
-        });
-
-        return (
-            <Modal show={showInjury()} onClose={() => setShowInjury(false)}>
-                <div class="overflow-x-auto border-white relative mt-4">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
-                        <tr class="order-b dark:bg-gray-800 dark:border-gray-700">
-                            <For each={keys}>{(key) =>
-                                <th class="text-center text-white py-3">{key}</th>}
-                            </For>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <For each={injuries}>
-                            {(odd) => (
-                                <tr class="border-b border-gray-500 dark:border-gray-700 dark:bg-gray-800">
-                                    <For each={keys}>{(key: string) =>
-                                        <td class="px-4 text-center text-white py-3">{odd[key]}</td>}
-                                    </For>
-                                </tr>
-                            )}
-                        </For>
-                        </tbody>
-                    </table>
-                </div>
-            </Modal>
-        )
-    }
 
     return (
         <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
@@ -89,7 +49,7 @@ const SavedGameCard: Component<ISavedGameCardProps> = (props: ISavedGameCardProp
                 {/* put view injury report in bottom middle of card */}
                 <div class="flex flex-row justify-center">
                     <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300 dark:text-gray-400">⚠️ View Injury Report</span>
-                    {injuryReportModal(props.savedHistory.injuries!)}
+                    <InjuryModal injuries={props.savedHistory.injuries!} show={showInjury()} onClose={() => setShowInjury(false)}/>
                 </div>
             </Show>
         </div>
