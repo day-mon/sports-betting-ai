@@ -122,7 +122,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 {/* put view injury report in bottom middle of card */}
                 <div class="flex flex-row justify-center">
                     <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300 dark:text-gray-400">⚠️ View Injury Report</span>
-                    <InjuryModal injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)}/>
+                    <InjuryModal header={"Injuries reports are important. Our model does not take these factors into account. If there is a influential player not playing take the prediction with a grain of salt."} injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)}/>
                 </div>
             </Show>
         </div>

@@ -7,13 +7,16 @@ interface IInjuryProps {
     injuries: Injury[]
     show: boolean
     onClose: () => void
+    header?: string
 }
 const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
     const injuries = props.injuries;
 
     const keys = Object.keys(injuries[0]);
-    let game_id_index = keys.indexOf('gameId');
+    let game_id_index = keys.indexOf('game_id');
     keys.splice(game_id_index, 1);
+    let gameId_index = keys.indexOf('gameId');
+    keys.splice(gameId_index, 1);
 
     injuries.sort((a, b) => {
         if (a.team === b.team) {
@@ -27,6 +30,7 @@ const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
 
     return (
         <Modal show={props.show} onClose={props.onClose}>
+            {props.header && <h1 class="text-xl font-bold">{props.header}</h1>}
             <div class="overflow-x-auto border-white relative mt-4">
                 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
