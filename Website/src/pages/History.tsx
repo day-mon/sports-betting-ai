@@ -3,7 +3,7 @@ import {fetchHelper} from "../util/fetchHelper";
 import {Loading} from "../components/Loading";
 import {NoData} from "../components/NoData";
 import {DateTimePicker} from 'date-time-picker-solid'
-import {SavedGame} from "../models";
+import {SavedGame, SavedHistory} from "../models";
 import SavedGameCard from "../components/SavedGameCard";
 
 const History: Component = () => {
@@ -11,7 +11,7 @@ const History: Component = () => {
     const [loading, setLoading] = createSignal(true);
     const [historyLoading, setHistoryLoading] = createSignal(false);
     const [dates, setDates] = createSignal([] as Date[]);
-    const [history, setHistory] = createSignal([] as SavedGame[]);
+    const [history, setHistory] = createSignal([] as SavedHistory[]);
     const [date, setDate] = createSignal(undefined as Date | undefined);
     const [funcRan, setFuncRan] = createSignal(0);
 
@@ -74,7 +74,7 @@ const History: Component = () => {
 
         let formattedDate = `${year}-${month}-${day}`;
         if (localStorage.getItem(formattedDate)) {
-            let games = JSON.parse(localStorage.getItem(formattedDate) as string) as SavedGame[];
+            let games = JSON.parse(localStorage.getItem(formattedDate) as string) as SavedHistory[];
             setHistory(games);
             return;
         }
@@ -94,7 +94,7 @@ const History: Component = () => {
             setHistoryLoading(false);
             return;
         }
-        const games = await response.json() as SavedGame[];
+        const games = await response.json() as SavedHistory[];
         localStorage.setItem(formattedDate, JSON.stringify(games));
         setHistory(games);
         setFuncRan(funcRan() + 1);
@@ -102,10 +102,10 @@ const History: Component = () => {
     }
 
 
-    const sortByWinner = (games: SavedGame[]) => {
+    const sortByWinner = (games: SavedHistory[]) => {
         return games.sort((a, b) => {
-            let _1 = getWinner(a) == a.our_projected_winner;
-            let _2 = getWinner(b) == b.our_projected_winner;
+            let _1 = getWinner(a.game) == a.game.our_projected_winner;
+            let _2 = getWinner(b.game) == b.game.our_projected_winner;
             if (_1 && !_2) return -1;
             if (!_1 && _2) return 1;
             return 0;
@@ -123,8 +123,8 @@ const History: Component = () => {
 
     }
 
-    const getWinPercentage = (games: SavedGame[]) => {
-        let won = games.filter((game) => getWinner(game) == game.our_projected_winner).length;
+    const getWinPercentage = (games: SavedHistory[]) => {
+        let won = games.filter((game) => getWinner(game.game) == game.game.our_projected_winner).length;
         return Math.round(won / games.length * 100);
     }
 
@@ -166,7 +166,7 @@ const History: Component = () => {
                             </h5>
                         </Show>
                     </div>
-                    <For each={sortByWinner(history())}>{(game) => (<SavedGameCard game={game}/>)}</For>
+                    <For each={sortByWinner(history())}>{(game) => <SavedGameCard savedHistory={game}/>}</For>
                 </Show>
             </Show>
         </Suspense>

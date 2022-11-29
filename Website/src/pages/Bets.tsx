@@ -35,7 +35,7 @@ const Bets: Component = () => {
     }
 
     setDisabled(true)
-    const BASE_URL = getBaseUrl(true);
+    const BASE_URL = getBaseUrl();
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
       setDisabled(false);
@@ -49,7 +49,7 @@ const Bets: Component = () => {
 
   const fetchBets = async (refresh?: boolean) => {
     if (!refresh) setLoading(true);
-    const BASE_URL = getBaseUrl(true);
+    const BASE_URL = getBaseUrl();
 
     const res = await fetchHelper(`${BASE_URL}/sports/games`);
 
@@ -157,7 +157,7 @@ const Bets: Component = () => {
         <Show when={bets().length > 0} keyed>
           <div class="flex flex-col justify-center items-center">
             <div class="flex flex-row justify-center items-center">
-              <LoadingButton disabled={disabled()} onClick={fetchPredictions}>
+              <LoadingButton disabled={predictions().length !== 0} loadingWhen={disabled()} onClick={fetchPredictions}>
                 Fetch our predictions
               </LoadingButton>
             </div>
