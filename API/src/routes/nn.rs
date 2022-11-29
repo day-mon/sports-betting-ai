@@ -11,13 +11,13 @@ use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_ex
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
-use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date};
+use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date, Injuries};
 use crate::util::io_helper::get_t_from_source;
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
 const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lvqyIHzLaFraGFTybxNeO/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
-
+const DAILY_INJURIES_URL: &str = "https://www.rotowire.com/basketball/tables/injury-report.php?team=ALL&pos=ALL";
 
 #[derive(Deserialize)]
 pub struct PredictQueryParams {
@@ -33,12 +33,11 @@ pub async fn predict_all(
 
     let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
     if !model_exist {
-
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
 
-    let daily_games =  get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
+    let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
     if daily_games.gs.g.is_empty() {
         return Err(ApiError::GamesNotFound)
@@ -78,7 +77,8 @@ pub async fn history(
         }
     };
     let connection = pooled_conn.deref_mut();
-    let games = get_saved_games_by_date(&date, connection)?;
+    let games =  get_saved_games_by_date(&date, connection)?;
+
     Ok(HttpResponse::Ok().json(games))
 }
 
@@ -93,7 +93,7 @@ pub async fn history_dates(
         }
     };
     let connection = pooled_conn.deref_mut();
-    let dates  = get_data_dates(connection)?;
+    let dates = get_data_dates(connection)?;
     Ok(HttpResponse::Ok().json(dates))
 }
 
@@ -128,6 +128,24 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         game_to_edit.venue = game_view.venue_name;
         item.odds_views.retain(|o| o.is_some());
         game_to_edit.odds = item.odds_views.into_iter().map(|go| go.unwrap().into_odds()).collect();
+    }
+
+    let Ok(injuries) = get_t_from_source::<Vec<Injuries>>(DAILY_INJURIES_URL).await else{
+        warn!("Could not get injuries");
+        return Ok(HttpResponse::Ok().json(g_w_o))
+    };
+
+
+    for mut game in g_w_o.iter_mut() {
+        let mut home_injuries = injuries.iter().filter(|&tm| tm.team == game.home_team_abbr).cloned().collect::<Vec<Injuries>>();
+        let mut away_injuries = injuries.iter().filter(|&tm| tm.team == game.away_team_abbr).cloned().collect::<Vec<Injuries>>();
+
+        home_injuries.iter_mut().for_each(|hi| hi.game_id = Some(game.game_id.clone()));
+        away_injuries.iter_mut().for_each(|ai| ai.game_id = Some(game.game_id.clone()));
+
+
+        game.home_team_injuries = Some(home_injuries);
+        game.away_team_injuries = Some(away_injuries);
     }
 
     Ok(HttpResponse::Ok().json(g_w_o))
