@@ -31,16 +31,16 @@ const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
     <Modal show={props.show} onClose={props.onClose}>
       {props.header && <h1 class="text-xl font-bold">{props.header}</h1>}
       <div class="overflow-x-auto border-white relative mt-4">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
-            <tr class="order-b dark:bg-gray-800 dark:border-gray-700">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs uppercase">
+            <tr class="order-b bg-gray-800 border-gray-700">
               <For each={keys}>{(key) => <th class="text-center text-white py-3">{key}</th>}</For>
             </tr>
           </thead>
           <tbody>
             <For each={injuries}>
               {(odd: Injury) => (
-                <tr class="border-b border-gray-500 dark:border-gray-700 dark:bg-gray-800">
+                <tr class="border-b border-gray-700 bg-gray-800">
                   <For each={keys}>{(key: string) => <td class="px-4 text-center text-white py-3">{odd[key]}</td>}</For>
                 </tr>
               )}

@@ -93,19 +93,19 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
       <Transition name="slide-fade">
         {props.showDropdown && (
           <div class="overflow-x-auto relative mt-4">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead class="text-xs text-gray-700 uppercase text-white dark:bg-gray-700 dark:text-gray-400">
-                <tr class="order-b dark:bg-gray-800 dark:border-gray-700">
+            <table class="w-full text-sm text-left text-gray-500">
+              <thead class="text-xs text-white uppercase bg-gray-700">
+                <tr class="order-b bg-gray-800 border-gray-700">
                   <For each={props.game.odds && props.game.odds.length > 0 && Object.keys(props.game.odds[0])}>{(key) => <th class="px-4 text-center text-white py-3">{key.replace('home_team', props.game.home_team_name).replace('away_team', props.game.away_team_name).replace(/_/g, ' ')}</th>}</For>
                   <Show when={props.prediction && props.game.odds && props.game.odds.length !== 0} keyed>
-                    <th class="px-4 text-white text-center text-center py-3">Our bet</th>
+                    <th class="px-4 text-white text-center py-3">Our bet</th>
                   </Show>
                 </tr>
               </thead>
               <tbody>
                 <For each={props.game.odds}>
                   {(odd) => (
-                    <tr class=" order-b dark:bg-gray-800 dark:border-gray-700">
+                    <tr class="order-bbg-gray-800 border-gray-700">
                       <th class="py-4 text-center text-white px-6">{odd.book_name.replace(/_/g, ' ').toUpperCase()}</th>
                       <th class="py-4 text-center text-white px-6">{odd.home_team_odds > 0 ? '+' + odd.home_team_odds : odd.home_team_odds}</th>
                       <th class="py-4 text-center text-white px-6">{odd.away_team_odds > 0 ? '+' + odd.away_team_odds : odd.away_team_odds}</th>
@@ -124,10 +124,10 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
       </Transition>
       <Show when={(props.game.home_team_injuries || props.game.away_team_injuries) && (props.game.home_team_injuries?.length > 0 || props.game.home_team_injuries?.length > 0)} keyed>
         <div class="flex flex-row justify-center">
-          <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300 dark:text-gray-400">
+          <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300">
             ⚠️ View Injury Report
           </span>
-          <InjuryModal header={'Injuries reports are important. Our model does not take these factors into account. If there is a influential player not playing take the prediction with a grain of salt.'} injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)} />
+          <InjuryModal header={'Injury reports are important. Our model does not take these factors into account. If there is a influential player not playing take the prediction with a grain of salt.'} injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)} />
         </div>
       </Show>
     </div>
