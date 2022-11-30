@@ -4,13 +4,12 @@ import { Router } from '@solidjs/router';
 import App from './App';
 
 import './index.css';
-import {HopeProvider} from "@hope-ui/solid";
 
 render(
   () => (
-        <Router>
-            <App />
-        </Router>
+    <Router>
+      <App />
+    </Router>
   ),
-  document.getElementById('root') as HTMLElement
+  document.getElementById('root') as HTMLElement,
 );

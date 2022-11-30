@@ -1,4 +1,4 @@
-import {Component, Index, onCleanup} from 'solid-js';
+import { Component, Index, onCleanup } from 'solid-js';
 import { createSignal, onMount, Show, Suspense } from 'solid-js';
 import { Game, Prediction } from '../models';
 import { GameCard } from '../components/GameCard';
@@ -13,7 +13,6 @@ const getBaseUrl = (useRemote?: boolean) => {
   if (useRemote) return remoteUrl;
   return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
 };
-
 
 const Bets: Component = () => {
   const [bets, setBets] = createSignal([] as Game[]);
@@ -34,7 +33,7 @@ const Bets: Component = () => {
       }
     }
 
-    setDisabled(true)
+    setDisabled(true);
     const BASE_URL = getBaseUrl();
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
@@ -84,59 +83,57 @@ const Bets: Component = () => {
     await fetchBets(true);
   }, 45_000);
 
-
-
-  const sortedBetsByTime = (games: Game[]) => games.sort((a, b) => {
-    if (a.start_time.includes('Qtr') || a.start_time.includes("Halftime")) {
+  const sortedBetsByTime = (games: Game[]) =>
+    games.sort((a, b) => {
+      if (a.start_time.includes('Qtr') || a.start_time.includes('Halftime')) {
         if (a.start_time.includes('Qtr') && b.start_time.includes('Qtr')) {
-            return parseInt(a.start_time.split(' ')[1]) - parseInt(b.start_time.split(' ')[1]);
+          return parseInt(a.start_time.split(' ')[1]) - parseInt(b.start_time.split(' ')[1]);
         } else if (a.start_time.includes('Qtr') && b.start_time.includes('Halftime')) {
-            return -1;
+          return -1;
         } else if (a.start_time.includes('Halftime') && b.start_time.includes('Qtr')) {
-            return 1;
+          return 1;
         } else {
-            return 0;
+          return 0;
         }
-    }
-    if (b.start_time.includes('Qtr') || b.start_time.includes("Halftime")) {
+      }
+      if (b.start_time.includes('Qtr') || b.start_time.includes('Halftime')) {
         if (b.start_time.includes('Qtr') && a.start_time.includes('Qtr')) {
-            return parseInt(b.start_time.split(' ')[1]) - parseInt(a.start_time.split(' ')[1]);
+          return parseInt(b.start_time.split(' ')[1]) - parseInt(a.start_time.split(' ')[1]);
         } else if (b.start_time.includes('Qtr') && a.start_time.includes('Halftime')) {
-            return 1;
+          return 1;
         } else if (b.start_time.includes('Halftime') && a.start_time.includes('Qtr')) {
-            return -1;
+          return -1;
         } else {
-            return 0;
+          return 0;
         }
-    }
+      }
 
-    if (a.start_time.includes('Final')) return 1;
-    if (b.start_time.includes('Final')) return -1;
+      if (a.start_time.includes('Final')) return 1;
+      if (b.start_time.includes('Final')) return -1;
 
-    const aTime = a.start_time.split(' ')[0].split(':');
-    const bTime = b.start_time.split(' ')[0].split(':');
-    const aHour = parseInt(aTime[0]);
-    const bHour = parseInt(bTime[0]);
-    const aMinute = parseInt(aTime[1]);
-    const bMinute = parseInt(bTime[1]);
+      const aTime = a.start_time.split(' ')[0].split(':');
+      const bTime = b.start_time.split(' ')[0].split(':');
+      const aHour = parseInt(aTime[0]);
+      const bHour = parseInt(bTime[0]);
+      const aMinute = parseInt(aTime[1]);
+      const bMinute = parseInt(bTime[1]);
 
-    if (aHour === bHour) {
-      if (aMinute < bMinute) return -1;
-      if (aMinute > bMinute) return 1;
-      return 0;
-    } else  {
-      if (aHour < bHour) return -1;
-      if (aHour > bHour) return 1;
-      return 0;
-    }
-  });
-
+      if (aHour === bHour) {
+        if (aMinute < bMinute) return -1;
+        if (aMinute > bMinute) return 1;
+        return 0;
+      } else {
+        if (aHour < bHour) return -1;
+        if (aHour > bHour) return 1;
+        return 0;
+      }
+    });
 
   const changeCardShow = (index: number) => {
     let newCardsShow = cardsShow().slice();
     newCardsShow[index] = !newCardsShow[index];
     setCardsShow(newCardsShow);
-  }
+  };
 
   onCleanup(() => {
     clearInterval(betInterval);
