@@ -20,6 +20,8 @@ pub struct GameWithOdds {
     #[serde(skip)]
     pub away_team_abbr: String,
     pub away_team_score: String,
+    #[serde(skip_deserializing)]
+    pub time_left: Option<String>,
     pub home_team_id: i64,
     pub away_team_id: i64,
     pub odds: Vec<Odds>,
@@ -41,6 +43,7 @@ impl GameWithOdds {
             away_team_score: remove_quotes(&match_up.v.s),
             home_team_id: match_up.h.tid,
             away_team_id: match_up.v.tid,
+            time_left: match_up.cl.as_ref().map(remove_quotes),
             home_team_abbr: remove_quotes(&match_up.h.ta),
             away_team_abbr: remove_quotes(&match_up.v.ta),
             odds: Vec::new(),

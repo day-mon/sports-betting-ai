@@ -44,6 +44,19 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
         return (home_team_winning === our_prediction) ? 'WITH ODDS' : 'AGAINST ODDS';
     };
 
+    const getGameStatus = () => {
+        if (props.game.start_time.includes('ET')) {
+            return `Starting @ ${props.game.start_time}`
+        } else if (props.game.start_time.includes('Final') || props.game.start_time.includes("Halftime") || props.game.start_time.includes("Tipoff")) {
+            return props.game.start_time
+        } else {
+            return (
+                <span>Current Quarter: {props.game.start_time} {(props.game.time_left && !props.game.start_time.includes("End")) && <span class="text.sm">({props.game.time_left})</span>}</span>
+            )
+        }
+
+    }
+
     // why use props.game? instead of just game?
     // we lose reactivity if we don't use props.game, so don't change it or figure out a better way to do it
 
@@ -69,8 +82,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                     </Show>
                 </div>
             </Show>
-            <div
-                class="flex flex-row justify-center ">{props.game.start_time.includes('ET') ? `Starting @ ${props.game.start_time}` : props.game.start_time.includes('Final') ? props.game.start_time : `Current Quarter: ${props.game.start_time}`}</div>
+            <div class="flex flex-row justify-center ">{getGameStatus()}</div>
             <Show when={props.prediction} keyed>
                 <div class="flex font-extrabold flex-row justify-center ">{`Our Projected Winner:`}
                     <span
@@ -119,7 +131,6 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 )}
             </Transition>
             <Show when={(props.game.home_team_injuries || props.game.away_team_injuries) && (props.game.home_team_injuries?.length > 0 || props.game.home_team_injuries?.length > 0)} keyed>
-                {/* put view injury report in bottom middle of card */}
                 <div class="flex flex-row justify-center">
                     <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300 dark:text-gray-400">⚠️ View Injury Report</span>
                     <InjuryModal header={"Injuries reports are important. Our model does not take these factors into account. If there is a influential player not playing take the prediction with a grain of salt."} injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)}/>
