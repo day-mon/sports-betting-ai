@@ -5,14 +5,18 @@ interface ILoadingButtonProps {
   onClick: () => void;
   loadingWhen: boolean;
   children: any;
-  disabled: boolean
+  disabled: boolean;
 }
 
 export const LoadingButton: Component<ILoadingButtonProps> = (props: ILoadingButtonProps) => {
   return (
     <>
-      <button onclick={() => props.onClick()} disabled={props.loadingWhen || props.disabled} class={`${props.loadingWhen || props.disabled ? 'bg-gray-800/10' : 'bg-gray-800'} max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 
-      hover:hover:${!props.disabled ? 'bg-gray-700/10' : 'bg-gray-700/90' } text-white`}>
+      <button
+        onclick={() => props.onClick()}
+        disabled={props.loadingWhen || props.disabled}
+        class={`${props.loadingWhen || props.disabled ? 'bg-gray-800/10' : 'bg-gray-800'} max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 
+      hover:hover:${!props.disabled ? 'bg-gray-700/10' : 'bg-gray-700/90'} text-white`}
+      >
         <span class="flex">
           <Show when={props.loadingWhen} keyed>
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
