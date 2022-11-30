@@ -51,7 +51,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
             return props.game.start_time
         } else {
             return (
-                <span>Current Quarter: {props.game.start_time} {(props.game.time_left && !props.game.start_time.includes("End") && <span class="text.sm">({props.game.time_left})</span>}</span>
+                <span>Current Quarter: {props.game.start_time} {(props.game.time_left && !props.game.start_time.includes("End")) && <span class="text.sm">({props.game.time_left})</span>}</span>
             )
         }
 
