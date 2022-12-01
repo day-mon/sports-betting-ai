@@ -2,8 +2,16 @@ name: Rust
 
 on:
   push:
-    branches: [ main, ci-test, 30-api-make-an-endpoint-for-the-games ]
+    paths:
+      - '**.rs'
+      - '**.toml'
+      - '.github/workflows/rust.yml'
+    branches: [ main, ci-test ]
   pull_request:
+    paths:
+      - '**.rs'
+      - '**.toml'
+      - '.github/workflows/rust.yml'
     branches: [ main ]
 
 env:

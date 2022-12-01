@@ -1,0 +1,42 @@
+name: Build and Test Solid.js Project
+
+on:
+  push:
+    paths:
+      - '**.js'
+      - '**.json'
+      - '**.lock'
+      - '**.md'
+      - '**.ts'
+      - '**.yml'
+      - '.github/workflows/solid-js.yml'
+      - 'Dockerfile'
+      - 'package.json'
+      - '**.json'
+    branches: [ main, ci-test ]
+    pull_request:
+        paths:
+            - '**.js'
+            - '**.json'
+            - '**.lock'
+            - '**.md'
+            - '**.ts'
+            - '**.yml'
+            - '.github/workflows/solid-js.yml'
+            - 'Dockerfile'
+            - 'package.json'
+            - '**.json'
+        branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm install
+      - run: npm build
+
