@@ -71,8 +71,8 @@ const History: Component = () => {
     let day = date.getDate();
 
     let formattedDate = `${year}-${month}-${day}`;
-    if (localStorage.getItem(formattedDate)) {
-      let games = JSON.parse(localStorage.getItem(formattedDate) as string) as SavedHistory[];
+    if (sessionStorage.getItem(formattedDate)) {
+      let games = JSON.parse(sessionStorage.getItem(formattedDate) as string) as SavedHistory[];
       setHistory(games);
       return;
     }
@@ -93,7 +93,7 @@ const History: Component = () => {
       return;
     }
     const games = (await response.json()) as SavedHistory[];
-    localStorage.setItem(formattedDate, JSON.stringify(games));
+    sessionStorage.setItem(formattedDate, JSON.stringify(games));
     setHistory(games);
     setFuncRan(funcRan() + 1);
     setHistoryLoading(false);

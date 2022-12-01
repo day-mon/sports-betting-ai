@@ -23,7 +23,7 @@ const Bets: Component = () => {
   const [cardsShow, setCardsShow] = createSignal([] as boolean[]);
 
   const fetchPredictions = async () => {
-    let predictions = localStorage.getItem('predictions');
+    let predictions = sessionStorage.getItem('predictions');
     if (predictions) {
       let parsedPredictions = JSON.parse(predictions) as Prediction[];
       let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
@@ -42,7 +42,7 @@ const Bets: Component = () => {
     }
     const data = (await response.json()) as Prediction[];
     setPredictions(data);
-    localStorage.setItem('predictions', JSON.stringify(data));
+    sessionStorage.setItem('predictions', JSON.stringify(data));
     setDisabled(false);
   };
 
