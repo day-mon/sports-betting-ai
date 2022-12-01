@@ -34,7 +34,7 @@ const Bets: Component = () => {
     }
 
     setDisabled(true);
-    const BASE_URL = getBaseUrl();
+    const BASE_URL = getBaseUrl(true);
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
       setDisabled(false);
@@ -48,7 +48,7 @@ const Bets: Component = () => {
 
   const fetchBets = async (refresh?: boolean) => {
     if (!refresh) setLoading(true);
-    const BASE_URL = getBaseUrl();
+    const BASE_URL = getBaseUrl(true);
 
     const res = await fetchHelper(`${BASE_URL}/sports/games`);
 
