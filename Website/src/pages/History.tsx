@@ -16,14 +16,13 @@ const History: Component = () => {
   const [funcRan, setFuncRan] = createSignal(0);
 
   const getBaseUrl = (useRemote?: boolean) => {
-    // check if current url is localhost
     const remoteUrl = 'https://api.accuribet.win';
     if (useRemote) return remoteUrl;
     return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
   };
 
   onMount(async () => {
-    let url = `${getBaseUrl()}/sports/history/dates`;
+    let url = `${getBaseUrl(true)}/sports/history/dates`;
     let response = await fetchHelper(url);
 
     if (!response) {
@@ -79,7 +78,7 @@ const History: Component = () => {
     }
 
     setHistoryLoading(true);
-    let url = `${getBaseUrl()}/sports/history?date=${formattedDate}`;
+    let url = `${getBaseUrl(true)}/sports/history?date=${formattedDate}`;
     let response = await fetchHelper(url);
 
     if (!response) {
@@ -144,13 +143,15 @@ const History: Component = () => {
         <NoData message={'There are no games we have saved :('} />
       </Show>
       <Show when={!loading() && dates().length !== 0} keyed>
-        <div class="flex flex-col items-center mt-15 justify-center w-full h-full">
+        <div class="flex flex-col items-center justify-center w-full h-full">
           <h5 class="text-xl text-white font-bold text-center">Choose a date to see our history on</h5>
           <DateTimePicker
             minDate={yesterdayDate(dates()[0])}
             maxDate={tomorrowDate(dates()[dates().length - 1])}
             dateFormat={'Y-M-D'}
             currentDate={date()!}
+            enableSelectedDateEditor={false}
+            enableSelectedDate={false}
             calendarResponse={async (props) => {
               props.setCalendarState(false);
               if (date()?.toDateString() == props.currentDate?.toDateString() && funcRan() !== 0) return;
