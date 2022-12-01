@@ -38,5 +38,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npm install
+        working-directory: ./Website
       - run: npm build
+        working-directory: ./Website
 
