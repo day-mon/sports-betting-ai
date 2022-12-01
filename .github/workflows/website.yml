@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 19.2
       - run: npm install
         working-directory: ./Website
       - run: npm run build
