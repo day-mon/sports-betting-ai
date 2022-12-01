@@ -14,19 +14,19 @@ on:
       - 'package.json'
       - '**.json'
     branches: [ main, ci-test ]
-    pull_request:
-        paths:
-            - '**.js'
-            - '**.json'
-            - '**.lock'
-            - '**.md'
-            - '**.ts'
-            - '**.yml'
-            - '.github/workflows/website.yml'
-            - 'Dockerfile'
-            - 'package.json'
-            - '**.json'
-        branches: [ main ]
+  pull_request:
+    paths:
+      - '**.js'
+      - '**.json'
+      - '**.lock'
+      - '**.md'
+      - '**.ts'
+      - '**.yml'
+      - '.github/workflows/website.yml'
+      - 'Dockerfile'
+      - 'package.json'
+      - '**.json'
+    branches: [ main ]
 
 jobs:
   build-and-test:
