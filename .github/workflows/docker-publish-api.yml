@@ -2,6 +2,11 @@ name: Docker Build
 
 on:
   push:
+    paths:
+      - '**.rs'
+      - '**.toml'
+      - '.github/workflows/rust.yml'
+      - 'Dockerfile'
     branches: [ main, ci-test ]
 
 env:
