@@ -16,7 +16,7 @@
 
 
 ## About The Project
-This project was a final project for CS 1783 (Artificial Intelligence) at the University of Pittsburgh.
+This project was a final project for CS 1783 (Artificial Intelligence) at the University of Pittsburgh at Johnstown.
 
 
 ## Built With
