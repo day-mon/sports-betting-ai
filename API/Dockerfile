@@ -1,6 +1,13 @@
 # Use the old image as the base
 FROM ghcr.io/day-mon/sports-betting-ai/api:main
 
+# Install the cargo command
+RUN apt-get update \
+  && apt-get install -y cargo \
+  && apt-get autoremove \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./src/ src/
