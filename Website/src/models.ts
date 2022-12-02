@@ -53,3 +53,4 @@ export interface SavedGame {
   winner: string;
   our_projected_winner: string;
   date: string;
+}
