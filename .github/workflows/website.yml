@@ -10,7 +10,7 @@ on:
       - '**.ts'
       - '**.yml'
       - '.github/workflows/website.yml'
-      - 'Dockerfile'
+      - 'Website/Dockerfile'
       - 'package.json'
       - '**.json'
     branches: [ main, ci-test ]
