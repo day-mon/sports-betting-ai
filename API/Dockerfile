@@ -12,6 +12,7 @@ WORKDIR /app
 COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./src/ src/
 
+
 # Check if there are any new dependencies
 RUN cargo check
 
