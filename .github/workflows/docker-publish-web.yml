@@ -2,7 +2,31 @@ name: Docker Build
 
 on:
   push:
+    paths:
+      - '**.js'
+      - '**.json'
+      - '**.lock'
+      - '**.md'
+      - '**.ts'
+      - '**.yml'
+      - '.github/workflows/website.yml'
+      - 'Website/Dockerfile'
+      - 'package.json'
+      - '**.json'
     branches: [ main, ci-test ]
+  pull_request:
+    paths:
+      - '**.js'
+      - '**.json'
+      - '**.lock'
+      - '**.md'
+      - '**.ts'
+      - '**.yml'
+      - '.github/workflows/website.yml'
+      - 'Dockerfile'
+      - 'package.json'
+      - '**.json'
+    branches: [ main ]
 
 env:
   IMAGE_NAME: website
