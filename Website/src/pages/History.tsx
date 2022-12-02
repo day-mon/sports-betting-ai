@@ -65,10 +65,9 @@ const History: Component = () => {
 
   const getGamesOnDate = async (date?: Date) => {
     if (!date) return;
-
     let year = date.getFullYear();
     let month = date.getMonth() + 1;
-    let day = date.getDate();
+    let day = ('0' + date.getDate()).slice(-2);
 
     let formattedDate = `${year}-${month}-${day}`;
     if (sessionStorage.getItem(formattedDate)) {
