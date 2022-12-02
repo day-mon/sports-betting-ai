@@ -3,7 +3,7 @@
 [![Stargazers][stars-shield]][stars-url]
 
 
-<h2 align="center">Acuribet</h2>
+<h2 align="center">Accuribet</h2>
 <p align="center">
   A new way to bet on sports. Accuribet utilizes machine learning to predict the outcome of sporting events. We use 98 different data points to predict the outcome of a game. In our testing phase we have been able to predict the outcome of games with 70% accuracy.
   <br/>
