@@ -11,7 +11,6 @@ on:
       - '**.yml'
       - '.github/workflows/website.yml'
       - 'Website/Dockerfile'
-      - 'package.json'
       - '**.json'
     branches: [ main, ci-test ]
   pull_request:
@@ -23,8 +22,7 @@ on:
       - '**.ts'
       - '**.yml'
       - '.github/workflows/website.yml'
-      - 'Dockerfile'
-      - 'package.json'
+      - 'Website/Dockerfile'
       - '**.json'
     branches: [ main ]
 
