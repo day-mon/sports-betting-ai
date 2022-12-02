@@ -4,7 +4,6 @@ This is a quick guide to get you started with Docker.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Environment variables
 - `DATABASE_URL` - The URL of the database. This is used for saving Historical data.
