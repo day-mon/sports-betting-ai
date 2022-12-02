@@ -13,7 +13,7 @@ COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./src/ src/
 
 # Check if there are any new dependencies and rebuild them if necessary
-RUN cargo check && cargo build --release -j 32
+RUN cargo check || cargo build --release -j 32
 
 # Copy the TensorFlow libraries from the old image to the current image
 RUN find . -type f -name libtensorflow.so.1 -exec cp {} . \; \
