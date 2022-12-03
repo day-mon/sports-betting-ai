@@ -1,9 +1,11 @@
 use std::ops::DerefMut;
+use std::sync::Arc;
 
 use actix_web::{HttpResponse, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
 use log::{error, warn};
+use redis::Client;
 use serde_derive::Deserialize;
 
 use crate::util::string::remove_quotes;
@@ -12,7 +14,7 @@ use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date, Injuries};
-use crate::util::io_helper::get_t_from_source;
+use crate::util::io_helper::{get_from_cache, get_t_from_source};
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
@@ -26,16 +28,20 @@ pub struct PredictQueryParams {
 
 pub async fn predict_all(
     params: web::Query<PredictQueryParams>,
+    redis: web::Data<Option<Client>>
 ) -> Result<HttpResponse, ApiError> {
     let inner = params.into_inner();
     let model_name = inner.model_name;
     let dir = std::env::var("MODEL_DIR").unwrap();
-
     let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
     if !model_exist {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
+    redis.
+
+    if let Some(response) = get_from_cache(redis.clone()
+
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
@@ -69,13 +75,10 @@ pub async fn history(
 ) -> Result<HttpResponse, ApiError> {
     let param = params.into_inner();
     let date = param.date;
-    let mut pooled_conn = match pool.get() {
-        Ok(pool) => pool,
-        Err(e) => {
-            warn!("Could not get connection from pool {}", e);
-            return Err(ApiError::DatabaseError)
-        }
-    };
+    let mut pooled_conn = pool.get().map_err(|error| {
+        warn!("Could not get connection from pool. Error: {}", error);
+        ApiError::DatabaseError
+    })?;
     let connection = pooled_conn.deref_mut();
     let games =  get_saved_games_by_date(&date, connection)?;
 
@@ -85,13 +88,10 @@ pub async fn history(
 pub async fn history_dates(
     pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
 ) -> Result<HttpResponse, ApiError> {
-    let mut pooled_conn = match pool.get() {
-        Ok(pool) => pool,
-        Err(e) => {
-            warn!("Could not get connection from pool {}", e);
-            return Err(ApiError::DatabaseError)
-        }
-    };
+    let mut pooled_conn = pool.get().map_err(|error| {
+        warn!("Could not get connection from pool. Error: {}", error);
+        ApiError::DatabaseError
+    })?;
     let connection = pooled_conn.deref_mut();
     let dates = get_data_dates(connection)?;
     Ok(HttpResponse::Ok().json(dates))
@@ -108,7 +108,6 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
             warn!("Could not get odds");
             return Ok(HttpResponse::Ok().json(g_w_o))
         }
-
     };
     // game_odds.page_props.odds_tables.retain(|go| go.is_some());
    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {

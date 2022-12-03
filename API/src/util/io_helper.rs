@@ -1,7 +1,9 @@
 use std::{env, fs};
 use std::fs::File;
 use std::path::Path;
-use log::{error};
+use diesel::serialize::IsNull::No;
+use log::{error, warn};
+use redis::{Client, Commands, RedisResult};
 use serde::de::DeserializeOwned;
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
@@ -95,4 +97,20 @@ pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, A
     };
     Ok(generic)
 }
+
+pub fn get_from_cache(
+    redis_client_opt: Option<Client>,
+    model_name: &String
+) -> Option<String> {
+    let redis_client = redis_client_opt?;
+    let redis_connection_result = redis_client.get_connection();
+    let mut redis_connection = redis_connection_result
+        .map_err(|err| error!("Error getting Redis connection. Error: {}", err))
+        .ok()?;
+    let prediction_key = format!("{}", model_name);
+    let value: RedisResult<String> = redis_connection.get(prediction_key);
+    value.ok()
+}
+
+
 

@@ -20,6 +20,7 @@ tensorflow = "0.16.0"
 protobuf = "3.2.0"
 log = "0.4.17"
 structopt = "0.3.23"
+redis = { version = "0.22.1 ", features = ["json"]}
 thiserror = "1.0.37"
 diesel = { version = "2.0.2", features = ["postgres", "r2d2"] }
 dotenvy = "0.15"
