@@ -3,7 +3,7 @@ use std::fs::File;
 use std::path::Path;
 
 use log::{debug, error};
-use redis::{Client, Commands, RedisResult};
+use redis::{Client, Commands};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use crate::models::api_error::ApiError;

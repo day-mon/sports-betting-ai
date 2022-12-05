@@ -5,8 +5,6 @@ use actix_web::{App, HttpServer, web};
 use actix_web::middleware::Logger;
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
-use env_logger::Env;
-use log::{error, info, warn};
 use routes::nn;
 
 mod routes;
@@ -14,16 +12,21 @@ mod models;
 mod util;
 mod services;
 
+extern crate emoji_logger;
+#[macro_use] extern crate log;
+
+
+const TENSOR_FLOW_LOGGING_FLAG: &str = "TF_CPP_MIN_LOG_LEVEL";
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init_from_env(env::var("LOG_LEVEL").unwrap_or_else(Env::default()));
+    emoji_logger::init_custom_env("LOG_LEVEL");
     let endpoint = format!("0.0.0.0:{}", 8080);
 
-    env::set_var("TF_CPP_MIN_LOG_LEVEL", "2");
+
+    env::set_var(TENSOR_FLOW_LOGGING_FLAG, "2");
 
     let model_dir = env::var("MODEL_DIR").unwrap_or_else(|_| {
-        // exit the process
         error!("MODEL_DIR environment variable not set");
         std::process::exit(1);
     });
@@ -96,4 +99,3 @@ async fn main() -> std::io::Result<()> {
         .await
 
 }
-

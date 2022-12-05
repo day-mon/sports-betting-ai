@@ -1,6 +1,4 @@
 use std::ops::DerefMut;
-use std::sync::Arc;
-
 use actix_web::{HttpResponse, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
