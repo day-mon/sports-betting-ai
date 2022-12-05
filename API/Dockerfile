@@ -31,6 +31,8 @@ RUN apt-get update \
 # Set the environment variables and expose the required port
 ENV MODEL_DIR /app/model
 ENV DATA_DIR /app/data
+ENV LOG_LEVEL info
+
 EXPOSE 8080
 
 # Set the entrypoint to the sports-betting-api-rs binary

@@ -20,7 +20,10 @@ const Bets: Component = () => {
   const [error, setError] = createSignal(false);
   const [predictions, setPredictions] = createSignal([] as Prediction[]);
   const [disabled, setDisabled] = createSignal(false);
+  // fill the setCardsShow with false values to hide the cards
+
   const [cardsShow, setCardsShow] = createSignal([] as boolean[]);
+  const [expanded, setExpanded] = createSignal(false);
 
   const fetchPredictions = async () => {
     let predictions = sessionStorage.getItem('predictions');
