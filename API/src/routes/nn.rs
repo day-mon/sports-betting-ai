@@ -1,9 +1,9 @@
 use std::ops::DerefMut;
-
 use actix_web::{HttpResponse, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
-use log::{error, warn};
+use log::{debug, error, warn};
+use redis::Client;
 use serde_derive::Deserialize;
 
 use crate::util::string::remove_quotes;
@@ -12,7 +12,8 @@ use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date, Injuries};
-use crate::util::io_helper::get_t_from_source;
+use crate::models::prediction::Prediction;
+use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
@@ -26,22 +27,36 @@ pub struct PredictQueryParams {
 
 pub async fn predict_all(
     params: web::Query<PredictQueryParams>,
+    redis: web::Data<Option<Client>>
 ) -> Result<HttpResponse, ApiError> {
     let inner = params.into_inner();
     let model_name = inner.model_name;
     let dir = std::env::var("MODEL_DIR").unwrap();
-
     let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
+
     if !model_exist {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
+
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
     if daily_games.gs.g.is_empty() {
         return Err(ApiError::GamesNotFound)
     }
+
+    let game_key =  &daily_games.gs.g.iter().map(|gm| remove_quotes(&gm.gid)).collect::<Vec<String>>().join("_");
+    let prediction_key = format!("{}:{}", model_name, game_key);
+
+    let client = redis.into_inner();
+    if let Some(cached_response) = get_from_cache::<Vec<Prediction>>(&client, &prediction_key) {
+        debug!("Cache Hit!");
+        return Ok(HttpResponse::Ok().json(cached_response))
+    }
+
+    debug!("Cache Miss");
+
 
     let date = remove_quotes(&daily_games.gs.gdte);
     let tids: Vec<Match> = daily_games.gs.g.iter().map(|g|
@@ -56,6 +71,7 @@ pub async fn predict_all(
 
     let model_data = get_model_data(&tids, &date).await?;
     let prediction = call_model(&model_data, &tids, &model_name)?;
+    store_in_cache(&client, &prediction_key, &prediction);
     Ok(HttpResponse::Ok().json(prediction))
 }
 #[derive(Deserialize)]
@@ -69,13 +85,10 @@ pub async fn history(
 ) -> Result<HttpResponse, ApiError> {
     let param = params.into_inner();
     let date = param.date;
-    let mut pooled_conn = match pool.get() {
-        Ok(pool) => pool,
-        Err(e) => {
-            warn!("Could not get connection from pool {}", e);
-            return Err(ApiError::DatabaseError)
-        }
-    };
+    let mut pooled_conn = pool.get().map_err(|error| {
+        warn!("Could not get connection from pool. Error: {}", error);
+        ApiError::DatabaseError
+    })?;
     let connection = pooled_conn.deref_mut();
     let games =  get_saved_games_by_date(&date, connection)?;
 
@@ -85,13 +98,10 @@ pub async fn history(
 pub async fn history_dates(
     pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
 ) -> Result<HttpResponse, ApiError> {
-    let mut pooled_conn = match pool.get() {
-        Ok(pool) => pool,
-        Err(e) => {
-            warn!("Could not get connection from pool {}", e);
-            return Err(ApiError::DatabaseError)
-        }
-    };
+    let mut pooled_conn = pool.get().map_err(|error| {
+        warn!("Could not get connection from pool. Error: {}", error);
+        ApiError::DatabaseError
+    })?;
     let connection = pooled_conn.deref_mut();
     let dates = get_data_dates(connection)?;
     Ok(HttpResponse::Ok().json(dates))
@@ -108,7 +118,6 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
             warn!("Could not get odds");
             return Ok(HttpResponse::Ok().json(g_w_o))
         }
-
     };
     // game_odds.page_props.odds_tables.retain(|go| go.is_some());
    let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {

@@ -24,6 +24,7 @@ COPY --from=build /app/src/model /app/model
 
 ENV MODEL_DIR /app/model
 ENV DATA_DIR /app/data
+ENV LOG_LEVEL info
 
 # this is really bad because i have root perms but i just need this to work rn tbh
 
