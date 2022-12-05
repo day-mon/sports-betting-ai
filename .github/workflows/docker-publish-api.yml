@@ -1,47 +1,8 @@
-name: Docker Build
-
-on:
-  push:
-    paths:
-      - '**.rs'
-      - '**.toml'
-      - 'API/Dockerfile'
-      - '.github/workflows/docker-publish-api.yml'
-    branches: [ main, ci-test ]
-  pull_request:
-    paths:
-      - '**.rs'
-      - '**.toml'
-      - 'API/Dockerfile'
-      - '.github/workflows/docker-publish-api.yml'
-    branches: [ main ]
-
-env:
-  IMAGE_NAME: api
-
-jobs:
-  build-api:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Build image
-        run: docker build . --build-arg VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,') --file Dockerfile --tag $IMAGE_NAME
-        working-directory: ./API
-
-      - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-        working-directory: ./API
-
-      - name: Push image
-        run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:latest
-          docker push --all-tags $IMAGE_ID
-        working-directory: ./API
+build:
+  uses: ectobit/reusable-workflows/.github/workflows/buildx.yaml@main
+  needs: check
+  with:
+    image: ectobit/bond
+  secrets:
+    container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+    container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
