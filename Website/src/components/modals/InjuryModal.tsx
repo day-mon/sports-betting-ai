@@ -12,7 +12,6 @@ const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
   const injuries = props.injuries;
 
   const keys = Object.keys(injuries[0]);
-  console.log(keys)
 
 
   let game_id_index = keys.indexOf('game_id');
@@ -28,8 +27,6 @@ const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
       return 1;
     }
   });
-
-  console.log(keys)
 
   return (
     <Modal show={props.show} onClose={props.onClose}>
