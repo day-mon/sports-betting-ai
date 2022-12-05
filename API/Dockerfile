@@ -1,25 +1,14 @@
-# Use the old image as the base
-FROM ghcr.io/day-mon/sports-betting-ai/api:main
-
-# Install the cargo command
-RUN apt-get update \
-  && apt-get install -y cargo \
-  && apt-get autoremove \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+FROM rust:latest AS build
 
 WORKDIR /app
 COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./src/ src/
-
-# Check if there are any new dependencies and rebuild them if necessary
-RUN cargo check || cargo build --release -j 32
-
-# Copy the TensorFlow libraries from the old image to the current image
+RUN cargo build --release -j 32
 RUN find . -type f -name libtensorflow.so.1 -exec cp {} . \; \
     && find . -type f -name libtensorflow_framework.so.1 -exec cp {} . \;
 
-# Install the required system packages
+FROM debian:buster-slim
+
 RUN apt-get update \
     && apt-get install -y \
         ca-certificates \
@@ -28,12 +17,16 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the environment variables and expose the required port
+WORKDIR /app
+COPY --from=build /app/target/release/sports-betting-api-rs /usr/local/bin/sports-betting-api-rs
+COPY --from=build /app/*.so.1 /usr/lib/
+COPY --from=build /app/src/model /app/model
+
 ENV MODEL_DIR /app/model
 ENV DATA_DIR /app/data
 ENV LOG_LEVEL info
 
-EXPOSE 8080
+# this is really bad because i have root perms but i just need this to work rn tbh
 
-# Set the entrypoint to the sports-betting-api-rs binary
+EXPOSE 8080
 ENTRYPOINT ["sports-betting-api-rs"]
