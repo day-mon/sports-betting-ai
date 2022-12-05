@@ -3,8 +3,19 @@ import { fetchHelper } from '../util/fetchHelper';
 import { Loading } from '../components/Loading';
 import { NoData } from '../components/NoData';
 import { DateTimePicker } from 'date-time-picker-solid';
-import { SavedGame, SavedHistory } from '../models';
+import {Game, SavedGame, SavedHistory} from '../models';
 import SavedGameCard from '../components/SavedGameCard';
+
+export const getWinner = (game?: SavedGame | Game) => {
+  if (!game) {
+    return "Couldn't find a projected winner";
+  }
+  const home_score = parseInt(game.home_team_score);
+  const away_score = parseInt(game.away_team_score);
+
+  return home_score > away_score ? game.home_team_name : game.away_team_name;
+};
+
 
 const History: Component = () => {
   const [error, setError] = createSignal(false);
@@ -22,7 +33,7 @@ const History: Component = () => {
   };
 
   onMount(async () => {
-    let url = `${getBaseUrl(true)}/sports/history/dates`;
+    let url = `${getBaseUrl()}/sports/history/dates`;
     let response = await fetchHelper(url);
 
     if (!response) {
@@ -77,7 +88,7 @@ const History: Component = () => {
     }
 
     setHistoryLoading(true);
-    let url = `${getBaseUrl(true)}/sports/history?date=${formattedDate}`;
+    let url = `${getBaseUrl()}/sports/history?date=${formattedDate}`;
     let response = await fetchHelper(url);
 
     if (!response) {
@@ -108,15 +119,6 @@ const History: Component = () => {
     });
   };
 
-  const getWinner = (game?: SavedGame) => {
-    if (!game) {
-      return "Couldn't find a projected winner";
-    }
-    const home_score = parseInt(game.home_team_score);
-    const away_score = parseInt(game.away_team_score);
-
-    return home_score > away_score ? game.home_team_name : game.away_team_name;
-  };
 
   const getWinPercentage = (games: SavedHistory[]) => {
     let won = games.filter((game) => getWinner(game.game) == game.game.our_projected_winner).length;
@@ -148,7 +150,7 @@ const History: Component = () => {
             minDate={yesterdayDate(dates()[0])}
             maxDate={tomorrowDate(dates()[dates().length - 1])}
             dateFormat={'Y-M-D'}
-            currentDate={date()!}
+            currentDate={dates()[dates().length - 1]}
             enableSelectedDateEditor={false}
             enableSelectedDate={false}
             calendarResponse={async (props) => {

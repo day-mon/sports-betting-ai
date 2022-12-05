@@ -130,7 +130,7 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     for mut item in odds_table_model.game_rows.into_iter() {
         let game_view = item.game_view;
         let Some(mut game_to_edit) = g_w_o.iter_mut().find(|gwo| gwo.home_team_name == game_view.home_team.full_name || gwo.away_team_name == game_view.away_team.full_name) else {
-            warn!("Couldnt find a game for {}", game_view.home_team.full_name);
+            debug!("Couldnt find a game for {}", game_view.home_team.full_name);
             continue
         };
 
