@@ -17,7 +17,7 @@ mod services;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init_from_env(Env::default().default_filter_or("info"));
+    env_logger::init_from_env(env::var("LOG_LEVEL").unwrap_or_else(Env::default()));
     let endpoint = format!("0.0.0.0:{}", 8080);
 
     env::set_var("TF_CPP_MIN_LOG_LEVEL", "2");

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use actix_web::{HttpResponse, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
-use log::{error, warn};
+use log::{debug, error, warn};
 use redis::Client;
 use serde_derive::Deserialize;
 
@@ -14,7 +14,8 @@ use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
 use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date, Injuries};
-use crate::util::io_helper::{get_from_cache, get_t_from_source};
+use crate::models::prediction::Prediction;
+use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
@@ -34,13 +35,11 @@ pub async fn predict_all(
     let model_name = inner.model_name;
     let dir = std::env::var("MODEL_DIR").unwrap();
     let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
+
     if !model_exist {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
-    redis.
-
-    if let Some(response) = get_from_cache(redis.clone()
 
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
@@ -48,6 +47,18 @@ pub async fn predict_all(
     if daily_games.gs.g.is_empty() {
         return Err(ApiError::GamesNotFound)
     }
+
+    let game_key =  &daily_games.gs.g.iter().map(|gm| remove_quotes(&gm.gid)).collect::<Vec<String>>().join("_");
+    let prediction_key = format!("{}:{}", model_name, game_key);
+
+    let client = redis.into_inner();
+    if let Some(cached_response) = get_from_cache::<Vec<Prediction>>(&client, &prediction_key) {
+        debug!("Cache Hit!");
+        return Ok(HttpResponse::Ok().json(cached_response))
+    }
+
+    debug!("Cache Miss");
+
 
     let date = remove_quotes(&daily_games.gs.gdte);
     let tids: Vec<Match> = daily_games.gs.g.iter().map(|g|
@@ -62,6 +73,7 @@ pub async fn predict_all(
 
     let model_data = get_model_data(&tids, &date).await?;
     let prediction = call_model(&model_data, &tids, &model_name)?;
+    store_in_cache(&client, &prediction_key, &prediction);
     Ok(HttpResponse::Ok().json(prediction))
 }
 #[derive(Deserialize)]
