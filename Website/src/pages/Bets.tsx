@@ -6,6 +6,7 @@ import { Loading } from '../components/Loading';
 import { NoData } from '../components/NoData';
 import { fetchHelper } from '../util/fetchHelper';
 import { LoadingButton } from '../components/LoadingButton';
+import {getWinner} from "./History";
 
 const getBaseUrl = (useRemote?: boolean) => {
   // check if current url is localhost
@@ -20,10 +21,7 @@ const Bets: Component = () => {
   const [error, setError] = createSignal(false);
   const [predictions, setPredictions] = createSignal([] as Prediction[]);
   const [disabled, setDisabled] = createSignal(false);
-  // fill the setCardsShow with false values to hide the cards
-
   const [cardsShow, setCardsShow] = createSignal([] as boolean[]);
-  const [expanded, setExpanded] = createSignal(false);
 
   const fetchPredictions = async () => {
     let predictions = sessionStorage.getItem('predictions');
@@ -37,7 +35,7 @@ const Bets: Component = () => {
     }
 
     setDisabled(true);
-    const BASE_URL = getBaseUrl(true);
+    const BASE_URL = getBaseUrl();
     const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
     if (!response) {
       setDisabled(false);
@@ -51,7 +49,7 @@ const Bets: Component = () => {
 
   const fetchBets = async (refresh?: boolean) => {
     if (!refresh) setLoading(true);
-    const BASE_URL = getBaseUrl(true);
+    const BASE_URL = getBaseUrl();
 
     const res = await fetchHelper(`${BASE_URL}/sports/games`);
 
@@ -79,6 +77,18 @@ const Bets: Component = () => {
 
   onMount(async () => {
     await fetchBets();
+
+    let predictions = sessionStorage.getItem('predictions');
+    if (predictions) {
+      let parsedPredictions = JSON.parse(predictions) as Prediction[];
+      let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
+      if (allGamesInPredictions) {
+        setLoading(false);
+        setPredictions(parsedPredictions);
+        return;
+      }
+    }
+
     setLoading(false);
   });
 
@@ -111,8 +121,16 @@ const Bets: Component = () => {
         }
       }
 
-      if (a.start_time.includes('Final')) return 1;
-      if (b.start_time.includes('Final')) return -1;
+      if (a.start_time.includes('Final')) {
+        let prediction = findPrediction(a);
+        let won = prediction?.predicted_winner == getWinner(a)
+        return won ? -1 : 1;
+      }
+      if (b.start_time.includes('Final'))  {
+        let prediction = findPrediction(a);
+        let won = prediction?.predicted_winner == getWinner(a)
+        return won ? -1 : 1;
+      }
 
       const aTime = a.start_time.split(' ')[0].split(':');
       const bTime = b.start_time.split(' ')[0].split(':');

@@ -62,7 +62,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
   // we lose reactivity if we don't use props.game, so don't change it or figure out a better way to do it
 
   return (
-    <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-700/10 text-white">
+    <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-800 text-white">
       <h6 class="flex mb-1 text-2xl flex-row justify-center items-center">
         {`${props.game.home_team_name} vs ${props.game.away_team_name}`}
       </h6>
@@ -89,7 +89,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
       <Show when={props.game.odds && props.game.odds.length !== 0}>
         <div class="flex flex-row justify-center">
           <span onclick={props.setShowDropdown} class="text-xs cursor-pointer hover:underline text-white">
-          🎲 View Odds
+              {!props.showDropdown ? '🎲 View Odds' : '🎲 Close Odds'}
           </span>
         </div>
       </Show>

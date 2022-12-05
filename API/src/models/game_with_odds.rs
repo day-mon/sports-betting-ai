@@ -130,6 +130,7 @@ pub fn get_saved_games_by_date(date: &String, con: &mut PgConnection) -> Result<
     let mut games_with_injuries: Vec<(SavedGame, Vec<InjuryStore>)> = Vec::new();
     for game in games
     {
+
         let injs = get_injuries_by_game_id(&game.game_id, con)?;
         games_with_injuries.push((game, injs));
     }
@@ -186,18 +187,17 @@ impl Injuries {
         }
     }
 }
-#[derive(Eq, PartialEq, Debug, Identifiable, Insertable, Queryable, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Identifiable, Insertable, Queryable, Serialize, Deserialize)]
 #[diesel(belongs_to(SavedGame, foreign_key = game_id))]
 #[diesel(primary_key(game_id, player))]
-#[diesel(table_name= injuries)]
+#[diesel(table_name = injuries)]
 pub struct InjuryStore {
     pub player: String,
     pub team: String,
     pub position: String,
     pub status: String,
-    pub game_id: String,
     pub injury: String,
+    pub game_id: String,
 }
 
 impl InjuryStore {
