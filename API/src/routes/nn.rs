@@ -23,6 +23,7 @@ const DAILY_INJURIES_URL: &str = "https://www.rotowire.com/basketball/tables/inj
 #[derive(Deserialize)]
 pub struct PredictQueryParams {
     pub model_name: String,
+    pub game_date: Option<String>
 }
 
 pub async fn predict_all(
@@ -31,12 +32,34 @@ pub async fn predict_all(
 ) -> Result<HttpResponse, ApiError> {
     let inner = params.into_inner();
     let model_name = inner.model_name;
-    let dir = std::env::var("MODEL_DIR").unwrap();
-    let model_exist = directory_exists(&format!("{}/{}", dir, model_name));
+    let dir = std::env::var("MODEL_DIR").map_err(|error| {
+        error!("Error while attempting to get model directory env variable. This should've never happened?. Error: {}", error);
+        ApiError::Unknown
+    })?;
 
-    if !model_exist {
+
+    if !directory_exists(&format!("{}/{}", dir, model_name)) {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
+    }
+
+
+    if inner.game_date.is_some()
+    {
+        let date = inner.game_date.unwrap();
+        let data_dir = std::env::var("DATA_DIR").map_err(|error| {
+            error!("Error while attempting to get data directory env variable. This should've never happened?. Error: {}", error);
+            ApiError::Unknown
+        })?;
+
+        if !directory_exists(&format!("{}/{}.csv", data_dir, date)) {
+            error!("Could find data with the date: {}", date);
+            return Err(ApiError::DatabaseError)
+        }
+
+        let (model_data, matches) = get_model_data(None, &date).await?;
+        let prediction = call_model(&model_data, &matches.unwrap(), &model_name)?;
+        return Ok(HttpResponse::Ok().json(prediction))
     }
 
 
@@ -46,7 +69,7 @@ pub async fn predict_all(
         return Err(ApiError::GamesNotFound)
     }
 
-    let game_key =  &daily_games.gs.g.iter().map(|gm| remove_quotes(&gm.gid)).collect::<Vec<String>>().join("_");
+    let game_key = &daily_games.gs.g.iter().map(|gm| remove_quotes(&gm.gid)).collect::<Vec<String>>().join("_");
     let prediction_key = format!("{}:{}", model_name, game_key);
 
     let client = redis.into_inner();
@@ -59,18 +82,10 @@ pub async fn predict_all(
 
 
     let date = remove_quotes(&daily_games.gs.gdte);
-    let tids: Vec<Match> = daily_games.gs.g.iter().map(|g|
-        Match {
-            game_id: remove_quotes(&g.gid),
-            home_team_id: g.h.tid,
-            away_team_id: g.v.tid,
-            home_team_name: format!("{} {}", remove_quotes(&g.h.tc), remove_quotes(&g.h.tn)),
-            away_team_name: format!("{} {}", remove_quotes(&g.v.tc), remove_quotes(&g.v.tn))
-        }
-    ).collect();
 
-    let model_data = get_model_data(&tids, &date).await?;
-    let prediction = call_model(&model_data, &tids, &model_name)?;
+    let matches: Vec<Match> = daily_games.gs.g.into_iter().map(Match::from_game).collect();
+    let (model_data, _) = get_model_data(Some(&matches), &date).await?;
+    let prediction = call_model(&model_data, &matches, &model_name)?;
     store_in_cache(&client, &prediction_key, &prediction);
     Ok(HttpResponse::Ok().json(prediction))
 }

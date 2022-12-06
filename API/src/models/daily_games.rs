@@ -1,6 +1,8 @@
+use polars::prelude::DataFrame;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
+use crate::util::string::remove_quotes;
 
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -97,4 +99,19 @@ pub struct Match {
     pub home_team_name: String,
     pub away_team_id : i64,
     pub away_team_name: String
+}
+
+impl Match {
+    pub fn from_game(game: G) -> Self {
+        Match {
+            game_id: remove_quotes(&game.gid),
+            home_team_id: game.h.tid,
+            away_team_id: game.v.tid,
+            home_team_name: format!("{} {}", remove_quotes(&game.h.tc), remove_quotes(&game.h.tn)),
+            away_team_name: format!("{} {}", remove_quotes(&game.v.tc), remove_quotes(&game.v.tn))
+        }
+    }
+
+    pub fn from_dataframe(df: &DataFrame) -> Self {
+    }
 }
