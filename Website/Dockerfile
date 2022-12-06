@@ -1,4 +1,4 @@
-FROM node:14-slim
+FROM node:14-slim as builder
 
 WORKDIR /app
 
@@ -16,6 +16,11 @@ COPY ./ /app
 # removes the dist/ folder before compiling its code
 RUN npm run build
 
-EXPOSE 3000
+FROM nginx:alpine
 
-CMD ["npm", "run", "startprod"] 
+EXPOSE 80
+
+COPY --from=builder ./app/dist /usr/share/nginx/html
+COPY --from=builder ./app/nginx.conf /etc/nginx/conf.d/default.conf
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

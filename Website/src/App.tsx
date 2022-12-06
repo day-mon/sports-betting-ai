@@ -5,6 +5,7 @@ import { lazy } from 'solid-js';
 const Bets = lazy(() => import('./pages/Bets'));
 const Home = lazy(() => import('./pages/Home'));
 const History = lazy(() => import('./pages/History'));
+const Error = lazy(() => import('./pages/Error'));
 
 const App: Component = () => {
   return (
@@ -15,7 +16,8 @@ const App: Component = () => {
           <Routes>
             <Route path="/" component={Home} />
             <Route path="/bets" component={Bets} />
-            <Route path={'/history'} component={History} />
+            <Route path="/history" component={History} />
+            <Route path="*" component={Error} />
           </Routes>
         </div>
       </div>
