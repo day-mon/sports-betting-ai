@@ -1,9 +1,8 @@
 use std::env;
 use std::fs::File;
 use log::{error};
-use polars::frame::DataFrame;
 use polars::io::SerReader;
-use polars::prelude::{CsvReader};
+use polars::prelude::{CsvReader, DataFrame};
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
@@ -16,7 +15,10 @@ const TEAM_DATA_URL: &str = "https://lively-fire-943d.alexanderjoemc.workers.dev
 
 
 pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataFrame, ApiError> {
-    let data_dir = env::var("DATA_DIR").unwrap();
+    let data_dir = env::var("DATA_DIR").map_err(|error| {
+        error!("Some how you got an error while trying to get the data_dir. Here's the error: {}", error);
+        ApiError::Unknown
+    })?;
 
     let file_name = format!("{}/{}.csv", data_dir, date);
     if let Ok(file) = File::open(file_name) {
@@ -25,50 +27,47 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
             .has_header(true)
             .low_memory(true)
             .finish()
-            .expect("Unable to read csv");
-
+            .map_err(|error| {
+                error!("Error occurred trying to read CSV. Error: {:?}", error);
+                ApiError::IOError
+            })?;
 
         convert_rows_to_f64(&mut df);
 
         return Ok(drop_columns(df));
     }
 
-    let response = match reqwest::get(TEAM_DATA_URL).await {
-        Ok(res) => res,
-        Err(err) => {
-            error!("Error getting team data: {}", err);
-            return Err(ApiError::DependencyError)
-        }
-    };
+    let response =  reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
+        error!("Error getting team data: {}", error);
+        ApiError::DependencyError
+    })?;
 
-    let response_body = match response.text().await  {
-        Ok(res) => res,
-        Err(err) => {
-            error!("Error getting team data: {}", err);
-            return Err(ApiError::DependencyError)
-        }
-    };
+    let response_body = response.text().await.map_err(|error| {
+        error!("Error getting team data: {}", error);
+        ApiError::DependencyError
+    })?;
 
-    let daily_stats  = match serde_json::from_str::<TeamStats>(&response_body) {
-        Ok(stats) => stats,
-        Err(err) => {
-            error!("Error occurred trying to deserialize response body: {}", err);
-            return Err(ApiError::DeserializationError)
-        }
-    };
+    let daily_stats = serde_json::from_str::<TeamStats>(&response_body).map_err(|error| {
+        error!("Error occurred trying to deserialize response body: {}", error);
+        ApiError::DeserializationError
+    })?;
 
     let written = write_to_csv(matches, &daily_stats, date)?;
 
-    let mut df = drop_columns(CsvReader::new(written)
+    let mut df = CsvReader::new(written)
         .infer_schema(None)
         .has_header(true)
         .low_memory(true)
         .finish()
-        .expect("Error happened here"));
+        .map_err(|error| {
+            error!("Error occurred trying to read CSV. Error: {:?}", error);
+            ApiError::IOError
+        })?;
+
 
     convert_rows_to_f64(&mut df);
 
-    Ok(df)
+    Ok(drop_columns(df))
 }
 
 
@@ -88,85 +87,57 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
         let any_val = row.0;
         let conv = any_val.iter().map(|val| val.to_string()).collect::<Vec<String>>();
         let initial_values = conv.iter().map(|val| val.parse::<f32>().unwrap()).collect::<Vec<f32>>();
-        let tensor = match Tensor::new(&[1, 98])
-            .with_values(&initial_values) {
-            Ok(tensor) => tensor,
-            Err(err) => {
-                error!("Error occurred trying to create tensor: {}", err);
-                return Err(ApiError::ModelError)
-            }
-        };
+        let tensor = Tensor::new(&[1, 98]).with_values(&initial_values).map_err(|error| {
+            error!("Error occurred trying to create tensor: {}", error);
+            ApiError::ModelError
+        })?;
 
         let mut graph = Graph::new();
-        let bundle = match SavedModelBundle::load(&SessionOptions::new(), ["serve"], &mut graph,  &model_path) {
-            Ok(bundle) => bundle,
-            Err(err) => {
-                error!("Error occurred trying to load model: {}", err);
-                return Err(ApiError::ModelError)
-            }
-        };
-
+        let bundle =  SavedModelBundle::load(&SessionOptions::new(), ["serve"], &mut graph, &model_path).map_err(|err| {
+            error!("Error occurred trying to load model: {}", err);
+            ApiError::ModelError
+        })?;
 
         let session = &bundle.session;
-        let signature = match bundle
-            .meta_graph_def()
-            .get_signature("serving_default") {
-            Ok(sig) => sig,
-            Err(e) => {
-                error!("Error occurred trying to get signature. {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
+        let signature =  bundle.meta_graph_def().get_signature("serving_default").map_err(|e| {
+            error!("Error occurred trying to get signature. {}", e);
+            ApiError::ModelError
+        })?;
 
-        let input_info = match signature.get_input(sig_in_name) {
-            Ok(info) => info,
-            Err(e) => {
-                error!("Error occurred trying to get input info. | Error: {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
-        let output_info = match signature.get_output(sig_out_name) {
-            Ok(info) => info,
-            Err(e) => {
-                error!("Error occurred trying to get output info | Error: {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
+        let input_info = signature.get_input(sig_in_name).map_err(|e| {
+            error!("Error occurred trying to get input info. | Error: {}", e);
+            ApiError::ModelError
+        })?;
 
-        let input_op = match graph.operation_by_name_required(&input_info.name().name) {
-            Ok(op) => op,
-            Err(e) => {
-                error!("Error occurred trying to get input op | Error: {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
-        let output_op = match graph.operation_by_name_required(&output_info.name().name) {
-            Ok(op) => op,
-            Err(e) => {
-                error!("Error occurred trying to get output op | Error: {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
+        let output_info = signature.get_output(sig_out_name).map_err(|error| {
+            error!("Error occurred trying to get output info | Error: {}", error);
+            ApiError::ModelError
+        })?;
+
+        let input_op = graph.operation_by_name_required(&input_info.name().name).map_err(|error| {
+            error!("Error occurred trying to get input op | Error: {}", error);
+            ApiError::ModelError
+        })?;
+
+        let output_op = graph.operation_by_name_required(&output_info.name().name).map_err(|error| {
+            error!("Error occurred trying to get output op | Error: {}", error);
+            ApiError::ModelError
+        })?;
 
         let mut args = SessionRunArgs::new();
         args.add_feed(&input_op, 0, &tensor);
         let output_tensor = args.request_fetch(&output_op, 0);
 
-        match session.run(&mut args) {
-            Ok(_) => {},
-            Err(e) => {
-                error!("Error occurred trying to run session | Error: {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
+        session.run(&mut args).map_err(|error| {
+            error!("Error occurred trying to run session | Error: {}", error);
+            ApiError::ModelError
+        })?;
 
-        let output = match args.fetch::<f32>(output_tensor) {
-            Ok(output) => output,
-            Err(e) => {
-                error!("Error occurred trying to fetch output | Error: {}", e);
-                return Err(ApiError::ModelError)
-            }
-        };
+        let output = args.fetch::<f32>(output_tensor).map_err(|error| {
+            error!("Error occurred trying to fetch output | Error: {}", error);
+            ApiError::ModelError
+        })?;
+
 
         let mut max = 0f32;
         let mut max_index = 0;
@@ -178,15 +149,11 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
             }
         }
 
-        let mat = match matches.get(row_index) {
-            Some(mat) => mat,
-            None => {
-                error!("Error occurred trying to get match");
-                return Err(ApiError::ModelError)
-            }
+
+        let Some(mat) = matches.get(row_index) else {
+            error!("Error occurred trying to get match");
+            return Err(ApiError::ModelError)
         };
-
-
 
         let winning = if max_index == 1 {
             Prediction {

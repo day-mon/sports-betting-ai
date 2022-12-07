@@ -40,7 +40,7 @@ const SavedGameCard: Component<ISavedGameCardProps> = (props: ISavedGameCardProp
       <Show when={props.savedHistory.injuries && props.savedHistory.injuries?.length > 0} keyed>
         {/* put view injury report in bottom middle of card */}
         <div class="flex flex-row justify-center">
-          <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300 dark:text-gray-400">
+          <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300">
             ⚠️ View Injury Report
           </span>
           <InjuryModal injuries={props.savedHistory.injuries!} show={showInjury()} onClose={() => setShowInjury(false)} />

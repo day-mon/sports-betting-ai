@@ -166,7 +166,7 @@ const History: Component = () => {
         <Show when={!historyLoading()} fallback={<Loading />} keyed>
           <div class="flex flex-col items-center mt-15 justify-center w-full h-full">
             <Show when={!isNaN(getWinPercentage(history()))} keyed>
-              <h5 class="text-xl text-white font-bold text-center">
+              <h5 class="text-xl  text-white font-bold text-center">
                 We predicted
                 <span class={`${getPredictedWinColor()}`}> {getWinPercentage(history())}% </span>
                 of the games correctly on <span class="font-bold underline">{date()?.toDateString()}</span>
