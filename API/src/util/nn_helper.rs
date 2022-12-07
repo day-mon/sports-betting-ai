@@ -1,9 +1,8 @@
 use std::env;
 use std::fs::File;
 use log::{error};
-use polars::frame::DataFrame;
 use polars::io::SerReader;
-use polars::prelude::{CsvReader};
+use polars::prelude::{CsvReader, DataFrame};
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
@@ -15,8 +14,11 @@ use crate::util::polars_helper::{convert_rows_to_f64, drop_columns};
 const TEAM_DATA_URL: &str = "https://lively-fire-943d.alexanderjoemc.workers.dev/";
 
 
-pub async fn get_model_data(matches: Option<&Vec<Match>>, date: &String) -> Result<(DataFrame, Option<Vec<Match>>), ApiError> {
-    let data_dir = env::var("DATA_DIR").unwrap();
+pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataFrame, ApiError> {
+    let data_dir = env::var("DATA_DIR").map_err(|error| {
+        error!("Some how you got an error while trying to get the data_dir. Here's the error: {}", error);
+        ApiError::Unknown
+    })?;
 
     let file_name = format!("{}/{}.csv", data_dir, date);
     if let Ok(file) = File::open(file_name) {
@@ -30,23 +32,9 @@ pub async fn get_model_data(matches: Option<&Vec<Match>>, date: &String) -> Resu
                 ApiError::IOError
             })?;
 
-
-        if matches.is_none()
-        {
-            let thing = df.select(["TEAM_ID", "TEAM_NAME", "TEAM_ID_duplicated_0", "TEAM_NAME_duplicated_0"])
-                .into_iter().map(|s| Match::from_csv_string(s)).collect::<Vec<Match>>())
-            .map_err(|error| {
-            error!("Error occurred trying to select columns. Error: {:?}", error);
-            ApiError::IOError
-        })?;
-            println!("{:?}", thing);
-            convert_rows_to_f64(&mut df);
-            return Ok((drop_columns(df), Some(matches)))
-        }
-
         convert_rows_to_f64(&mut df);
 
-        return Ok((drop_columns(df), None));
+        return Ok(drop_columns(df));
     }
 
     let response =  reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
@@ -64,19 +52,22 @@ pub async fn get_model_data(matches: Option<&Vec<Match>>, date: &String) -> Resu
         ApiError::DeserializationError
     })?;
 
-    let csv_matches = matches.unwrap();
-    let written = write_to_csv(csv_matches, &daily_stats, date)?;
+    let written = write_to_csv(matches, &daily_stats, date)?;
 
-    let mut df = drop_columns(CsvReader::new(written)
+    let mut df = CsvReader::new(written)
         .infer_schema(None)
         .has_header(true)
         .low_memory(true)
         .finish()
-        .expect("Error happened here"));
+        .map_err(|error| {
+            error!("Error occurred trying to read CSV. Error: {:?}", error);
+            ApiError::IOError
+        })?;
+
 
     convert_rows_to_f64(&mut df);
 
-    return Ok((drop_columns(df), None));
+    Ok(drop_columns(df))
 }
 
 

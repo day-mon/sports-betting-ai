@@ -111,7 +111,4 @@ impl Match {
             away_team_name: format!("{} {}", remove_quotes(&game.v.tc), remove_quotes(&game.v.tn))
         }
     }
-
-    pub fn from_dataframe(df: &DataFrame) -> Self {
-    }
 }

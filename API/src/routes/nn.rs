@@ -44,24 +44,6 @@ pub async fn predict_all(
     }
 
 
-    if inner.game_date.is_some()
-    {
-        let date = inner.game_date.unwrap();
-        let data_dir = std::env::var("DATA_DIR").map_err(|error| {
-            error!("Error while attempting to get data directory env variable. This should've never happened?. Error: {}", error);
-            ApiError::Unknown
-        })?;
-
-        if !directory_exists(&format!("{}/{}.csv", data_dir, date)) {
-            error!("Could find data with the date: {}", date);
-            return Err(ApiError::DatabaseError)
-        }
-
-        let (model_data, matches) = get_model_data(None, &date).await?;
-        let prediction = call_model(&model_data, &matches.unwrap(), &model_name)?;
-        return Ok(HttpResponse::Ok().json(prediction))
-    }
-
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
@@ -84,7 +66,7 @@ pub async fn predict_all(
     let date = remove_quotes(&daily_games.gs.gdte);
 
     let matches: Vec<Match> = daily_games.gs.g.into_iter().map(Match::from_game).collect();
-    let (model_data, _) = get_model_data(Some(&matches), &date).await?;
+    let model_data = get_model_data(&matches, &date).await?;
     let prediction = call_model(&model_data, &matches, &model_name)?;
     store_in_cache(&client, &prediction_key, &prediction);
     Ok(HttpResponse::Ok().json(prediction))
