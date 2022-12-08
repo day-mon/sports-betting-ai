@@ -19,6 +19,8 @@ pub enum ApiError {
     DatabaseError,
     #[error("A website we rely on returned a invalid response")]
     DependencyError,
+    #[error("An Unknown error has occurred")]
+    Unknown
 }
 impl ApiError {
     pub fn name(&self) -> String {
@@ -29,7 +31,8 @@ impl ApiError {
             Self::IOError => "An Error occurred during IO".to_string(),
             Self::DependencyError => "A website we rely on returned a invalid response".to_string(),
             Self::DatabaseError => "Error occurred while interfacing with the database".to_string(),
-            Self::ModelNotFound => "There is no model with that name".to_string()
+            Self::ModelNotFound => "There is no model with that name".to_string(),
+            Self::Unknown => "An unknown error has occurred. This is unusual.".to_string()
         }
     }
 }
@@ -44,6 +47,7 @@ impl ResponseError for ApiError {
             Self::DatabaseError => StatusCode::FAILED_DEPENDENCY,
             Self::ModelError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::DependencyError => StatusCode::FAILED_DEPENDENCY,
+            Self::Unknown => StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 
