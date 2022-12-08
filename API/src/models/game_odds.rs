@@ -46,7 +46,7 @@ pub struct OddsTableModel {
 pub struct GameRow {
     pub game_view: GameView,
     pub odds_views: Vec<Option<OddsView>>,
-    pub opening_line_views: Vec<OpeningLineView>,
+    pub opening_line_views: Vec<Option<OpeningLineView>>,
     pub live_score_views: LiveScoreViews,
 }
 
