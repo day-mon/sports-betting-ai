@@ -22,7 +22,7 @@ COPY --from=build /app/target/release/sports-betting-api-rs /usr/local/bin/sport
 COPY --from=build /app/*.so.1 /usr/lib/
 COPY --from=build /app/src/model /app/model
 
-ENV MODEL_DIR /app/model
+ENV MODEL_DIR /app/trained_models
 ENV DATA_DIR /app/data
 ENV LOG_LEVEL info
 
