@@ -24,15 +24,27 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     return home_score_int > away_score_int ? game.home_team_name : game.away_team_name;
   };
 
-  const getInjuries = (): Injury[] => {
+    const getTotalScore = (game: Game) => {
+        let home_score = game.home_team_score;
+        let away_score = game.away_team_score;
+
+        let home_score_int = parseInt(home_score);
+        let away_score_int = parseInt(away_score);
+
+        return home_score_int + away_score_int;
+    };
+
+  const getInjuries = (game: Game): Injury[] => {
     const arr = [];
-    if (props.game.home_team_injuries) {
-      arr.push(...props.game.home_team_injuries);
+    if (game.home_team_injuries) {
+        arr.push(...game.home_team_injuries);
     }
 
-    if (props.game.away_team_injuries) {
-      arr.push(...props.game.away_team_injuries);
+
+    if (game.away_team_injuries) {
+        arr.push(...game.away_team_injuries);
     }
+
 
     return arr;
   };
@@ -90,7 +102,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
         </div>
       </Show>
       <Show when={props.game.start_time.includes('Final')} keyed>
-        <div class="flex flex-row justify-center">{`Winner: ${getWinner(props.game)}`}</div>
+        <div class="flex flex-row justify-center">{ props.prediction?.prediction_type === 'score' ? `Total Score: ${getTotalScore(props.game)}` : `Winner: ${getWinner(props.game)}`}</div>
       </Show>
       <Show when={props.game.odds && props.game.odds.length !== 0} keyed>
         <div class="flex flex-row justify-center">
@@ -104,7 +116,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
           <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300">
             ⚠️ View Injury Report
           </span>
-          <InjuryModal header={'Injury reports are important. Our model does not take these factors into account. If there is a influential player not playing take the prediction with a grain of salt.'} injuries={getInjuries()} show={showInjury()} onClose={() => setShowInjury(false)} />
+          <InjuryModal header={'Injury reports are important. Our model does not take these factors into account. If there is a influential player not playing take the prediction with a grain of salt.'} injuries={getInjuries(props.game)} show={showInjury()} onClose={() => setShowInjury(false)} />
         </div>
       </Show>
       <Transition name="slide-fade">

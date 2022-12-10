@@ -177,13 +177,13 @@ const Bets: Component = () => {
         <Show when={bets().length > 0} keyed>
           <div class="flex flex-col justify-center items-center">
             <h5 class="text-xl text-white mb-4 font-bold text-center">Select a prediction you would like to view</h5>
-            <select class={"rounded-lg bg-transparent p-2  border border-white text-white"} onInput={async (e) => {
+            <select class={"rounded-lg bg-transparent text-center p-2  border border-white text-white"} onInput={async (e) => {
               setModelSelected(e.currentTarget.value)
               await fetchPredictions(modelSelected())
             }} >
               <option value="" disabled selected>None</option>
               <For each={[{key: 'v1', value: 'Money Line' }, {key: 'ou', value: 'Over Under (Beta)'}]}>{option =>
-                  <option value={option.key}>{option.value}</option>
+                  <option class={'text-center'} value={option.key}>{option.value}</option>
               }</For>
             </select>
           </div>
