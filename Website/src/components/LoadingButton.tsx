@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import {Component, JSX} from 'solid-js';
 import { Show } from 'solid-js';
 
 interface ILoadingButtonProps {
@@ -6,6 +6,7 @@ interface ILoadingButtonProps {
   loadingWhen: boolean;
   children: any;
   disabled: boolean;
+  Element: JSX.Element
 }
 
 export const LoadingButton: Component<ILoadingButtonProps> = (props: ILoadingButtonProps) => {

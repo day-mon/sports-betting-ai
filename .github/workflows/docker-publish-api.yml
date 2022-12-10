@@ -38,3 +38,14 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:latest
           docker push --all-tags $IMAGE_ID
         working-directory: ./API
+  deploy:
+    needs:
+      - build-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://watchtower.montague.im/v1/update'
+          method: 'POST'
+          customHeaders: '{"Authorization": "Bearer ${{ secrets.TOKEN }}"}'
