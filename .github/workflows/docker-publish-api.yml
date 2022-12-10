@@ -8,13 +8,6 @@ on:
       - 'API/Dockerfile'
       - '.github/workflows/docker-publish-api.yml'
     branches: [ main, ci-test ]
-  pull_request:
-    paths:
-      - '**.rs'
-      - '**.toml'
-      - 'API/Dockerfile'
-      - '.github/workflows/docker-publish-api.yml'
-    branches: [ main ]
 
 env:
   IMAGE_NAME: api
