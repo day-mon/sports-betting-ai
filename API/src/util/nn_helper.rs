@@ -139,36 +139,80 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
         })?;
 
 
-        let mut max = 0f32;
-        let mut max_index = 0;
-        for (i, val) in output.iter().enumerate()
-        {
-            if *val > max {
-                max = *val;
-                max_index = i;
-            }
-        }
-
-
-        let Some(mat) = matches.get(row_index) else {
-            error!("Error occurred trying to get match");
-            return Err(ApiError::ModelError)
-        };
-
-        let winning = if max_index == 1 {
-            Prediction {
-                predicted_winner: mat.home_team_name.clone(),
-                game_id: mat.game_id.clone(),
-            }
+        let result = if model_name == "ou" {
+            retrieve_game_score(&output, matches, row_index)?
         } else {
-            Prediction {
-                predicted_winner: mat.away_team_name.clone(),
-                game_id: mat.game_id.clone(),
-            }
+            retrieve_match_winner(&output, matches, row_index)?
         };
 
 
-        inputs.push(winning);
+        inputs.push(result);
     }
     Ok(inputs)
+}
+
+fn retrieve_game_score(
+    output: &Tensor<f32>,
+    matches: &[Match],
+    row_index: usize,
+) -> Result<Prediction, ApiError> {
+
+    if output.len() == 0 {
+        error!("Some how the tensor did no produce a response");
+        return Err(ApiError::ModelError);
+    }
+
+    Ok(
+        Prediction {
+            game_id: matches[row_index].game_id.clone(),
+            prediction: (output[0] as u16).to_string(),
+            confidence: None,
+            prediction_type: "score".to_string()
+        },
+    )
+
+}
+
+fn retrieve_match_winner(
+    output: &Tensor<f32>,
+    matches: &[Match],
+    row_index: usize
+) -> Result<Prediction, ApiError> {
+    let mut max = 0f32;
+    let mut max_index = 0;
+    for (i, val) in output.iter().enumerate()
+    {
+        if *val > max {
+            max = *val;
+            max_index = i;
+        }
+    }
+
+
+    let Some(mat) = matches.get(row_index) else {
+        error!("Error occurred trying to get match");
+        return Err(ApiError::ModelError)
+    };
+
+
+
+    if max_index == 1 {
+        Ok(
+            Prediction {
+                prediction_type: "win-loss".to_string(),
+                prediction: mat.home_team_name.clone(),
+                game_id: mat.game_id.clone(),
+                confidence: Some(max)
+            }
+        )
+    } else {
+        Ok(
+            Prediction {
+                prediction_type: "win-loss".to_owned(),
+                prediction: mat.away_team_name.clone(),
+                game_id: mat.game_id.clone(),
+                confidence: Some(max)
+            }
+        )
+    }
 }

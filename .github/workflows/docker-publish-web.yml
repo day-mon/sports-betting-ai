@@ -14,19 +14,6 @@ on:
       - 'Website/Dockerfile'
       - '**.json'
     branches: [ main, ci-test ]
-  pull_request:
-    paths:
-      - '**.js'
-      - '**.json'
-      - '**.lock'
-      - '**.md'
-      - '**.ts'
-      - '**.tsx'
-      - '**.yml'
-      - '.github/workflows/website.yml'
-      - 'Website/Dockerfile'
-      - '**.json'
-    branches: [ main ]
 
 env:
   IMAGE_NAME: website

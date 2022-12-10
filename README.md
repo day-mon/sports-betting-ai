@@ -7,11 +7,11 @@
 <p align="center">
   A new way to bet on sports. Accuribet utilizes machine learning to predict the outcome of sporting events. We use 98 different data points to predict the outcome of a game. In our testing phase we have been able to predict the outcome of games with 70% accuracy.
   <br/>
-    <a href="">View Live Website</a>
+    <a href="https://accuribet.win">View Live Website</a>
     ·
-    <a href="">Report Bug</a>
+    <a href="https://github.com/day-mon/sports-betting-ai/issues/new">Report Bug</a>
     ·
-    <a href="">Request Feature</a>
+    <a href="https://github.com/day-mon/sports-betting-ai/issues/new">Request Feature</a>
 </p>
 
 
@@ -25,6 +25,7 @@ This project was a final project for CS 1783 (Artificial Intelligence) at the Un
 * [SolidJS](https://www.solidjs.com/)
 * [TailwindCSS](https://tailwindcss.com/)
 * [Tensorflow](https://www.tensorflow.org/)
+* [Redis](https://redis.io/)
 
 
 ## Contributing

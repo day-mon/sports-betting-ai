@@ -26,7 +26,8 @@ export interface Odd {
 
 export interface Prediction {
   game_id: string;
-  predicted_winner: string;
+  prediction: string;
+  prediction_type: string
 }
 
 
