@@ -54,6 +54,7 @@ jobs:
         with:
           url: 'https://watchtower.montague.im/v1/update'
           method: 'POST'
+          timeout: 10000
           customHeaders: '{"Authorization": "Bearer ${{ secrets.TOKEN }}"}'
 
 
