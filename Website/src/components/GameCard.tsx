@@ -40,7 +40,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
   const getPredictionAgainstOdds = (odd: Odd, prediction: Prediction) => {
     // in betting is negative number or positive number better
     let home_team_winning = Math.min(odd.home_team_odds, odd.away_team_odds) === odd.home_team_odds;
-    let our_prediction = prediction.predicted_winner === props.game.home_team_name;
+    let our_prediction = prediction.prediction === props.game.home_team_name;
     return home_team_winning === our_prediction ? 'WITH ODDS' : 'AGAINST ODDS';
   };
 
@@ -79,14 +79,20 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
       <div class="flex flex-row justify-center ">{getGameStatus()}</div>
       <Show when={props.prediction} keyed>
         <div class="flex font-extrabold flex-row justify-center ">
-          {`Our Projected Winner:`}
-          <span class={`flex flex-col pl-2 text-s ${!props.game.start_time.includes('Final') ? 'text-white' : `${props.prediction?.predicted_winner === getWinner(props.game) && props.game.start_time.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.predicted_winner}`}</span>
+            <Show when={props.prediction?.prediction_type === "win-loss"} keyed>
+              {`Our Projected Winner:`}
+              <span class={`flex flex-col pl-2 text-s ${!props.game.start_time.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.start_time.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
+            </Show>
+            <Show when={props.prediction?.prediction_type === 'score'} keyed>
+                {`Our Projected Total Score:`}
+                <span class={'flex flex-col pl-2 text-s '}>{props?.prediction?.prediction}</span>
+            </Show>
         </div>
       </Show>
       <Show when={props.game.start_time.includes('Final')} keyed>
         <div class="flex flex-row justify-center">{`Winner: ${getWinner(props.game)}`}</div>
       </Show>
-      <Show when={props.game.odds && props.game.odds.length !== 0}>
+      <Show when={props.game.odds && props.game.odds.length !== 0} keyed>
         <div class="flex flex-row justify-center">
           <span onclick={props.setShowDropdown} class="text-xs cursor-pointer hover:underline text-white">
               {!props.showDropdown ? '🎲 View Odds' : '🎲 Close Odds'}

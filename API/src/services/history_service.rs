@@ -76,7 +76,7 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
                error!("No prediction found {} vs {}", g.home_team_name, g.away_team_name);
                return g.into_saved_game(None);
            };
-            g.into_saved_game(Some(p.predicted_winner.clone()))
+            g.into_saved_game(Some(p.prediction.clone()))
         }).collect::<Vec<SavedGame>>();
 
         let unsaved_games = save_games_structs.into_iter().filter(|gg| {
