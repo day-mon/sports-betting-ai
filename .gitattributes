@@ -1,2 +1,3 @@
 # ignore jupyter notebook files in github language statistics
 *.ipynb linguist-vendored
+*.pb linguist-vendored
