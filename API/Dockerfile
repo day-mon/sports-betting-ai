@@ -20,7 +20,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app/target/release/sports-betting-api-rs /usr/local/bin/sports-betting-api-rs
 COPY --from=build /app/*.so.1 /usr/lib/
-COPY --from=build /app/src/model /app/model
+COPY --from=build /app/src/trained_models /app/trained_models
 
 ENV MODEL_DIR /app/trained_models
 ENV DATA_DIR /app/data
