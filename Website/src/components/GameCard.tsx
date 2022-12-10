@@ -103,6 +103,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
       </Show>
       <Show when={props.game.start_time.includes('Final')} keyed>
         <div class="flex flex-row justify-center">{ props.prediction?.prediction_type === 'score' ? `Total Score: ${getTotalScore(props.game)}` : `Winner: ${getWinner(props.game)}`}</div>
+          {props.prediction?.prediction_type == "score" &&  <div class="flex flex-row justify-center">{`Difference ${(getTotalScore(props.game) - parseInt(props.prediction?.prediction))}`}</div>}
       </Show>
       <Show when={props.game.odds && props.game.odds.length !== 0} keyed>
         <div class="flex flex-row justify-center">

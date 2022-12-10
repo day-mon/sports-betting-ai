@@ -9,16 +9,13 @@ interface IInjuryProps {
   header?: string;
 }
 const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
-  const injuries = props.injuries;
 
-  const keys = Object.keys(injuries[0]);
-
-
+  const keys = Object.keys(props.injuries[0]);
   let game_id_index = keys.indexOf('game_id');
   keys.splice(game_id_index, 1);
 
 
-  injuries.sort((a, b) => {
+  props.injuries.sort((a, b) => {
     if (a.team === b.team) {
       return 0;
     } else if (a.team) {
@@ -39,7 +36,7 @@ const InjuryModal: Component<IInjuryProps> = (props: IInjuryProps) => {
             </tr>
           </thead>
           <tbody>
-            <For each={injuries}>
+            <For each={props.injuries}>
               {(odd: Injury) => (
                 <tr class="border-b border-gray-700 bg-gray-800">
                   <For each={keys}>{(key: string) => <td class="px-4 text-center text-white py-3">{odd[key]}</td>}</For>

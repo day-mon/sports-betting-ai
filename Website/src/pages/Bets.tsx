@@ -75,6 +75,8 @@ const Bets: Component = () => {
     setBets(data);
   };
 
+
+
   const findPrediction = (game: Game) => predictions().find((prediction) => prediction.game_id === game.game_id);
 
   onMount(async () => {
@@ -94,9 +96,21 @@ const Bets: Component = () => {
     setLoading(false);
   });
 
+
+  const getBetInterval = () => {
+    let millsInMinutes = 60_000;
+
+    if (bets().every((game) => game.start_time == "Final")) {
+      return 3 * millsInMinutes;
+    } else {
+      return 45_000;
+    }
+  }
+
   const betInterval = setInterval(async () => {
+    console.log(`Fetching ${new Date()}`)
     await fetchBets(true);
-  }, 45_000);
+  }, getBetInterval());
 
   const sortedBetsByTime = (games: Game[]) =>
     games.sort((a, b) => {
@@ -192,11 +206,14 @@ const Bets: Component = () => {
         </Show>
       </Suspense>
       <div class="flex flex-col justify-center items-center">
-        <div class="flex flex-row justify-center items-center">
           <p class="text-xs text-gray-500">
             <span class="font-bold">Disclaimer:</span> The model we wrote is not aware of injuries, suspensions or any thing of that nature. Take the predictions with a grain of salt. 😊
           </p>
-        </div>
+          {predictions().length > 0 && predictions()[0].prediction_type === 'score' && (
+              <p class="text-xs text-gray-500">
+                <span class="font-bold">Disclaimer V2:</span> This model in particular is in its testing phase. We dont really know the accuracy.
+              </p>
+          )}
       </div>
     </>
   );

@@ -1,10 +1,8 @@
 import { Component, createSignal, onMount } from 'solid-js';
-import { lazy } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
-import { Transition, TransitionGroup } from 'solid-transition-group';
+import { Transition } from 'solid-transition-group';
 import NavbarLink from './NavbarLink';
-const Bets = lazy(() => import('../pages/Bets'));
-const Home = lazy(() => import('../pages/Home'));
+
 
 const Navbar: Component = () => {
   const location = useLocation();
