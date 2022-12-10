@@ -1,4 +1,4 @@
-import { Component, Index, onCleanup } from 'solid-js';
+import {Component, For, Index, onCleanup} from 'solid-js';
 import { createSignal, onMount, Show, Suspense } from 'solid-js';
 import { Game, Prediction } from '../models';
 import { GameCard } from '../components/GameCard';
@@ -6,7 +6,7 @@ import { Loading } from '../components/Loading';
 import { NoData } from '../components/NoData';
 import { fetchHelper } from '../util/fetchHelper';
 import { LoadingButton } from '../components/LoadingButton';
-import {getWinner} from "./History";
+import { getWinner } from "./History";
 
 const getBaseUrl = (useRemote?: boolean) => {
   // check if current url is localhost
@@ -22,9 +22,11 @@ const Bets: Component = () => {
   const [predictions, setPredictions] = createSignal([] as Prediction[]);
   const [disabled, setDisabled] = createSignal(false);
   const [cardsShow, setCardsShow] = createSignal([] as boolean[]);
+  const [modelSelected, setModelSelected] = createSignal('')
 
-  const fetchPredictions = async () => {
-    let predictions = sessionStorage.getItem('predictions');
+  const fetchPredictions = async (model_name: string) => {
+    if (model_name === '') return;
+    let predictions = sessionStorage.getItem(`predictions_${model_name}`);
     if (predictions) {
       let parsedPredictions = JSON.parse(predictions) as Prediction[];
       let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
@@ -36,14 +38,14 @@ const Bets: Component = () => {
 
     setDisabled(true);
     const BASE_URL = getBaseUrl();
-    const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=v1`);
+    const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=${model_name}`);
     if (!response) {
       setDisabled(false);
       return;
     }
     const data = (await response.json()) as Prediction[];
     setPredictions(data);
-    sessionStorage.setItem('predictions', JSON.stringify(data));
+    sessionStorage.setItem(`predictions_${model_name}`, JSON.stringify(data));
     setDisabled(false);
   };
 
@@ -78,7 +80,7 @@ const Bets: Component = () => {
   onMount(async () => {
     await fetchBets();
 
-    let predictions = sessionStorage.getItem('predictions');
+    let predictions = sessionStorage.getItem(`predictions_${modelSelected()}`);
     if (predictions) {
       let parsedPredictions = JSON.parse(predictions) as Prediction[];
       let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
@@ -123,12 +125,12 @@ const Bets: Component = () => {
 
       if (a.start_time.includes('Final')) {
         let prediction = findPrediction(a);
-        let won = prediction?.predicted_winner == getWinner(a)
+        let won = prediction?.prediction == getWinner(a)
         return won ? -1 : 1;
       }
       if (b.start_time.includes('Final'))  {
         let prediction = findPrediction(a);
-        let won = prediction?.predicted_winner == getWinner(a)
+        let won = prediction?.prediction == getWinner(a)
         return won ? -1 : 1;
       }
 
@@ -174,12 +176,18 @@ const Bets: Component = () => {
         </Show>
         <Show when={bets().length > 0} keyed>
           <div class="flex flex-col justify-center items-center">
-            <div class="flex flex-row justify-center items-center">
-              <LoadingButton disabled={predictions().length !== 0} loadingWhen={disabled()} onClick={fetchPredictions}>
-                Fetch our predictions
-              </LoadingButton>
-            </div>
+            <h5 class="text-xl text-white mb-4 font-bold text-center">Select a prediction you would like to view</h5>
+            <select class={"rounded-lg bg-transparent p-2  border border-white text-white"} onInput={async (e) => {
+              setModelSelected(e.currentTarget.value)
+              await fetchPredictions(modelSelected())
+            }} >
+              <option value="" disabled selected>None</option>
+              <For each={[{key: 'v1', value: 'Money Line' }, {key: 'ou', value: 'Over Under (Beta)'}]}>{option =>
+                  <option value={option.key}>{option.value}</option>
+              }</For>
+            </select>
           </div>
+
           <Index each={sortedBetsByTime(bets())}>{(game, index) => <GameCard showDropdown={cardsShow()[index]} setShowDropdown={() => changeCardShow(index)} prediction={findPrediction(game())} game={game()} />}</Index>
         </Show>
       </Suspense>
