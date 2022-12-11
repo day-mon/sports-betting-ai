@@ -127,7 +127,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 <thead class="text-xs text-white uppercase bg-gray-700">
                 <tr class="order-b bg-gray-800 border-gray-700">
                   <For each={props.game.odds && props.game.odds.length > 0 && Object.keys(props.game.odds[0])}>{(key) => <th class="px-4 text-center text-white py-3">{key.replace('home_team', props.game.home_team_name).replace('away_team', props.game.away_team_name).replace(/_/g, ' ')}</th>}</For>
-                  <Show when={props.prediction && props.game.odds && props.game.odds.length !== 0} keyed>
+                  <Show when={props.prediction && props.game.odds && props.game.odds.length !== 0 && props.prediction.prediction_type == "win-loss"} keyed>
                     <th class="px-4 text-white text-center py-3">Our bet</th>
                   </Show>
                 </tr>
@@ -141,7 +141,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                         <th class="py-4 text-center text-white px-6">{odd.away_team_odds > 0 ? '+' + odd.away_team_odds : odd.away_team_odds}</th>
                         <th class="py-4 text-center text-white px-6">{odd.home_team_opening_odds > 0 ? '+' + odd.home_team_opening_odds : odd.home_team_opening_odds}</th>
                         <th class="py-4 text-center text-white px-6">{odd.away_team_opening_odds > 0 ? '+' + odd.away_team_opening_odds : odd.away_team_opening_odds}</th>
-                        <Show when={props.prediction && props.game.odds && props.game.odds.length !== 0} keyed>
+                        <Show when={props.prediction && props.game.odds && props.game.odds.length !== 0 && props.prediction.prediction_type == "win-loss"} keyed>
                           <th class="py-4 text-center text-white px-6">{getPredictionAgainstOdds(odd!, props.prediction!)}</th>
                         </Show>
                       </tr>

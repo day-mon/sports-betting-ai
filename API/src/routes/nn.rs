@@ -66,7 +66,7 @@ pub async fn predict_all(
     let date = remove_quotes(&daily_games.gs.gdte);
 
     let matches: Vec<Match> = daily_games.gs.g.into_iter().map(Match::from_game).collect();
-    let model_data = get_model_data(&matches, &date).await?;
+    let model_data = get_model_data(&matches, &date, &model_name).await?;
     let prediction = call_model(&model_data, &matches, &model_name)?;
     store_in_cache(&client, &prediction_key, &prediction);
     Ok(HttpResponse::Ok().json(prediction))

@@ -14,7 +14,7 @@ use crate::util::polars_helper::{convert_rows_to_f64, drop_columns};
 const TEAM_DATA_URL: &str = "https://lively-fire-943d.alexanderjoemc.workers.dev/";
 
 
-pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataFrame, ApiError> {
+pub async fn get_model_data(matches: &Vec<Match>, date: &String, model_name: &str) -> Result<DataFrame, ApiError> {
     let data_dir = env::var("DATA_DIR").map_err(|error| {
         error!("Some how you got an error while trying to get the data_dir. Here's the error: {}", error);
         ApiError::Unknown
@@ -33,11 +33,12 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
             })?;
 
         convert_rows_to_f64(&mut df);
+        drop_columns(&mut df, model_name);
 
-        return Ok(drop_columns(df));
+        return Ok(df);
     }
 
-    let response =  reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
+    let response = reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
         error!("Error getting team data: {}", error);
         ApiError::DependencyError
     })?;
@@ -66,20 +67,27 @@ pub async fn get_model_data(matches: &Vec<Match>, date: &String) -> Result<DataF
 
 
     convert_rows_to_f64(&mut df);
+    drop_columns(&mut df, model_name);
 
-    Ok(drop_columns(df))
+    Ok(df)
 }
 
 
 pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Result<Vec<Prediction>, ApiError> {
     let model_dir = env::var("MODEL_DIR").unwrap();
     let model_path = format!("{}/{}", model_dir, model_name);
-    let sig_in_name = "input_layer_input";
+    let sig_in_name = if model_name != "v2" {
+        "input_layer_input"
+    } else {
+        "flatten_3_input"
+    };
     let sig_out_name = "output_layer";
 
-    let (rows, ..) = df.shape();
+    let (rows, columns) = df.shape();
 
     let mut inputs: Vec<Prediction> = Vec::with_capacity(rows);
+
+    info!("Rows: {}, Columns: {}", rows, columns);
 
     for row_index in 0..rows
     {
@@ -87,7 +95,7 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
         let any_val = row.0;
         let conv = any_val.iter().map(|val| val.to_string()).collect::<Vec<String>>();
         let initial_values = conv.iter().map(|val| val.parse::<f32>().unwrap()).collect::<Vec<f32>>();
-        let tensor = Tensor::new(&[1, 98]).with_values(&initial_values).map_err(|error| {
+        let tensor = Tensor::new(&[1, columns as u64]).with_values(&initial_values).map_err(|error| {
             error!("Error occurred trying to create tensor: {}", error);
             ApiError::ModelError
         })?;
