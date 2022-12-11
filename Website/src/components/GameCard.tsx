@@ -70,40 +70,56 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     }
   };
 
+  const getPercentageRounded = (num: number) => {
+      return (num * 100).toFixed(2)
+  }
+
   // why use props.game? instead of just game?
   // we lose reactivity if we don't use props.game, so don't change it or figure out a better way to do it
 
   return (
     <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-800 text-white">
-      <h6 class="flex mb-1 text-2xl flex-row justify-center items-center">
+      <h6 class="flex mb-1 text-xl flex-row justify-center items-center">
         {`${props.game.home_team_name} vs ${props.game.away_team_name}`}
       </h6>
+
+
+
 
       <Show when={props.game.home_team_score != '' || props.game.away_team_score != ''} keyed>
         <div class="flex flex-row justify-center">
           <Show when={props.game.away_team_score !== '0' || props.game.home_team_score != '0'} keyed>
-            <h6 class="text-s">{props.game.home_team_score}</h6>
-            <h6 class="text-s mx px-2">-</h6>
-            <h6 class="text-s">{props.game.away_team_score}</h6>
+              {/* show the score of the game */}
+            <div class="flex flex-col">
+                <span class="text-base">{`${props.game.home_team_score} - ${props.game.away_team_score}`}
+                </span>
+            </div>
           </Show>
         </div>
       </Show>
       <div class="flex flex-row justify-center ">{getGameStatus()}</div>
       <Show when={props.prediction} keyed>
-        <div class="flex font-extrabold flex-row justify-center ">
-            <Show when={props.prediction?.prediction_type === "win-loss"} keyed>
-              {`Our Projected Winner:`}
-              <span class={`flex flex-col pl-2 text-s ${!props.game.start_time.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.start_time.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
+        <div class="flex flex-row font-extrabold flex-row justify-center ">
+            <Show when={props.prediction!.prediction_type === "win-loss"} keyed>
+              {`Projected Winner:`}
+                <span class={`flex flex-row pl-2 ${!props.game.start_time.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.start_time.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
             </Show>
-            <Show when={props.prediction?.prediction_type === 'score'} keyed>
-                {`Our Projected Total Score:`}
-                <span class={'flex flex-col pl-2 text-s '}>{props?.prediction?.prediction}</span>
+
+            <Show when={props.prediction!.prediction_type === 'score'} keyed>
+                {`Projected Total Score:`}
+                <span class={'flex flex-col pl-2'}>{props?.prediction?.prediction}</span>
             </Show>
         </div>
       </Show>
+        <Show when={props.prediction?.confidence}>
+            <div class="flex flex-row font-extrabold flex-row justify-center ">
+            {`Confidence:`}
+            <span class="flex flex-col font-medium pl-2">{` ${getPercentageRounded(props.prediction!.confidence)}%`}</span>
+            </div>
+        </Show>
       <Show when={props.game.start_time.includes('Final')} keyed>
         <div class="flex flex-row justify-center">{ props.prediction?.prediction_type === 'score' ? `Total Score: ${getTotalScore(props.game)}` : `Winner: ${getWinner(props.game)}`}</div>
-          {props.prediction?.prediction_type == "score" &&  <div class="flex flex-row justify-center">{`Difference ${(getTotalScore(props.game) - parseInt(props.prediction?.prediction))}`}</div>}
+          {props.prediction?.prediction_type == "score" &&  <div class="flex flex-row justify-center">{`Difference: ${(getTotalScore(props.game) - parseInt(props.prediction?.prediction))}`}</div>}
       </Show>
       <Show when={props.game.odds && props.game.odds.length !== 0} keyed>
         <div class="flex flex-row justify-center">

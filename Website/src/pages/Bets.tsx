@@ -15,6 +15,14 @@ const getBaseUrl = (useRemote?: boolean) => {
   return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
 };
 
+const options =
+    [
+        {key: 'v1', value: 'Money Line (V1)', description: 'The V1 Model is a simple model that that predicts winners of the games with no consideration of players or injuries. We use overall team statistics to predict the winner of the game up until this point in the season. This model has days where it is OVERLY confident in its predictions, which may be disingenuous.'},
+        {key: 'v2', value: 'Money Line (V2)', description: 'The V2 Model model differs from the V1 model in that it has a confidence value associated with each prediction. We also use 86 features instead of 98.'},
+        {key: 'ou', value: 'Over Under (Beta)', description: 'The Over Under model predicts the total score of the game. This model uses the same overall team statistics as the V1 & V2 model. '},
+  ];
+
+
 const Bets: Component = () => {
   const [bets, setBets] = createSignal([] as Game[]);
   const [loading, setLoading] = createSignal(true);
@@ -97,20 +105,20 @@ const Bets: Component = () => {
   });
 
 
-  const getBetInterval = () => {
-    let millsInMinutes = 60_000;
-
-    if (bets().every((game) => game.start_time == "Final")) {
-      return 3 * millsInMinutes;
-    } else {
-      return 45_000;
+  // make a method that checks if all the games are Final and if so et the interval to 3 minutes else 45 seconds
+    const checkIfAllGamesAreFinal = () => {
+        let allGamesAreFinal = bets().every((game) => game.start_time === 'Final');
+        if (allGamesAreFinal) {
+          console.log("sd")
+            return 180000;
+        }
+        return 45000;
     }
-  }
 
   const betInterval = setInterval(async () => {
     console.log(`Fetching ${new Date()}`)
     await fetchBets(true);
-  }, getBetInterval());
+  }, checkIfAllGamesAreFinal());
 
   const sortedBetsByTime = (games: Game[]) =>
     games.sort((a, b) => {
@@ -176,6 +184,7 @@ const Bets: Component = () => {
     clearInterval(betInterval);
   });
 
+
   return (
     <>
       <Suspense fallback={<Loading />}>
@@ -190,30 +199,37 @@ const Bets: Component = () => {
         </Show>
         <Show when={bets().length > 0} keyed>
           <div class="flex flex-col justify-center items-center">
-            <h5 class="text-xl text-white mb-4 font-bold text-center">Select a prediction you would like to view</h5>
+            <h5 class="text-xl text-white mb-4 font-bold text-center">Select a model to predict with</h5>
             <select class={"rounded-lg bg-transparent text-center p-2  border border-white text-white"} onInput={async (e) => {
               setModelSelected(e.currentTarget.value)
               await fetchPredictions(modelSelected())
             }} >
               <option value="" disabled selected>None</option>
-              <For each={[{key: 'v1', value: 'Money Line' }, {key: 'ou', value: 'Over Under (Beta)'}]}>{option =>
-                  <option class={'text-center'} value={option.key}>{option.value}</option>
+              <For each={options}>{option =>
+                  <option class={'text-black bg-transparent text-center'} value={option.key}>{option.value}</option>
               }</For>
             </select>
+            <Show when={modelSelected() !== 'None' && modelSelected() !== ''}  keyed>
+            <div class={'text-white text-center mt-3'}>
+              <span class={"font-bold"}>About this model</span>: {options.find((option) => option.key === modelSelected())?.description}
+            </div>
+          </Show>
           </div>
-
           <Index each={sortedBetsByTime(bets())}>{(game, index) => <GameCard showDropdown={cardsShow()[index]} setShowDropdown={() => changeCardShow(index)} prediction={findPrediction(game())} game={game()} />}</Index>
         </Show>
       </Suspense>
-      <div class="flex flex-col justify-center items-center">
+      <div class="flex flex-col">
           <p class="text-xs text-gray-500">
             <span class="font-bold">Disclaimer:</span> The model we wrote is not aware of injuries, suspensions or any thing of that nature. Take the predictions with a grain of salt. 😊
           </p>
           {predictions().length > 0 && predictions()[0].prediction_type === 'score' && (
               <p class="text-xs text-gray-500">
-                <span class="font-bold">Disclaimer V2:</span> This model in particular is in its testing phase. We dont really know the accuracy.
+                <span class="font-bold">Disclaimer 2:</span> This model in particular is in its testing phase. We  dont really know the accuracy.
               </p>
           )}
+        <p class="text-xs text-gray-500">
+            <span class="font-bold">Legal Disclaimer: </span> Our sports betting AI is provided for informational and entertainment purposes only. We do not guarantee the accuracy of our predictions or any financial or other outcomes resulting from the use of our AI. We are not responsible for any decisions or actions taken based on the information provided by our AI. Betting on sports carries a high level of risk and may result in financial loss. Please gamble responsibly.
+        </p>
       </div>
     </>
   );

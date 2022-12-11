@@ -10,7 +10,7 @@ const Home: Component = () => {
         <div class="mx-auto max-w-[43rem]">
           <div class="text-center ">
             <h1 class="mt-1 text-[3.0rem] font-bold leading-[4rem] tracking-tight text-white">Accuribet</h1>
-            <p class="text-xl font-medium leading-8 text-gray-400">Accuribet is a website that utilizes a neural network to predict the outcome of NBA games. We use 98 unique data points and 10 years of historic data to predict the outcome.</p>
+            <p class="text-xl font-medium leading-8 text-gray-400">Accuribet is a website that utilizes a neural network to predict the outcome of NBA games. We use 43-49 unique data points and 10 years of historic data to predict the outcome.</p>
             <p class="mt-3 text-lg leading-relaxed text-slate-400">By: Alexander Diaz, Connor Smith &amp; Damon Montague</p>
           </div>
 

@@ -37,12 +37,10 @@ pub async fn predict_all(
         ApiError::Unknown
     })?;
 
-
     if !directory_exists(&format!("{}/{}", dir, model_name)) {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
-
 
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;

@@ -28,6 +28,7 @@ export interface Prediction {
   game_id: string;
   prediction: string;
   prediction_type: string
+  confidence: number;
 }
 
 
