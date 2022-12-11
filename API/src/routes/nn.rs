@@ -71,21 +71,21 @@ pub async fn predict_all(
 }
 #[derive(Deserialize)]
 pub struct HistoryQueryParams {
-    pub date: String
+    pub date: String,
+    pub model_name: String
 }
 
 pub async fn history(
      params: web::Query<HistoryQueryParams>,
      pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
 ) -> Result<HttpResponse, ApiError> {
-    let param = params.into_inner();
-    let date = param.date;
+    let params = params.into_inner();
     let mut pooled_conn = pool.get().map_err(|error| {
         warn!("Could not get connection from pool. Error: {}", error);
         ApiError::DatabaseError
     })?;
     let connection = pooled_conn.deref_mut();
-    let games =  get_saved_games_by_date(&date, connection)?;
+    let games =  get_saved_games_by_date(&params, connection)?;
 
     Ok(HttpResponse::Ok().json(games))
 }

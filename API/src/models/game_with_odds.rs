@@ -4,9 +4,12 @@ use crate::{util::string::remove_quotes, models::daily_games::G};
 use diesel::prelude::*;
 use log::{error};
 use crate::models::api_error::ApiError;
+use crate::models::prediction::Prediction;
 use crate::models::schema::*;
+use crate::models::schema::saved_games::model_name;
+use crate::routes::nn::HistoryQueryParams;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct GameWithOdds {
     pub game_id: String,
     pub date: String,
@@ -52,9 +55,25 @@ impl GameWithOdds {
         }
     }
 
-    pub fn into_saved_game(self, our_winner: Option<String>) -> SavedGame {
+    pub fn into_saved_game(
+        self,
+        our_prediction: Option<&Prediction>,
+        saved_model_name: &str
+    ) -> SavedGame {
         let home_team_score = self.home_team_score.parse::<i32>().unwrap_or(0);
         let away_team_score = self.away_team_score.parse::<i32>().unwrap_or(0);
+
+
+        let prediction = our_prediction.map(|prediction| prediction.prediction.clone());
+
+        let confidence = match our_prediction {
+            Some(prediction) => {
+                prediction.confidence.map(|confidence| confidence as f64)
+            },
+            None => None
+        };
+
+
         SavedGame {
             game_id: self.game_id,
             date: self.date,
@@ -67,7 +86,12 @@ impl GameWithOdds {
             home_team_score: self.home_team_score,
             away_team_name: self.away_team_name,
             away_team_score: self.away_team_score,
-            our_projected_winner: our_winner
+            model_name: saved_model_name.to_owned(),
+            confidence,
+            prediction,
+
+
+
         }
     }
 
@@ -76,7 +100,7 @@ impl GameWithOdds {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Odds {
     pub book_name: String,
     pub home_team_odds: i32,
@@ -86,7 +110,7 @@ pub struct Odds {
 }
 
 #[derive(Identifiable, Insertable, Queryable, Serialize, Deserialize)]
-#[diesel(primary_key(game_id))]
+#[diesel(primary_key(game_id, model_name))]
 #[diesel(table_name = saved_games)]
 pub struct SavedGame {
     pub game_id: String,
@@ -95,8 +119,10 @@ pub struct SavedGame {
     pub away_team_name: String,
     pub away_team_score: String,
     pub winner: String,
-    pub our_projected_winner: Option<String>,
-    pub date: String
+    pub prediction: Option<String>,
+    pub date: String,
+    pub model_name: String,
+    pub confidence: Option<f64>,
 }
 
 
@@ -113,6 +139,7 @@ impl SavedGame {
         {
             let s: i64 = saved_games::table
                 .filter(saved_games::game_id.eq(&self.game_id))
+                .filter(saved_games::model_name.eq(&self.model_name))
                 .count()
                 .get_result::<i64>(conn)?;
             Ok(s > 0)
@@ -120,10 +147,14 @@ impl SavedGame {
     }
 }
 
-pub fn get_saved_games_by_date(date: &String, con: &mut PgConnection) -> Result<Vec<HistoryModel>, ApiError> {
+pub fn get_saved_games_by_date(params: &HistoryQueryParams, con: &mut PgConnection) -> Result<Vec<HistoryModel>, ApiError> {
+
+    let date = &params.date;
+    let other_model_name = &params.model_name;
 
     let games: Vec<SavedGame> = saved_games::table
         .filter(saved_games::date.eq(date))
+        .filter(model_name.eq(other_model_name))
         .load::<SavedGame>(con).unwrap();
 
 
@@ -141,18 +172,52 @@ pub fn get_saved_games_by_date(date: &String, con: &mut PgConnection) -> Result<
 
 
 
-pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<String>, ApiError> {
-    match saved_games::table
-        .select(saved_games::date)
+pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<DateModel>, ApiError> {
+    let model_names: Vec<String> = match saved_games::table
+        .select(model_name)
         .distinct()
         .load::<String>(con) {
-        Ok(dates) => Ok(dates),
+        Ok(names) => Ok(names),
         Err(e) => {
-            error!("Error getting saved games dates: {}", e);
+            error!("Error getting model names: {}", e);
             Err(ApiError::DatabaseError)
         }
+    }?;
+
+    let mut model_and_dates = vec![];
+    for model in model_names {
+        let dates: Vec<String> = match saved_games::table
+            .select(saved_games::date)
+            .filter(model_name.eq(&model))
+            .distinct()
+            .load::<String>(con) {
+            Ok(dates) => Ok(dates),
+            Err(e) => {
+                error!("Error getting saved games dates: {}", e);
+                Err(ApiError::DatabaseError)
+            }
+        }?;
+        model_and_dates.push(
+            DateModel {
+                model_name: model,
+                dates
+            }
+        );
     }
+
+    Ok(model_and_dates)
+
+    // select models and get the dates for each model
+
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct DateModel {
+    pub dates: Vec<String>,
+    pub model_name: String,
+}
+
+
 #[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct Injuries {
     #[serde(skip)]
