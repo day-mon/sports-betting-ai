@@ -1,4 +1,4 @@
-import {Component, createSignal, For, onMount, Show, Suspense} from 'solid-js';
+import {Component, createEffect, createSignal, For, on, onMount, Show, Suspense} from 'solid-js';
 import {fetchHelper} from '../util/fetchHelper';
 import {Loading} from '../components/Loading';
 import {NoData} from '../components/NoData';
@@ -24,11 +24,12 @@ const History: Component = () => {
     const [loading, setLoading] = createSignal(true);
     const [historyLoading, setHistoryLoading] = createSignal(false);
     const [dates, setDates] = createSignal([] as HistoryDates[]);
+    const [jsDates, setJsDates] = createSignal([] as Date[]);
     const [history, setHistory] = createSignal([] as SavedHistory[]);
     const [date, setDate] = createSignal(undefined as Date | undefined);
-    const [fetching, setFetching] = createSignal(false);
     const [modelSelected, setModelSelected] = createSignal('');
     const [funcRan, setFuncRan] = createSignal(0);
+    const [calOpen, setCalOpen] = createSignal(false);
 
 
     const getBaseUrl = (useRemote?: boolean) => {
@@ -61,6 +62,7 @@ const History: Component = () => {
 
     const yesterdayDate = (d: Date) => {
         const h = new Date(d);
+        console.log(h);
         h.setDate(h.getDate() - 1);
         return h;
     };
@@ -72,13 +74,18 @@ const History: Component = () => {
     };
 
     const getGamesOnDate = async (modelName: string, date?: Date) => {
-        if (!date) return;
+        if (!date) {
+            console.log("no date");
+            return
+        }
         let year = date.getFullYear();
         let month = date.getMonth() + 1;
         let day = ('0' + date.getDate()).slice(-2);
 
+        let hour = new Date().getHours();
+
         let formattedDate = `${year}-${month}-${day}`;
-        if (sessionStorage.getItem(`${formattedDate}_${modelName}`)) {
+        if (sessionStorage.getItem(`${formattedDate}_${modelName}_${hour}`)) {
             let games = JSON.parse(sessionStorage.getItem(`${formattedDate}_${modelName}`) as string) as SavedHistory[];
             setHistory(games);
             return;
@@ -100,7 +107,7 @@ const History: Component = () => {
             return;
         }
         const games = (await response.json()) as SavedHistory[];
-        sessionStorage.setItem(`${formattedDate}_${modelName}`, JSON.stringify(games));
+        sessionStorage.setItem(`${formattedDate}_${modelName}_${hour}`, JSON.stringify(games));
         setHistory(games);
         setFuncRan(funcRan() + 1);
         setHistoryLoading(false);
@@ -122,6 +129,10 @@ const History: Component = () => {
         return Math.round((won / games.length) * 100);
     };
 
+
+
+
+
     const getPredictedWinColor = () => {
         let winPercentage = getWinPercentage(history());
         if (winPercentage > 50 && winPercentage < 60) return 'text-yellow-500';
@@ -133,15 +144,26 @@ const History: Component = () => {
         return dates().some((date) => date.model_name.includes(option.key));
     });
 
-    const getSelectedModelDates = () => {
-        let modelDates = dates().flatMap(historyModel => historyModel.dates);
-        return modelDates
-            .map((date) => {
-                let [year, month, day] = date.split('-');
-                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            })
-            .sort((a, b) => a.getTime() - b.getTime());
+    const getCalenderForDates = (minDate: Date, maxDate: Date, currentDate: Date) => {
+        return (
+            <DateTimePicker
+                customizeCalendar={'m-0'}
+                minDate={minDate}
+                maxDate={maxDate}
+                dateFormat={'Y-M-D'}
+                currentDate={currentDate}
+                enableSelectedDateEditor={false}
+                enableSelectedDate={false}
+                calendarResponse={async (props) => {
+                    props.setCalendarState(calOpen());
+                    setDate(props.currentDate);
+                    props.currentDate = date();
+                    await getGamesOnDate(modelSelected(), props.currentDate);
+                }}
+            />
+        )
     }
+
 
     return (
         <Suspense fallback={<Loading/>}>
@@ -159,34 +181,31 @@ const History: Component = () => {
                     <h5 class={"mb-2 text-white font-bold text-base"}>Select a model</h5>
                     <LoadingSelect disabled={historyLoading()} options={getOptions()} onInput={(e) => {
                         setModelSelected(e.target.value);
-                        setDate(undefined);
+
+                        let newDatesHist = dates().find(d => d.model_name.includes(e.target.value));
+                        if (!newDatesHist) return;
+                        let newDates = newDatesHist.dates
+                            .map((date) => {
+                                let [year, month, day] = date.split('-');
+                                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                            }).sort((a, b) => a.getTime() - b.getTime());
+
+                        setJsDates(newDates);
                     }}/>
+
+
 
                     <Show when={modelSelected() !== 'None' && modelSelected() !== ''}  keyed>
                         <div class={'text-white text-center mt-6 mb-5'}>
                             <span class={"font-bold mt-0"}>About this model</span>: {MODEL_OPTIONS.find((option) => option.key === modelSelected())?.description}
                         </div>
                     </Show>
-
-                    <Show when={modelSelected() !== ''} keyed>
-                        <DateTimePicker
-                            minDate={yesterdayDate(getSelectedModelDates()[0])}
-                            maxDate={tomorrowDate(getSelectedModelDates()[dates().length - 1])}
-                            customizeCalendar={'m-0'}
-                            customizeTogglerCalendarIcon={'stroke-current text-white'}
-                            dateFormat={'Y-M-D'}
-                            currentDate={getSelectedModelDates()[dates().length - 1]}
-                            enableSelectedDateEditor={false}
-                            enableSelectedDate={false}
-                            calendarResponse={async (props) => {
-                                props.setCalendarState(false);
-                                if (date()?.toDateString() == props.currentDate?.toDateString() && funcRan() !== 0) return;
-                                setDate(props.currentDate);
-                                props.currentDate = date();
-                                await getGamesOnDate(modelSelected(), props.currentDate);
-                            }}
-                        />
-                    </Show>
+                    { modelSelected() && (
+                        getCalenderForDates(yesterdayDate(jsDates()[0]),
+                            tomorrowDate(jsDates()[jsDates().length - 1]),
+                            jsDates()[jsDates().length - 1]
+                        )
+                    )}
                 </div>
                 <Show when={!historyLoading()} fallback={<Loading/>} keyed>
                     <div class="flex flex-col items-center mt-15 justify-center w-full h-full">

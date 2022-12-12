@@ -108,7 +108,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
             </Show>
         </div>
       </Show>
-        <Show when={props.prediction?.confidence}>
+        <Show when={props.prediction?.confidence} keyed>
             <div class="flex flex-row font-extrabold flex-row justify-center ">
             {`Confidence:`}
             <span class="flex flex-col font-medium pl-2">{` ${getPercentageRounded(props.prediction!.confidence)}%`}</span>
