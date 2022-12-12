@@ -82,15 +82,9 @@ const History: Component = () => {
         let month = date.getMonth() + 1;
         let day = ('0' + date.getDate()).slice(-2);
 
-        let hour = new Date().getHours();
-
         let formattedDate = `${year}-${month}-${day}`;
 
-        if (sessionStorage.getItem(`${formattedDate}_${modelName}_${hour}`)) {
-            let games = JSON.parse(sessionStorage.getItem(`${formattedDate}_${modelName}`) as string) as SavedHistory[];
-            setHistory(games);
-            return;
-        }
+
         setHistoryLoading(true);
         let url = `${getBaseUrl()}/sports/history?date=${formattedDate}&model_name=${modelName}`;
         let response = await fetchHelper(url);
@@ -107,7 +101,6 @@ const History: Component = () => {
             return;
         }
         const games = (await response.json()) as SavedHistory[];
-        sessionStorage.setItem(`${formattedDate}_${modelName}_${hour}`, JSON.stringify(games));
         setHistory(games);
         setFuncRan(funcRan() + 1);
         setHistoryLoading(false);
