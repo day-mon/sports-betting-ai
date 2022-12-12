@@ -4,3 +4,8 @@ export const MODEL_OPTIONS =
         {key: 'v2', value: 'Money Line (V2)', description: 'The V2 Model model differs from the V1 model in that it has a confidence value associated with each prediction. We also use 43 features instead of 49.'},
         {key: 'ou', value: 'Over Under (Beta)', description: 'The Over Under model predicts the total score of the game. This model uses the same overall team statistics as the V1 & V2 model. '},
     ];
+export const getBaseUrl = (useRemote?: boolean) => {
+    const remoteUrl = 'https://api.accuribet.win';
+    if (useRemote) return remoteUrl;
+    return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
+};

@@ -44,7 +44,7 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:latest
           docker push --all-tags $IMAGE_ID
         working-directory: ./Website
-  deploy:
+  deploy-and-purge:
     needs:
       - build-website
     runs-on: ubuntu-latest
@@ -56,6 +56,13 @@ jobs:
           method: 'POST'
           timeout: 60000
           customHeaders: '{"Authorization": "Bearer ${{ secrets.TOKEN }}"}'
-
+      - name: Purge Cloudflare Cache
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE }}/purge_cache'
+          method: 'POST'
+          timeout: 60000
+          customHeaders: '{"Authorization": "Bearer ${{ secrets.CF_TOKEN }}"}'
+          data: '{"purge_everything":true}'
 
 

@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.5.0",
-    "date-time-picker-solid": "^1.0.8",
     "solid-headless": "^0.13.0",
     "solid-js": "^1.5.1",
     "solid-tippy": "^0.2.0",

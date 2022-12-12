@@ -5,7 +5,6 @@ import { GameCard } from '../components/GameCard';
 import { Loading } from '../components/Loading';
 import { NoData } from '../components/NoData';
 import { fetchHelper } from '../util/fetchHelper';
-import { getWinner } from "./History";
 import LoadingSelect from "../components/LoadingSelect";
 import {MODEL_OPTIONS} from "../constants";
 
@@ -99,6 +98,15 @@ const Bets: Component = () => {
   });
 
 
+  const getWinner = (game: Game) => {
+    let home_score = game.home_team_score;
+    let away_score = game.away_team_score;
+
+    let home_score_int = parseInt(home_score);
+    let away_score_int = parseInt(away_score);
+
+    return home_score_int > away_score_int ? game.home_team_name : game.away_team_name;
+  };
 
 
   const betInterval = setInterval(async () => {
@@ -129,6 +137,8 @@ const Bets: Component = () => {
           return 0;
         }
       }
+
+
 
       if (a.start_time.includes('Final')) {
         let prediction = findPrediction(a);
