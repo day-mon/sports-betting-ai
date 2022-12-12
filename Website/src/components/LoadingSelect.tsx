@@ -3,6 +3,7 @@ import {Component, For, Show} from "solid-js";
 interface iLoadingSelectProps {
     children?: any;
     disabled: boolean;
+    class?: string
     options: {key: string, value: string}[];
     // async onInput function
     onInput: (e: any) => void;
@@ -20,7 +21,7 @@ export const LoadingSelect: Component<iLoadingSelectProps> = (props: iLoadingSel
             <select class={"rounded-lg bg-transparent text-center p-2 border border-white text-white"} onInput={props.onInput}>
                 <option value="" disabled selected>None</option>
                 <For each={props.options}>
-                    {(option) => <option value={option.key} disabled={props.disabled}>{option.value}</option>}
+                    {(option) => <option class={"text-black"} value={option.key} disabled={props.disabled}>{option.value}</option>}
                 </For>
                 {props.children}
             </select>

@@ -1,6 +1,4 @@
 import type { Component } from 'solid-js';
-import { Routes, Route } from '@solidjs/router';
-import Bets from './Bets';
 
 const Home: Component = () => {
   // just doing this for fun change if needed

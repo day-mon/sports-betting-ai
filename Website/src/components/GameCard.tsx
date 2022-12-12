@@ -1,5 +1,5 @@
 import { Component, createSignal, For, Show } from 'solid-js';
-import { Game, Injury, Odd, Prediction } from '../models';
+import {Game, Injury, Odd, Prediction, SavedGame} from '../models';
 import { Transition } from 'solid-transition-group';
 import Modal from './Modal';
 import InjuryModal from './modals/InjuryModal';
@@ -10,7 +10,15 @@ interface IBetCards {
   showDropdown: boolean;
   setShowDropdown: () => void;
 }
+export const getTotalScore = (game: Game | SavedGame) => {
+    let home_score = game.home_team_score;
+    let away_score = game.away_team_score;
 
+    let home_score_int = parseInt(home_score);
+    let away_score_int = parseInt(away_score);
+
+    return home_score_int + away_score_int;
+};
 export const GameCard: Component<IBetCards> = (props: IBetCards) => {
   const [showInjury, setShowInjury] = createSignal(false);
 
@@ -24,15 +32,6 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     return home_score_int > away_score_int ? game.home_team_name : game.away_team_name;
   };
 
-    const getTotalScore = (game: Game) => {
-        let home_score = game.home_team_score;
-        let away_score = game.away_team_score;
-
-        let home_score_int = parseInt(home_score);
-        let away_score_int = parseInt(away_score);
-
-        return home_score_int + away_score_int;
-    };
 
   const getInjuries = (game: Game): Injury[] => {
     const arr = [];
@@ -82,8 +81,6 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
       <h6 class="flex mb-1 text-xl flex-row justify-center items-center">
         {`${props.game.home_team_name} vs ${props.game.away_team_name}`}
       </h6>
-
-
 
 
       <Show when={props.game.home_team_score != '' || props.game.away_team_score != ''} keyed>

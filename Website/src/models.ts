@@ -24,6 +24,11 @@ export interface Odd {
   away_team_opening_odds: number;
 }
 
+export interface HistoryDates {
+    model_name: string;
+    dates: string[];
+}
+
 export interface Prediction {
   game_id: string;
   prediction: string;
@@ -53,6 +58,8 @@ export interface SavedGame {
   away_team_name: string;
   away_team_score: string;
   winner: string;
-  our_projected_winner: string;
+  model_name: string;
+  prediction: string;
+  confidence: number;
   date: string;
 }
