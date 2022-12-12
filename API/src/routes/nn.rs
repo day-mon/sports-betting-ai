@@ -37,12 +37,10 @@ pub async fn predict_all(
         ApiError::Unknown
     })?;
 
-
     if !directory_exists(&format!("{}/{}", dir, model_name)) {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
-
 
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
@@ -66,28 +64,28 @@ pub async fn predict_all(
     let date = remove_quotes(&daily_games.gs.gdte);
 
     let matches: Vec<Match> = daily_games.gs.g.into_iter().map(Match::from_game).collect();
-    let model_data = get_model_data(&matches, &date).await?;
+    let model_data = get_model_data(&matches, &date, &model_name).await?;
     let prediction = call_model(&model_data, &matches, &model_name)?;
     store_in_cache(&client, &prediction_key, &prediction);
     Ok(HttpResponse::Ok().json(prediction))
 }
 #[derive(Deserialize)]
 pub struct HistoryQueryParams {
-    pub date: String
+    pub date: String,
+    pub model_name: String
 }
 
 pub async fn history(
      params: web::Query<HistoryQueryParams>,
      pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
 ) -> Result<HttpResponse, ApiError> {
-    let param = params.into_inner();
-    let date = param.date;
+    let params = params.into_inner();
     let mut pooled_conn = pool.get().map_err(|error| {
         warn!("Could not get connection from pool. Error: {}", error);
         ApiError::DatabaseError
     })?;
     let connection = pooled_conn.deref_mut();
-    let games =  get_saved_games_by_date(&date, connection)?;
+    let games =  get_saved_games_by_date(&params, connection)?;
 
     Ok(HttpResponse::Ok().json(games))
 }

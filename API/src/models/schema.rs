@@ -12,19 +12,19 @@ diesel::table! {
 }
 
 diesel::table! {
-    saved_games (game_id) {
+    saved_games (game_id, model_name) {
         game_id -> Text,
         home_team_name -> Text,
         home_team_score -> Text,
         away_team_name -> Text,
         away_team_score -> Text,
         winner -> Text,
-        our_projected_winner -> Nullable<Text>,
+        prediction -> Nullable<Text>,
         date -> Text,
+        model_name -> Text,
+        confidence -> Nullable<Float8>,
     }
 }
-
-diesel::joinable!(injuries -> saved_games (game_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     injuries,
