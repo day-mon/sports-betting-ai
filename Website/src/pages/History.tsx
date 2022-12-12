@@ -29,7 +29,7 @@ const History: Component = () => {
     const [date, setDate] = createSignal(undefined as Date | undefined);
     const [modelSelected, setModelSelected] = createSignal('');
     const [funcRan, setFuncRan] = createSignal(0);
-    const [calOpen, setCalOpen] = createSignal(false);
+    const [oldModel, setOldModel] = createSignal('');
 
 
     const getBaseUrl = (useRemote?: boolean) => {
@@ -85,12 +85,12 @@ const History: Component = () => {
         let hour = new Date().getHours();
 
         let formattedDate = `${year}-${month}-${day}`;
+
         if (sessionStorage.getItem(`${formattedDate}_${modelName}_${hour}`)) {
             let games = JSON.parse(sessionStorage.getItem(`${formattedDate}_${modelName}`) as string) as SavedHistory[];
             setHistory(games);
             return;
         }
-
         setHistoryLoading(true);
         let url = `${getBaseUrl()}/sports/history?date=${formattedDate}&model_name=${modelName}`;
         let response = await fetchHelper(url);
@@ -155,7 +155,17 @@ const History: Component = () => {
                 enableSelectedDateEditor={false}
                 enableSelectedDate={false}
                 calendarResponse={async (props) => {
-                    props.setCalendarState(calOpen());
+                    props.setCalendarState(false);
+
+                    if (date()?.toDateString() == props.currentDate?.toDateString() && oldModel() === modelSelected() &&  funcRan() !== 0) return;
+                    let modelDates = dates().find((historyDate) => historyDate.model_name === modelSelected())
+                    if (!modelDates) return;
+                    let dateExists = modelDates.dates.some((d) => {
+                        let date = new Date(d);
+                        return date.toDateString() === props.currentDate?.toDateString();
+                    });
+                    if (!dateExists) return;
+
                     setDate(props.currentDate);
                     props.currentDate = date();
                     await getGamesOnDate(modelSelected(), props.currentDate);
@@ -180,6 +190,7 @@ const History: Component = () => {
                 <div class="flex flex-col items-center justify-center">
                     <h5 class={"mb-2 text-white font-bold text-base"}>Select a model</h5>
                     <LoadingSelect disabled={historyLoading()} options={getOptions()} onInput={(e) => {
+                        setOldModel(modelSelected());
                         setModelSelected(e.target.value);
 
                         let newDatesHist = dates().find(d => d.model_name.includes(e.target.value));
