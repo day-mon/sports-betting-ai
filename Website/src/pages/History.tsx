@@ -125,6 +125,7 @@ const History: Component = () => {
             </Show>
             <Show when={!loading() && savedDates().length !== 0} keyed>
                 <div class="flex flex-col items-center">
+                    <h1 class="text-base mb-4 mt-2 text-white font-bold text-center">Select a model you'd like to see the history of</h1>
                     <LoadingSelect disabled={fetchingGamesOnDate()} options={getOptions()} onInput={async (e) => {
                         let modelName = e.target.value;
                         let oldModel = model();

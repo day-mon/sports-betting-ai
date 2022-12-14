@@ -17,12 +17,12 @@ const getBaseUrl = (useRemote?: boolean) => {
 
 
 const Bets: Component = () => {
-  const [bets, setBets] = createSignal([] as Game[]);
+  const [bets, setBets] = createSignal<Game[]>([]);
+  const [cardsShow, setCardsShow] = createSignal<boolean[]>([]);
+  const [predictions, setPredictions] = createSignal<Prediction[]>([]);
   const [loading, setLoading] = createSignal(true);
   const [error, setError] = createSignal(false);
-  const [predictions, setPredictions] = createSignal([] as Prediction[]);
   const [disabled, setDisabled] = createSignal(false);
-  const [cardsShow, setCardsShow] = createSignal([] as boolean[]);
   const [modelSelected, setModelSelected] = createSignal('')
 
   const fetchPredictions = async (model_name: string) => {
@@ -72,7 +72,7 @@ const Bets: Component = () => {
 
     setError(false);
 
-    const data = (await response.json()) as Game[];
+    const data = await response.json() as Game[]
     setBets(data);
   };
 
@@ -111,7 +111,8 @@ const Bets: Component = () => {
 
   const betInterval = setInterval(async () => {
     await fetchBets(true);
-  },45_000);
+  }, 45_000);
+
 
   const sortedBetsByTime = (games: Game[]) =>
     games.sort((a, b) => {
@@ -200,9 +201,7 @@ const Bets: Component = () => {
               await fetchPredictions(modelSelected())
             }} />
             <Show when={modelSelected() !== 'None' && modelSelected() !== ''}  keyed>
-            <div class={'text-white text-center mt-3'}>
-              <span class={"font-bold"}>About this model</span>: {MODEL_OPTIONS.find((option) => option.key === modelSelected())?.description}
-            </div>
+              <a href={`/about/${modelSelected()}`} class="text-white hover:underline text-center mt-4">Learn more about {modelSelected().toUpperCase()}</a>
           </Show>
           </div>
           <Index each={sortedBetsByTime(bets())}>{(game, index) => <GameCard showDropdown={cardsShow()[index]} setShowDropdown={() => changeCardShow(index)} prediction={findPrediction(game())} game={game()} />}</Index>

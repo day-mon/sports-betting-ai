@@ -5,7 +5,7 @@
 
 <h2 align="center">Accuribet</h2>
 <p align="center">
-  A new way to bet on sports. Accuribet utilizes machine learning to predict the outcome of sporting events. We use 43-49 different data points to predict the outcome of a game. In our testing phase we have been able to predict the outcome of games with 60-70% accuracy.
+  A new way to bet on sports. Accuribet utilizes machine learning to predict the outcome of sporting events. We use 42-48 different data points to predict the outcome of a game. In our testing phase we have been able to predict the outcome of games with 60-70% accuracy.
   <br/>
     <a href="https://accuribet.win">View Live Website</a>
     ·

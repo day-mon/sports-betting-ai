@@ -79,7 +79,7 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
     let sig_in_name = if model_name != "v2" {
         "input_layer_input"
     } else {
-        "flatten_3_input"
+        "flatten_4_input"
     };
     let sig_out_name = "output_layer";
 
@@ -87,7 +87,6 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
 
     let mut inputs: Vec<Prediction> = Vec::with_capacity(rows);
 
-    info!("Rows: {}, Columns: {}", rows, columns);
 
     for row_index in 0..rows
     {
@@ -105,6 +104,7 @@ pub fn call_model(df: &DataFrame, matches: &[Match], model_name: &String) -> Res
             error!("Error occurred trying to load model: {}", err);
             ApiError::ModelError
         })?;
+
 
         let session = &bundle.session;
         let signature =  bundle.meta_graph_def().get_signature("serving_default").map_err(|e| {

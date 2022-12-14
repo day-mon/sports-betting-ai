@@ -92,6 +92,8 @@ async fn main() -> std::io::Result<()> {
                             .route("/games", web::get().to(nn::games))
                             .route("/history", web::get().to(nn::history))
                             .route("/history/dates", web::get().to(nn::history_dates))
+                            .route("/model/accuracy", web::get().to(nn::model_accuracy))
+
             )
     })
         .bind(endpoint)?

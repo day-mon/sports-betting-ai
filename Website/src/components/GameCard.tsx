@@ -148,7 +148,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 <tbody>
                 <For each={props.game.odds}>
                   {(odd) => (
-                      <tr class="order-bbg-gray-800 border-gray-700">
+                      <tr class="bg-gray-800 border-gray-700">
                         <th class="py-4 text-center text-white px-6">{odd.book_name.replace(/_/g, ' ').toUpperCase()}</th>
                         <th class="py-4 text-center text-white px-6">{odd.home_team_odds > 0 ? '+' + odd.home_team_odds : odd.home_team_odds}</th>
                         <th class="py-4 text-center text-white px-6">{odd.away_team_odds > 0 ? '+' + odd.away_team_odds : odd.away_team_odds}</th>

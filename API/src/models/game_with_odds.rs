@@ -1,7 +1,9 @@
 use diesel::{Insertable, PgConnection, Queryable};
+use diesel::dsl::sql;
 use serde::{Deserialize, Serialize};
 use crate::{util::string::remove_quotes, models::daily_games::G};
 use diesel::prelude::*;
+use diesel::sql_types::{Bool, Float8,};
 use log::{error};
 use crate::models::api_error::ApiError;
 use crate::models::prediction::Prediction;
@@ -147,6 +149,24 @@ impl SavedGame {
     }
 }
 
+
+pub fn get_model_win_rate(other_model_name: &str, conn: &mut PgConnection) -> Result<f64, ApiError> {
+    let select = format!("CAST(COUNT(prediction) AS FLOAT) / (SELECT COUNT(*) FROM saved_games WHERE model_name = '{}') * 100 AS percentage_correct", other_model_name);
+    let percentage_correct: f64 = saved_games::table
+        .select(sql::<Float8>(select.as_str()))
+        .filter(sql::<Bool>("prediction = winner"))
+        .filter(model_name.eq(other_model_name))
+        .get_result(conn)
+        .map_err(|error|  {
+            error!("Error occurred while getting win rate for model {}: {}", other_model_name, error);
+            ApiError::DatabaseError
+        })?;
+
+
+    Ok(percentage_correct)
+
+}
+
 pub fn get_saved_games_by_date(params: &HistoryQueryParams, con: &mut PgConnection) -> Result<Vec<HistoryModel>, ApiError> {
 
     let date = &params.date;
@@ -161,7 +181,6 @@ pub fn get_saved_games_by_date(params: &HistoryQueryParams, con: &mut PgConnecti
     let mut games_with_injuries: Vec<(SavedGame, Vec<InjuryStore>)> = Vec::new();
     for game in games
     {
-
         let injs = get_injuries_by_game_id(&game.game_id, con)?;
         games_with_injuries.push((game, injs));
     }
@@ -206,9 +225,6 @@ pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<DateModel>, ApiError
     }
 
     Ok(model_and_dates)
-
-    // select models and get the dates for each model
-
 }
 
 #[derive(Serialize, Deserialize)]

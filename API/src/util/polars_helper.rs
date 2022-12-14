@@ -33,6 +33,7 @@ pub fn drop_columns(df: &mut DataFrame, model_name: &str)  {
             "PLUS_MINUS",
             "W_RANK",
             "L_RANK",
+            "MIN_RANK",
             "PLUS_MINUS_RANK",
       ]);
     }

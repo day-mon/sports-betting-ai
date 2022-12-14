@@ -11,7 +11,7 @@ use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_ex
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
-use crate::models::game_with_odds::{get_data_dates, get_saved_games_by_date, Injuries};
+use crate::models::game_with_odds::{get_data_dates, get_model_win_rate, get_saved_games_by_date, Injuries};
 use crate::models::prediction::Prediction;
 use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
@@ -100,6 +100,43 @@ pub async fn history_dates(
     let connection = pooled_conn.deref_mut();
     let dates = get_data_dates(connection)?;
     Ok(HttpResponse::Ok().json(dates))
+}
+
+#[derive(Deserialize)]
+pub struct ModelAccuracy {
+    pub model_name: String
+}
+
+pub async fn model_accuracy(
+    params: web::Query<ModelAccuracy>,
+    pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
+) -> Result<HttpResponse, ApiError> {
+    let dir = std::env::var("MODEL_DIR").map_err(|error| {
+        error!("Error while attempting to get model directory env variable. This should've never happened?. Error: {}", error);
+        ApiError::Unknown
+    })?;
+    let inner_params = params.into_inner();
+    let model_name = inner_params.model_name;
+
+    if !directory_exists(&format!("{}/{}", dir, model_name)) {
+        error!("Could find model with the name {}", model_name);
+        return Err(ApiError::ModelNotFound)
+    }
+
+    if model_name ==  *"ou" {
+        return Ok(HttpResponse::Ok().json("Cannot get winrate for over/under model"))
+    }
+
+    let mut pooled_conn = pool.get().map_err(|error| {
+        warn!("Could not get connection from pool. Error: {}", error);
+        ApiError::DatabaseError
+    })?;
+
+    let connection = pooled_conn.deref_mut();
+
+    let perc = get_model_win_rate(&model_name, connection)?;
+    Ok(HttpResponse::Ok().json(perc))
+
 }
 
 pub async fn games() -> Result<HttpResponse, ApiError> {

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::ops::{DerefMut};
-use std::path::Path;
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::{ConnectionManager};
 use log::{error, info, warn};

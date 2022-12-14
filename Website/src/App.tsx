@@ -6,6 +6,8 @@ const Bets = lazy(() => import('./pages/Bets'));
 const Home = lazy(() => import('./pages/Home'));
 const History = lazy(() => import('./pages/History'));
 const Error = lazy(() => import('./pages/Error'));
+const About = lazy(() => import('./pages/About'));
+
 
 const App: Component = () => {
   return (
@@ -17,6 +19,7 @@ const App: Component = () => {
             <Route path="/" component={Home} />
             <Route path="/bets" component={Bets} />
             <Route path="/history" component={History} />
+            <Route path='/about/:model_name' component={About} />
             <Route path="*" component={Error} />
           </Routes>
         </div>
