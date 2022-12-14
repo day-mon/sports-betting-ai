@@ -23,7 +23,7 @@ const FEATURES = [
     { name: 'PF', longName: 'Personal Fouls' },
     { name: 'PFD', longName: 'Personal Fouls Drawn' },
     { name: 'PTS', longName: 'Points' },
-    { name: 'PLUS_MINUS', longName: 'Player=(Team Points Scored While That Player is On The Court) – (Team Points Allowed While That Player is On The Court)' },
+    { name: 'PLUS_MINUS', longName: 'Team points scored - Team points allowed' },
 ];
 
 const FEATURES_V2 = FEATURES.filter(i => i.name !== 'W' && i.name !== 'L' && i.name !== 'PLUS_MINUS');

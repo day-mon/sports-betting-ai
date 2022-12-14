@@ -48,7 +48,7 @@ const About: Component = () => {
                 <h2 class="text-xl font-bold text-center mb-2 text-gray-100">{model.value}</h2>
                 <span class={'font-bold text-sm text-center text-white'}>About this model:</span> <span class="text-sm  text-center text-gray-100">{model.description}</span>
                 <div class={'text-center'}>
-                    <span class={'mb-2 text-sm text-center text-white'} >In addition to these stats we use the teams ranking in comparison to everyone else for each of these stats. For example: Wins Ranking of the bucks may be first in the season</span>
+                    <span class={'mb-2 text-sm text-center text-white'} >In addition to these stats we use the teams ranking in comparison to everyone else for each of these stats. For example: Bucks may be 1st in Wins for the season or the Sixers are 8th in Field Goal Attempts</span>
                 </div>
                 <div class="overflow-x-auto relative  sm:rounded-lg">
                     <div class="mt-4">
