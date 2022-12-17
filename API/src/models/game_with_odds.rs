@@ -1,11 +1,12 @@
 use diesel::{Insertable, PgConnection, Queryable};
 use diesel::dsl::sql;
 use serde::{Deserialize, Serialize};
-use crate::{util::string::remove_quotes, models::daily_games::G};
+use crate::{util::string::remove_quotes};
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Float8,};
 use log::{error};
 use crate::models::api_error::ApiError;
+use crate::models::daily_games::Game;
 use crate::models::prediction::Prediction;
 use crate::models::schema::*;
 use crate::models::schema::saved_games::model_name;
@@ -15,11 +16,13 @@ use crate::routes::nn::HistoryQueryParams;
 pub struct GameWithOdds {
     pub game_id: String,
     pub date: String,
-    pub venue: String,
+    pub game_status: String,
     pub start_time: String,
     pub home_team_name: String,
     pub home_team_score: String,
     pub away_team_name: String,
+    pub home_team_record: (i64, i64),
+    pub away_team_record: (i64, i64),
     #[serde(skip)]
     pub home_team_abbr: String,
     #[serde(skip)]
@@ -36,21 +39,23 @@ pub struct GameWithOdds {
 }
 
 impl GameWithOdds {
-    pub fn from_g(match_up: &G, date: &str) -> GameWithOdds {
+    pub fn from_g(match_up: &Game, date: &str) -> GameWithOdds {
         GameWithOdds {
-            game_id: remove_quotes(&match_up.gid),
+            game_id: match_up.game_id.clone(),
             date: date.to_owned(),
-            venue: "".to_string(),
-            start_time: remove_quotes(&match_up.stt),
-            home_team_name: format!("{} {}", remove_quotes(&match_up.h.tc), remove_quotes(&match_up.h.tn)),
-            away_team_name: format!("{} {}", remove_quotes(&match_up.v.tc), remove_quotes(&match_up.v.tn)),
-            home_team_score: remove_quotes(&match_up.h.s),
-            away_team_score: remove_quotes(&match_up.v.s),
-            home_team_id: match_up.h.tid,
-            away_team_id: match_up.v.tid,
-            time_left: match_up.cl.as_ref().map(remove_quotes),
-            home_team_abbr: remove_quotes(&match_up.h.ta),
-            away_team_abbr: remove_quotes(&match_up.v.ta),
+            game_status: match_up.game_status_text.clone(),
+            home_team_record: (match_up.home_team.wins, match_up.home_team.losses),
+            away_team_record: (match_up.away_team.wins, match_up.away_team.losses),
+            start_time: match_up.game_et.clone(),
+            home_team_name: format!("{} {}", &match_up.home_team.team_city, &match_up.home_team.team_name),
+            away_team_name: format!("{} {}", &match_up.away_team.team_city, &match_up.away_team.team_name),
+            home_team_score: match_up.home_team.score.to_string(),
+            away_team_score: match_up.away_team.score.to_string(),
+            home_team_id: match_up.home_team.team_id,
+            away_team_id: match_up.away_team.team_id,
+            time_left: Option::from(match_up.game_clock.clone()),
+            home_team_abbr: match_up.home_team.team_tricode.clone(),
+            away_team_abbr: match_up.away_team.team_tricode.clone(),
             odds: Vec::new(),
             home_team_injuries: None,
             away_team_injuries: None,
@@ -98,7 +103,7 @@ impl GameWithOdds {
     }
 
     pub fn is_finished(&self) -> bool {
-        self.start_time == "Final"
+        self.game_status == "Final"
     }
 }
 

@@ -16,7 +16,7 @@ use crate::models::prediction::Prediction;
 use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
 
-const DAILY_GAMES_URL: &str = "https://data.nba.com/data/v2015/json/mobile_teams/nba/2022/scores/00_todays_scores.json";
+const DAILY_GAMES_URL: &str = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
 const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lvqyIHzLaFraGFTybxNeO/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
 const DAILY_INJURIES_URL: &str = "https://www.rotowire.com/basketball/tables/injury-report.php?team=ALL&pos=ALL";
 
@@ -45,11 +45,10 @@ pub async fn predict_all(
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
-    if daily_games.gs.g.is_empty() {
+    if daily_games.scoreboard.games.is_empty() {
         return Err(ApiError::GamesNotFound)
     }
-
-    let game_key = &daily_games.gs.g.iter().map(|gm| remove_quotes(&gm.gid)).collect::<Vec<String>>().join("_");
+    let game_key = daily_games.scoreboard.games.iter().map(|game| game.game_id.clone()).collect::<Vec<String>>().join("_");
     let prediction_key = format!("{}:{}", model_name, game_key);
 
     let client = redis.into_inner();
@@ -61,9 +60,9 @@ pub async fn predict_all(
     debug!("Cache Miss");
 
 
-    let date = remove_quotes(&daily_games.gs.gdte);
+    let date = &daily_games.scoreboard.game_date;
 
-    let matches: Vec<Match> = daily_games.gs.g.into_iter().map(Match::from_game).collect();
+    let matches: Vec<Match> = daily_games.scoreboard.games.into_iter().map(Match::from_game).collect();
     let model_data = get_model_data(&matches, &date, &model_name).await?;
     let prediction = call_model(&model_data, &matches, &model_name)?;
     store_in_cache(&client, &prediction_key, &prediction);
@@ -141,8 +140,9 @@ pub async fn model_accuracy(
 
 pub async fn games() -> Result<HttpResponse, ApiError> {
     let game_odds = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
-    let games = game_odds.gs.g;
-    let date = remove_quotes(&game_odds.gs.gdte);
+
+    let games = game_odds.scoreboard.games;
+    let date = game_odds.scoreboard.game_date;
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
     let game_odds = match get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await {
         Ok(odds) => odds,
@@ -166,7 +166,6 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
             continue
         };
 
-        game_to_edit.venue = game_view.venue_name;
         item.odds_views.retain(|o| o.is_some());
         game_to_edit.odds = item.odds_views.into_iter().map(|go| go.unwrap().into_odds()).collect();
     }
@@ -188,6 +187,8 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         game.home_team_injuries = Some(home_injuries);
         game.away_team_injuries = Some(away_injuries);
     }
+
+    println!("Flushing games to client");
 
     Ok(HttpResponse::Ok().json(g_w_o))
 }

@@ -82,6 +82,8 @@ pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, A
         ApiError::DeserializationError
     })?;
 
+    debug!("Response looks like: {}", response_body);
+
 
     let generic = serde_json::from_str::<T>(&response_body).map_err(|error| {
         error!("Error has occurred while deserializing | {}", error.to_string());
