@@ -187,9 +187,6 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         game.home_team_injuries = Some(home_injuries);
         game.away_team_injuries = Some(away_injuries);
     }
-
-    println!("Flushing games to client");
-
     Ok(HttpResponse::Ok().json(g_w_o))
 }
 

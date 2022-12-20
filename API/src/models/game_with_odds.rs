@@ -96,14 +96,11 @@ impl GameWithOdds {
             model_name: saved_model_name.to_owned(),
             confidence,
             prediction,
-
-
-
         }
     }
 
     pub fn is_finished(&self) -> bool {
-        self.game_status == "Final"
+        self.game_status.contains("Final")
     }
 }
 
