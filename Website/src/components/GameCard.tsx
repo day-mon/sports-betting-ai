@@ -56,16 +56,10 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
   };
 
   const getGameStatus = () => {
-    if (props.game.start_time.includes('ET')) {
-      return `Starting @ ${props.game.start_time}`;
-    } else if (props.game.start_time.includes('Final') || props.game.start_time.includes('Halftime') || props.game.start_time.includes('Tipoff')) {
-      return props.game.start_time;
+    if (props.game.game_status.includes('ET')) {
+      return `Starting @ ${props.game.game_status}`;
     } else {
-      return (
-        <span>
-          Current Quarter: {props.game.start_time} {props.game.time_left && !props.game.start_time.includes('End') && <span class="text.sm">({props.game.time_left})</span>}
-        </span>
-      );
+        return props.game.game_status;
     }
   };
 
@@ -79,7 +73,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
   return (
     <div class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-800 text-white">
       <h6 class="flex mb-1 text-xl flex-row justify-center items-center">
-        {`${props.game.home_team_name} vs ${props.game.away_team_name}`}
+          {` ${props.game.home_team_name} vs ${props.game.away_team_name}`}
       </h6>
 
 
@@ -99,7 +93,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
         <div class="flex flex-row font-extrabold flex-row justify-center ">
             <Show when={props.prediction!.prediction_type === "win-loss"} keyed>
               {`Projected Winner:`}
-                <span class={`flex flex-row pl-2 ${!props.game.start_time.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.start_time.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
+                <span class={`flex flex-row pl-2 ${!props.game.game_status.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.game_status.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
             </Show>
 
             <Show when={props.prediction!.prediction_type === 'score'} keyed>
@@ -108,16 +102,17 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
             </Show>
         </div>
       </Show>
-        <Show when={props.prediction?.confidence} keyed>
-            <div class="flex flex-row font-extrabold flex-row justify-center ">
-            {`Confidence:`}
-            <span class="flex flex-col font-medium pl-2">{` ${getPercentageRounded(props.prediction!.confidence)}%`}</span>
-            </div>
-        </Show>
-      <Show when={props.game.start_time.includes('Final')} keyed>
+
+      <Show when={props.game.game_status.includes('Final')} keyed>
         <div class="flex flex-row justify-center">{ props.prediction?.prediction_type === 'score' ? `Total Score: ${getTotalScore(props.game)}` : `Winner: ${getWinner(props.game)}`}</div>
           {props.prediction?.prediction_type == "score" &&  <div class="flex flex-row justify-center">{`Difference: ${(getTotalScore(props.game) - parseInt(props.prediction?.prediction))}`}</div>}
       </Show>
+        <Show when={props.prediction?.confidence} keyed>
+            <div class="flex flex-row font-extrabold flex-row justify-center ">
+                {`Confidence:`}
+                <span class="flex flex-col font-medium pl-2">{` ${getPercentageRounded(props.prediction!.confidence)}%`}</span>
+            </div>
+        </Show>
       <Show when={props.game.odds && props.game.odds.length !== 0} keyed>
         <div class="flex flex-row justify-center">
           <span onclick={props.setShowDropdown} class="text-xs cursor-pointer hover:underline text-white">
@@ -125,7 +120,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
           </span>
         </div>
       </Show>
-      <Show when={(props.game.home_team_injuries || props.game.away_team_injuries) && (props.game.home_team_injuries?.length > 0 || props.game.home_team_injuries?.length > 0)} keyed>
+      <Show when={(props.game.home_team_injuries || props.game.away_team_injuries) && (props.game.home_team_injuries!.length > 0 || props.game.away_team_injuries!.length > 0)} keyed>
         <div class="flex flex-row justify-center">
           <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300">
             ⚠️ View Injury Report

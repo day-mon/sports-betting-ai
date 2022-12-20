@@ -44,6 +44,7 @@ const Bets: Component = () => {
       setDisabled(false);
       return;
     }
+
     const data = (await response.json()) as Prediction[];
     setPredictions(data);
     sessionStorage.setItem(`predictions_${model_name}`, JSON.stringify(data));
@@ -116,23 +117,23 @@ const Bets: Component = () => {
 
   const sortedBetsByTime = (games: Game[]) =>
     games.sort((a, b) => {
-      if (a.start_time.includes('Qtr') || a.start_time.includes('Halftime')) {
-        if (a.start_time.includes('Qtr') && b.start_time.includes('Qtr')) {
-          return parseInt(a.start_time.split(' ')[1]) - parseInt(b.start_time.split(' ')[1]);
-        } else if (a.start_time.includes('Qtr') && b.start_time.includes('Halftime')) {
+      if (a.game_status.includes('Q') || a.game_status.includes('Halftime')) {
+        if (a.game_status.includes('Q') && b.game_status.includes('Q')) {
+          return parseInt(a.game_status.split(' ')[1]) - parseInt(b.game_status.split(' ')[1]);
+        } else if (a.game_status.includes('Q') && b.game_status.includes('Halftime')) {
           return -1;
-        } else if (a.start_time.includes('Halftime') && b.start_time.includes('Qtr')) {
+        } else if (a.game_status.includes('Halftime') && b.game_status.includes('Q')) {
           return 1;
         } else {
           return 0;
         }
       }
-      if (b.start_time.includes('Qtr') || b.start_time.includes('Halftime')) {
-        if (b.start_time.includes('Qtr') && a.start_time.includes('Qtr')) {
-          return parseInt(b.start_time.split(' ')[1]) - parseInt(a.start_time.split(' ')[1]);
-        } else if (b.start_time.includes('Qtr') && a.start_time.includes('Halftime')) {
+      if (b.game_status.includes('Q') || b.game_status.includes('Halftime')) {
+        if (b.game_status.includes('Q') && a.game_status.includes('Q')) {
+          return parseInt(b.game_status.split(' ')[1]) - parseInt(a.game_status.split(' ')[1]);
+        } else if (b.game_status.includes('Q') && a.game_status.includes('Halftime')) {
           return 1;
-        } else if (b.start_time.includes('Halftime') && a.start_time.includes('Qtr')) {
+        } else if (b.game_status.includes('Halftime') && a.game_status.includes('Q')) {
           return -1;
         } else {
           return 0;
@@ -141,19 +142,19 @@ const Bets: Component = () => {
 
 
 
-      if (a.start_time.includes('Final')) {
+      if (a.game_status.includes('Final')) {
         let prediction = findPrediction(a);
         let won = prediction?.prediction == getWinner(a)
         return won ? -1 : 1;
       }
-      if (b.start_time.includes('Final'))  {
+      if (b.game_status.includes('Final'))  {
         let prediction = findPrediction(a);
         let won = prediction?.prediction == getWinner(a)
         return won ? -1 : 1;
       }
 
-      const aTime = a.start_time.split(' ')[0].split(':');
-      const bTime = b.start_time.split(' ')[0].split(':');
+      const aTime = a.game_status.split(' ')[0].split(':');
+      const bTime = b.game_status.split(' ')[0].split(':');
       const aHour = parseInt(aTime[0]);
       const bHour = parseInt(bTime[0]);
       const aMinute = parseInt(aTime[1]);

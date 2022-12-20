@@ -67,7 +67,6 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
 
         for model in models
         {
-
             let games = games.clone();
 
             let prediction_url = format!("http://127.0.0.1:8080/sports/predict/all?model_name={}", model);
