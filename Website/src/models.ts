@@ -12,6 +12,9 @@ export interface Game {
   odds?: Odd[];
   away_team_injuries?: Injury[];
   home_team_injuries?: Injury[];
+  home_team_record: number[];
+  away_team_record: number[];
+  game_status: string
 }
 
 export interface Odd {
