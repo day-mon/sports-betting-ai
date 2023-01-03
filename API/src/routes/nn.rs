@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::ops::DerefMut;
 use actix_web::{HttpResponse, web};
 use diesel::{PgConnection, r2d2};
@@ -6,7 +7,7 @@ use log::{debug, error, warn};
 use redis::Client;
 use serde_derive::Deserialize;
 
-use crate::util::string::remove_quotes;
+
 use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_exists}};
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
@@ -45,12 +46,9 @@ pub async fn predict_all(
 
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
-    if daily_games.scoreboard.games.is_empty() {
-        return Err(ApiError::GamesNotFound)
-    }
-    let game_key = daily_games.scoreboard.games.iter().map(|game| game.game_id.clone()).collect::<Vec<String>>().join("_");
-    let prediction_key = format!("{}:{}", model_name, game_key);
-
+    // this is kinda yikes but it works /shrug
+    let game_key = daily_games.scoreboard.games.iter().map(|game| game.game_id.clone()).collect::<Vec<String>>().join("_").split('_').flat_map(str::parse::<u64>).collect::<BTreeSet<_>>();
+    let prediction_key = format!("{}:{:?}:{}", model_name, game_key, daily_games.scoreboard.game_date);
     let client = redis.into_inner();
     if let Some(cached_response) = get_from_cache::<Vec<Prediction>>(&client, &prediction_key) {
         debug!("Cache Hit!");
