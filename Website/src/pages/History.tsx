@@ -45,7 +45,8 @@ const History: Component = () => {
     const getGamesOnDate = async (modelName: string, date: Date) => {
 
         let year = date.getFullYear();
-        let month = date.getMonth() + 1;
+        // add a leading zero to the month
+        let month = `0${date.getMonth() + 1}`.slice(-2);
         let day = ('0' + date.getDate()).slice(-2);
         let hour = ('0' + date.getHours()).slice(-2);
 
