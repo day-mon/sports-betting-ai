@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
-use std::ops::DerefMut;
-use actix_web::{HttpResponse, web};
+use std::ops::{DerefMut, Not};
+use actix_web::{HttpRequest, HttpResponse, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
 use log::{debug, error, warn};
@@ -24,7 +24,7 @@ const DAILY_INJURIES_URL: &str = "https://www.rotowire.com/basketball/tables/inj
 #[derive(Deserialize)]
 pub struct PredictQueryParams {
     pub model_name: String,
-    pub game_date: Option<String>
+    pub ignore_cache: Option<bool>,
 }
 
 pub async fn predict_all(
@@ -43,27 +43,31 @@ pub async fn predict_all(
         return Err(ApiError::ModelNotFound)
     }
 
-
     let daily_games = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
     // this is kinda yikes but it works /shrug
     let game_key = daily_games.scoreboard.games.iter().map(|game| game.game_id.clone()).collect::<Vec<String>>().join("_").split('_').flat_map(str::parse::<u64>).collect::<BTreeSet<_>>();
     let prediction_key = format!("{}:{:?}:{}", model_name, game_key, daily_games.scoreboard.game_date);
+    let bypass_cache = ((inner.ignore_cache.is_none()) || (inner.ignore_cache.is_some() && !inner.ignore_cache.unwrap())).not();
     let client = redis.into_inner();
-    if let Some(cached_response) = get_from_cache::<Vec<Prediction>>(&client, &prediction_key) {
-        debug!("Cache Hit!");
-        return Ok(HttpResponse::Ok().json(cached_response))
+
+    if !bypass_cache
+    {
+        if let Some(cached_response) = get_from_cache::<Vec<Prediction>>(&client, &prediction_key) {
+            debug!("Cache Hit!");
+            return Ok(HttpResponse::Ok().json(cached_response))
+        }
     }
 
     debug!("Cache Miss");
 
-
     let date = &daily_games.scoreboard.game_date;
 
     let matches: Vec<Match> = daily_games.scoreboard.games.into_iter().map(Match::from_game).collect();
-    let model_data = get_model_data(&matches, &date, &model_name).await?;
+    let model_data = get_model_data(&matches, date, &model_name).await?;
     let prediction = call_model(&model_data, &matches, &model_name)?;
-    store_in_cache(&client, &prediction_key, &prediction);
+    if !bypass_cache { store_in_cache(&client, &prediction_key, &prediction); }
+
     Ok(HttpResponse::Ok().json(prediction))
 }
 #[derive(Deserialize)]
@@ -82,7 +86,7 @@ pub async fn history(
         ApiError::DatabaseError
     })?;
     let connection = pooled_conn.deref_mut();
-    let games =  get_saved_games_by_date(&params, connection)?;
+    let games = get_saved_games_by_date(&params, connection)?;
 
     Ok(HttpResponse::Ok().json(games))
 }
@@ -140,6 +144,11 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let game_odds = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
     let games = game_odds.scoreboard.games;
+
+    if games.is_empty() {
+        return Err(ApiError::GamesNotFound)
+    }
+
     let date = game_odds.scoreboard.game_date;
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
     let game_odds = match get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await {

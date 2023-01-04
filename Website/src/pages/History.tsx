@@ -151,8 +151,8 @@ const History: Component = () => {
                     }}/>
                 </div>
                 <Show when={model() !== 'None' && model() !== ''}  keyed>
-                    <div class={'text-white text-center mt-6 mb-5'}>
-                        <span class={"font-bold mt-0"}>About this model</span>: {MODEL_OPTIONS.find((option) => option.key === model())?.description}
+                    <div class="flex flex-col items-center mb-4">
+                        <a href={`/about/${model()}`} class="text-white hover:underline text-center mt-4">Learn more about {model().toUpperCase()}</a>
                     </div>
                 </Show>
 
@@ -196,8 +196,7 @@ const History: Component = () => {
                             <h5 class="text-base text-white font-bold text-center">
                                 We predicted
                                 <span class={`${getPredictedWinColor()}`}> {getWinPercentage(savedHistory())}% </span>
-                                of the games correctly on  <span
-                                class="font-bold underline">{date()?.toDateString()}</span>
+                                of the games correctly on <span class="font-bold underline">{date()?.toDateString()}</span>
                             </h5>
                         </Show>
                     </div>

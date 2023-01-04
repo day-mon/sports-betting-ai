@@ -1,7 +1,6 @@
 use diesel::{Insertable, PgConnection, Queryable};
 use diesel::dsl::sql;
 use serde::{Deserialize, Serialize};
-use crate::{util::string::remove_quotes};
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Float8,};
 use log::{error};
