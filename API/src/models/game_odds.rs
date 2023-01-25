@@ -269,7 +269,7 @@ pub struct ItemListElement {
 pub struct BettingArticle {
     pub slug: String,
     pub url_path: UrlPath,
-    pub date_created: String,
+    pub date_created: Option<String>,
     pub date_updated: String,
     pub sections: Vec<Value>,
     pub sportsbooks: Vec<Value>,
