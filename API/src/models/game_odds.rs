@@ -270,7 +270,7 @@ pub struct BettingArticle {
     pub slug: String,
     pub url_path: UrlPath,
     pub date_created: Option<String>,
-    pub date_updated: String,
+    pub date_updated: Option<String>,
     pub sections: Vec<Value>,
     pub sportsbooks: Vec<Value>,
     pub sponsored_sportsbooks: Value,

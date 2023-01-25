@@ -63,11 +63,9 @@ async fn main() -> std::io::Result<()> {
     }
 
     let redis_client = redis::Client::open(redis_url.clone()).ok();
-
     if redis_client.is_none() && !redis_url.is_empty() {
         warn!("Could not connect to redis, we will not cache tensorflow model responses.");
     }
-
 
     info!("Running server at {}", endpoint);
     info!("Models directory: {}", std::env::var("MODEL_DIR").unwrap());
