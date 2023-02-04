@@ -1,3 +1,4 @@
+
 use std::collections::BTreeSet;
 use std::ops::{DerefMut, Not};
 use actix_web::{HttpRequest, HttpResponse, web};
@@ -18,7 +19,7 @@ use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
-const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/lvqyIHzLaFraGFTybxNeO/betting-odds/nba-basketball/money-line/full-game.json?league=nba-basketball&oddsType=money-line&oddsScope=full-game";
+const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/48_-pK5MYrcr1wHsVIcs6/betting-odds/compare/money-line/full-game.json?oddsType=money-line&oddsScope=full-game";
 const DAILY_INJURIES_URL: &str = "https://www.rotowire.com/basketball/tables/injury-report.php?team=ALL&pos=ALL";
 
 #[derive(Deserialize)]

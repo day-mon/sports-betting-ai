@@ -21,6 +21,7 @@ pub struct PageProps {
     pub is_favorites: bool,
     pub breadcrumb_list_object: BreadcrumbListObject,
     pub sport_list_object: String,
+    #[serde(skip_deserializing)]
     pub betting_article: BettingArticle,
     #[serde(rename = "schemaFAQ")]
     pub schema_faq: String,

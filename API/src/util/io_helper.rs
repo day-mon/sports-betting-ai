@@ -78,7 +78,7 @@ pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, A
 
 
     let response_body = response.text().await.map_err(|error| {
-        error!("Error has occurred while getting body | {}", error.to_string());
+        error!("Error has occurred while getting body | {error}, Came from {source}");
         ApiError::DeserializationError
     })?;
 
@@ -86,7 +86,7 @@ pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, A
 
 
     let generic = serde_json::from_str::<T>(&response_body).map_err(|error| {
-        error!("Error has occurred while deserializing | {}", error.to_string());
+        error!("Error has occurred while deserializing | {error}. Came from {source}");
         ApiError::DeserializationError
     })?;
     Ok(generic)
