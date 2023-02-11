@@ -3,11 +3,16 @@ import {getBaseUrl, MODEL_OPTIONS} from "../constants";
 import {fetchHelper} from "../util/fetchHelper";
 import {HistoryDates, SavedHistory} from "../models";
 import {Loading} from "../components/Loading";
-import {DateTimePicker} from 'date-time-picker-solid';
 import {NoData} from "../components/NoData";
 import LoadingSelect from "../components/LoadingSelect";
 import SavedGameCard from "../components/SavedGameCard";
 
+
+export const getPredictedWinColor = (winPercentage: number) => {
+    if (winPercentage > 50 && winPercentage < 60) return 'text-yellow-500';
+    if (winPercentage >= 60) return 'text-green-500';
+    if (winPercentage <= 50) return 'text-red-500';
+};
 const History: Component = () => {
     const [savedDates, setSavedDates] = createSignal<HistoryDates[]>([]);
     const [savedHistory, setSavedHistory] = createSignal<SavedHistory[]>([])
@@ -61,7 +66,7 @@ const History: Component = () => {
             return;
         }
 
-            setFetchingGamesOnDate(true)
+        setFetchingGamesOnDate(true)
 
         let url = `${getBaseUrl()}/sports/history?date=${formattedDate}&model_name=${modelName}`;
         let response = await fetchHelper(url)
@@ -101,12 +106,7 @@ const History: Component = () => {
         let won = games.filter((game) => game.game.winner == game.game.prediction).length;
         return Math.round((won / games.length) * 100);
     };
-    const getPredictedWinColor = () => {
-        let winPercentage = getWinPercentage(savedHistory());
-        if (winPercentage > 50 && winPercentage < 60) return 'text-yellow-500';
-        if (winPercentage >= 60) return 'text-green-500';
-        if (winPercentage <= 50) return 'text-red-500';
-    };
+
 
     const getOptions = () => MODEL_OPTIONS.filter((option) => {
         return savedDates().some((date) => date.model_name.includes(option.key));
@@ -126,7 +126,8 @@ const History: Component = () => {
             </Show>
             <Show when={!loading() && savedDates().length !== 0} keyed>
                 <div class="flex flex-col items-center">
-                    <h1 class="text-base mb-4 mt-2 text-white font-bold text-center">Select a model you'd like to see the history of</h1>
+                    <h1 class="text-base mb-4 mt-2 text-white font-bold text-center">Select a model you'd like to see
+                        the history of</h1>
                     <LoadingSelect disabled={fetchingGamesOnDate()} options={getOptions()} onInput={async (e) => {
                         let modelName = e.target.value;
                         let oldModel = model();
@@ -141,7 +142,7 @@ const History: Component = () => {
                             .map((date) => {
                                 let [year, month, day] = date.split('-');
                                 return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                        }).sort((a, b) => a.getTime() - b.getTime());
+                            }).sort((a, b) => a.getTime() - b.getTime());
                         setCurrentDates(datesForModel);
 
                         if (oldModel !== modelName) {
@@ -150,13 +151,14 @@ const History: Component = () => {
                         }
                     }}/>
                 </div>
-                <Show when={model() !== 'None' && model() !== ''}  keyed>
+                <Show when={model() !== 'None' && model() !== ''} keyed>
                     <div class="flex flex-col items-center mb-4">
-                        <a href={`/about/${model()}`} class="text-white hover:underline text-center mt-4">Learn more about {model().toUpperCase()}</a>
+                        <a href={`/about/${model()}`} class="text-white hover:underline text-center mt-4">Learn more
+                            about {model().toUpperCase()}</a>
                     </div>
                 </Show>
 
-                <Show when={currentDates().length !== 0}  keyed>
+                <Show when={currentDates().length !== 0} keyed>
                     <div class="flex flex-col items-center">
                         <input
                             id={'date-picker'}
@@ -177,7 +179,7 @@ const History: Component = () => {
                                 let selectedDate = e.currentTarget.value;
                                 let dateExists = modelDates.dates.some((date) => date === selectedDate);
                                 if (!dateExists) {
-                                    e.currentTarget.value= date()!.toISOString().split('T')[0];
+                                    e.currentTarget.value = date()!.toISOString().split('T')[0];
                                     console.error('Date does not exist for model: ' + model());
                                     return;
                                 }
@@ -195,8 +197,10 @@ const History: Component = () => {
                         <Show when={!isNaN(getWinPercentage(savedHistory())) && model() !== 'ou'} keyed>
                             <h5 class="text-base text-white font-bold text-center">
                                 We predicted
-                                <span class={`${getPredictedWinColor()}`}> {getWinPercentage(savedHistory())}% </span>
-                                of the games correctly on <span class="font-bold underline">{date()?.toDateString()}</span>
+                                <span class={`${getPredictedWinColor(getWinPercentage(savedHistory())
+                                )}`}> {getWinPercentage(savedHistory())}% </span>
+                                of the games correctly on <span
+                                class="font-bold underline">{date()?.toDateString()}</span>
                             </h5>
                         </Show>
                     </div>

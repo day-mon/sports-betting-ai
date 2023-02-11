@@ -7,6 +7,8 @@ import {NoData} from '../components/NoData';
 import {fetchHelper} from '../util/fetchHelper';
 import LoadingSelect from "../components/LoadingSelect";
 import {MODEL_OPTIONS} from "../constants";
+import {getPredictedWinColor} from "./History";
+import {ErrorPopup} from "../components/ErrorPopup";
 
 const getBaseUrl = (useRemote?: boolean) => {
     // check if current url is localhost
@@ -19,7 +21,9 @@ const getBaseUrl = (useRemote?: boolean) => {
 const Bets: Component = () => {
     const [bets, setBets] = createSignal<Game[]>([]);
     const [cardsShow, setCardsShow] = createSignal<boolean[]>([]);
-    const [predictions, setPredictions] = createSignal<Prediction[]>([]);
+    const [predictionFetchFailed, setPredictionFetchFailed] = createSignal<boolean>(false)
+    const [predictionsErrorResponse, setPredictionsErrorResponse] = createSignal<string>()
+    const [modelPredictions, setPredictions] = createSignal<Prediction[]>([]);
     const [loading, setLoading] = createSignal(true);
     const [error, setError] = createSignal(false);
     const [disabled, setDisabled] = createSignal(false);
@@ -39,22 +43,31 @@ const Bets: Component = () => {
 
         setDisabled(true);
         const BASE_URL = getBaseUrl();
-        const response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=${model_name}`);
+        let response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=${model_name}`);
         if (!response) {
-            setLoading(false)
             setDisabled(false);
+            setPredictionFetchFailed(true)
+            setTimeout(() => setPredictionFetchFailed(false), 2000)
             return;
         }
 
+        const data = await response.json();
+
         if (response.status !== 200) {
-            setLoading(false);
-            setDisabled(true);
+            setDisabled(false);
+            setPredictionFetchFailed(true)
+            setPredictionsErrorResponse(data.message)
+            setTimeout(() => setPredictionFetchFailed(false), 2000)
+            return;
         }
 
-        const data = (await response.json()) as Prediction[];
-        setPredictions(data);
-        sessionStorage.setItem(`predictions_${model_name}`, JSON.stringify(data));
+        const prediction = data as Prediction[];
+        setPredictions(prediction);
+        sessionStorage.setItem(`predictions_${model_name}`, JSON.stringify(prediction));
         setDisabled(false);
+        setPredictionsErrorResponse(undefined)
+        setPredictionFetchFailed(false)
+
     };
 
     const fetchBets = async (refresh?: boolean) => {
@@ -88,7 +101,18 @@ const Bets: Component = () => {
     };
 
 
-    const findPrediction = (game: Game) => predictions().find((prediction) => prediction.game_id === game.game_id);
+    const findPrediction = (game: Game): Prediction | undefined => modelPredictions().find((prediction) => prediction.game_id === game.game_id);
+
+
+    const getWinPercentage = () => {
+        let won = bets().filter(game => game.game_status.includes('Final'))
+            .map(game => game.away_team_score > game.home_team_score ? [game.away_team_name, game.game_id] : [game.home_team_name, game.game_id])
+            .filter(game => {
+                let foundPrediction = modelPredictions().find(predict => predict.game_id == game[1]);
+                return foundPrediction?.prediction == game[0]
+        }).length;
+        return Math.round((won / bets().filter(game => game.game_status.includes('Final')).length) * 100);
+    }
 
     onMount(async () => {
         await fetchBets();
@@ -153,12 +177,14 @@ const Bets: Component = () => {
 
             if (a.game_status.includes('Final')) {
                 let prediction = findPrediction(a);
-                let won = prediction?.prediction == getWinner(a)
+                if (!prediction) return 1;
+                let won = prediction.prediction == getWinner(a)
                 return won ? -1 : 1;
             }
             if (b.game_status.includes('Final')) {
                 let prediction = findPrediction(a);
-                let won = prediction?.prediction == getWinner(a)
+                if (!prediction) return 1;
+                let won = prediction.prediction == getWinner(a)
                 return won ? -1 : 1;
             }
 
@@ -186,9 +212,7 @@ const Bets: Component = () => {
         setCardsShow(newCardsShow);
     };
 
-    onCleanup(() => {
-        clearInterval(betInterval);
-    });
+    onCleanup(() => clearInterval(betInterval));
 
 
     return (
@@ -210,17 +234,30 @@ const Bets: Component = () => {
                             setModelSelected(e.currentTarget.value)
                             await fetchPredictions(modelSelected())
                         }}/>
+                        {predictionFetchFailed() && (
+                            <ErrorPopup errorText={predictionsErrorResponse()} closeHandler={() => setPredictionFetchFailed(false)} show={predictionFetchFailed()}/>
+                        )}
                         <Show when={modelSelected() !== 'None' && modelSelected() !== ''} keyed>
                             <a href={`/about/${modelSelected()}`} class="text-white hover:underline text-center mt-4">Learn
                                 more about {modelSelected().toUpperCase()}</a>
+                            <Show when={bets().every(game => game.game_status.includes('Final')) && modelPredictions().length !== 0 && modelSelected() !== 'ou'} keyed>
+
+                                <h5 class="text-base text-white font-bold text-center">
+                                    We predicted
+                                    <span class={`${getPredictedWinColor(getWinPercentage())}`}>
+                                        {getWinPercentage()}%
+                                    </span> of the games correctly on <span class="font-bold underline">{bets()[0].date}</span>
+                                </h5>
+                            </Show>
                         </Show>
+
                     </div>
                     <Index each={sortedBetsByTime(bets())}>
                         {(game, index) =>
-                        <GameCard showDropdown={cardsShow()[index]}
-                                  setShowDropdown={() => changeCardShow(index)}
-                                  prediction={findPrediction(game())}
-                                  game={game()}/>}
+                            <GameCard showDropdown={cardsShow()[index]}
+                                      setShowDropdown={() => changeCardShow(index)}
+                                      prediction={findPrediction(game())}
+                                      game={game()}/>}
                     </Index>
                 </Show>
             </Suspense>
@@ -229,7 +266,7 @@ const Bets: Component = () => {
                     <span class="font-extrabold">Disclaimer:</span> The model we wrote is not aware of injuries,
                     suspensions or any thing of that nature. Take the predictions with a grain of salt. 😊
                 </p>
-                {predictions().length > 0 && predictions()[0].prediction_type === 'score' && (
+                {modelPredictions().length > 0 && modelPredictions()[0].prediction_type === 'score' && (
                     <p class="text-xs text-gray-500">
                         <span class="font-extrabold">Disclaimer 2:</span> This model in particular is in its testing
                         phase. We dont really know the accuracy.

@@ -1,4 +1,5 @@
 export interface Game {
+  date: string
   game_id: string;
   start_time: string;
   venue: string;
@@ -7,7 +8,7 @@ export interface Game {
   home_team_id: number;
   away_team_id: number;
   home_team_score: string;
-  away_team_score: string;
+  away_team_score: string;s
   time_left?: string;
   odds?: Odd[];
   away_team_injuries?: Injury[];

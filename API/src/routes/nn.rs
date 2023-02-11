@@ -125,7 +125,7 @@ pub async fn model_accuracy(
     }
 
     if model_name ==  *"ou" {
-        return Ok(HttpResponse::Ok().json("Cannot get winrate for over/under model"))
+        return Ok(HttpResponse::Ok().json("Cannot get win-rate for over/under model"))
     }
 
     let mut pooled_conn = pool.get().map_err(|error| {
@@ -149,8 +149,7 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     if games.is_empty() {
         return Err(ApiError::GamesNotFound)
     }
-    let date = game_odds.scoreboard.game_date
-        .replace('-', "");
+    let date = game_odds.scoreboard.game_date;
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
 
     let Ok(injuries) = get_t_from_source::<Vec<Injuries>>(DAILY_INJURIES_URL).await else{
@@ -171,7 +170,8 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         game.away_team_injuries = Some(away_injuries);
     }
 
-    let daily_odds_url = format!("https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date={date}");
+    let url_date = date.replace('-', "");
+    let daily_odds_url = format!("https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date={url_date}");
 
     let game_odds = match get_t_from_source::<GameOdds>(daily_odds_url.as_str()).await {
         Ok(odds) => odds,
@@ -197,7 +197,7 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         };
         game_to_edit.odds = game.odds.into_iter()
             .skip_while(|o| ids_to_skip.contains(&o.book_id))
-            .map(|i| i.into_odds())
+            .map(|odd| odd.into_odds())
             .collect::<Vec<Odds>>();
 
     }

@@ -69,7 +69,7 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
         {
             let games = games.clone();
 
-            let prediction_url = format!("http://127.0.0.1:8080/sports/predict/all?model_name={}", model);
+            let prediction_url = format!("http://127.0.0.1:8080/sports/predict/all?model_name={model}");
 
             let Ok(predictions) = get_t_from_source::<Vec<Prediction>>(&prediction_url).await else {
                 error!("Error occurred while trying to get predictions");

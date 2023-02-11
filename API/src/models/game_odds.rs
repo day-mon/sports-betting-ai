@@ -9,6 +9,7 @@ use crate::models::game_with_odds::Odds;
 
 // 15,30,255,280,68,246,264,74,1104,1906,76,75
 static BOOKIES: phf::Map<&'static str, &'static str> = phf_map! {
+    "0" => "Unknown",
     "255" => "Fanduel",
     "280" => "BetMGM",
     "68" => "DraftKings",
@@ -22,49 +23,52 @@ static BOOKIES: phf::Map<&'static str, &'static str> = phf_map! {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(default)]
 pub struct GameOdds {
-    pub league: League,
+    #[serde(skip_deserializing)]
+    pub league: Option<League>,
     pub games: Vec<Game>,
+    #[serde(skip_deserializing)]
     #[serde(rename = "content_live_count")]
-    pub content_live_count: i64,
+    pub content_live_count: Option<i64>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct League {
-    pub id: i64,
-    pub sport: String,
-    pub name: String,
-    pub description: String,
-    pub logo: String,
+    pub id: Option<i64>,
+    pub sport: Option<String>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub logo: Option<String>,
     #[serde(rename = "current_season")]
-    pub current_season: String,
+    pub current_season: Option<String>,
     #[serde(rename = "current_season_type")]
-    pub current_season_type: String,
+    pub current_season_type: Option<String>,
     #[serde(rename = "pre_season_start")]
-    pub pre_season_start: String,
+    pub pre_season_start: Option<String>,
     #[serde(rename = "pre_season_end")]
-    pub pre_season_end: String,
+    pub pre_season_end: Option<String>,
     #[serde(rename = "reg_season_start")]
-    pub reg_season_start: String,
+    pub reg_season_start: Option<String>,
     #[serde(rename = "reg_season_end")]
-    pub reg_season_end: String,
+    pub reg_season_end: Option<String>,
     #[serde(rename = "post_season_start")]
-    pub post_season_start: String,
+    pub post_season_start: Option<String>,
     #[serde(rename = "post_season_end")]
-    pub post_season_end: String,
+    pub post_season_end: Option<String>,
     #[serde(rename = "blacklist_dates")]
-    pub blacklist_dates: Vec<String>,
+    pub blacklist_dates: Option<Vec<String>>,
     #[serde(rename = "calendar_info")]
-    pub calendar_info: CalendarInfo,
+    pub calendar_info: Option<CalendarInfo>,
     #[serde(rename = "current_week")]
-    pub current_week: i64,
+    pub current_week: Option<i64>,
     #[serde(rename = "updated_at")]
-    pub updated_at: String,
+    pub updated_at: Option<String>,
     #[serde(rename = "is_active")]
-    pub is_active: bool,
-    pub conferences: Vec<Conference>,
-    pub divisions: Vec<Division>,
+    pub is_active: Option<bool>,
+    pub conferences: Option<Vec<Conference>>,
+    pub divisions: Option<Vec<Division>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -75,88 +79,88 @@ pub struct CalendarInfo {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Conference {
-    pub id: String,
-    pub display: String,
+    pub id: Option<String>,
+    pub display: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Division {
-    pub id: String,
-    pub display: String,
+    pub id: Option<String>,
+    pub display: Option<String>,
     #[serde(rename = "conference_id")]
-    pub conference_id: String,
+    pub conference_id: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Game {
-    pub id: i64,
-    pub status: String,
+    pub id: Option<i64>,
+    pub status: Option<String>,
     #[serde(rename = "real_status")]
-    pub real_status: String,
+    pub real_status: Option<String>,
     #[serde(rename = "status_display")]
     pub status_display: Option<Value>,
     #[serde(rename = "start_time")]
-    pub start_time: String,
+    pub start_time: Option<String>,
     #[serde(rename = "away_team_id")]
-    pub away_team_id: i64,
+    pub away_team_id: Option<i64>,
     #[serde(rename = "home_team_id")]
-    pub home_team_id: i64,
+    pub home_team_id: Option<i64>,
     #[serde(rename = "winning_team_id")]
     pub winning_team_id: Option<Value>,
     #[serde(rename = "league_name")]
-    pub league_name: String,
+    pub league_name: Option<String>,
     #[serde(rename = "type")]
-    pub type_field: String,
-    pub season: i64,
-    pub attendance: i64,
-    pub coverage: String,
+    pub type_field: Option<String>,
+    pub season: Option<i64>,
+    pub attendance: Option<i64>,
+    pub coverage: Option<String>,
     #[serde(rename = "is_free")]
-    pub is_free: bool,
-    pub trending: bool,
+    pub is_free: Option<bool>,
+    pub trending: Option<bool>,
     #[serde(rename = "away_rotation_number")]
-    pub away_rotation_number: i64,
+    pub away_rotation_number: Option<i64>,
     #[serde(rename = "home_rotation_number")]
-    pub home_rotation_number: i64,
+    pub home_rotation_number: Option<i64>,
     pub teams: Vec<Team>,
-    pub meta: Meta,
+    pub meta: Option<Meta>,
     pub odds: Vec<Odd>,
-    pub broadcast: Broadcast,
+    pub broadcast: Option<Broadcast>,
 }
 
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Team {
-    pub id: i64,
+    pub id: Option<i64>,
     #[serde(rename = "full_name")]
     pub full_name: String,
     #[serde(rename = "display_name")]
-    pub display_name: String,
+    pub display_name: Option<String>,
     #[serde(rename = "short_name")]
-    pub short_name: String,
-    pub location: String,
+    pub short_name: Option<String>,
+    pub location: Option<String>,
     pub abbr: String,
-    pub logo: String,
+    pub logo: Option<String>,
     #[serde(rename = "primary_color")]
-    pub primary_color: String,
+    pub primary_color: Option<String>,
     #[serde(rename = "secondary_color")]
-    pub secondary_color: String,
+    pub secondary_color: Option<String>,
     #[serde(rename = "conference_type")]
-    pub conference_type: String,
+    pub conference_type: Option<String>,
     #[serde(rename = "division_type")]
-    pub division_type: String,
+    pub division_type: Option<String>,
     #[serde(rename = "url_slug")]
-    pub url_slug: String,
-    pub standings: Standings,
+    pub url_slug: Option<String>,
+    pub standings: Option<Standings>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Standings {
-    pub win: i64,
-    pub loss: i64,
+    pub win: Option<i64>,
+    pub loss: Option<i64>,
     pub ties: Option<Value>,
     #[serde(rename = "overtime_losses")]
     pub overtime_losses: Option<Value>,
@@ -176,15 +180,15 @@ pub struct Odd {
     #[serde(rename = "ml_home")]
     pub ml_home: i64,
     #[serde(rename = "spread_away")]
-    pub spread_away: f64,
+    pub spread_away: Option<f64>,
     #[serde(rename = "spread_home")]
-    pub spread_home: f64,
+    pub spread_home: Option<f64>,
     #[serde(rename = "spread_away_line")]
-    pub spread_away_line: i64,
+    pub spread_away_line: Option<i64>,
     #[serde(rename = "spread_home_line")]
-    pub spread_home_line: i64,
-    pub over: i64,
-    pub under: i64,
+    pub spread_home_line: Option<i64>,
+    pub over: Option<i64>,
+    pub under: Option<i64>,
     pub draw: Option<Value>,
     pub total: f64,
     #[serde(rename = "away_total")]
@@ -229,10 +233,10 @@ pub struct Odd {
     #[serde(rename = "book_id")]
     pub book_id: i64,
     #[serde(rename = "type")]
-    pub type_field: String,
-    pub inserted: String,
+    pub type_field: Option<String>,
+    pub inserted: Option<String>,
     #[serde(rename = "line_status")]
-    pub line_status: LineStatus,
+    pub line_status: Option<LineStatus>,
 }
 
 impl Odd {
@@ -241,6 +245,7 @@ impl Odd {
         let book_name = BOOKIES.get(&book_id)
             .map(|&book| book.to_string())
             .unwrap_or("Unknown".to_string());
+
 
         Odds {
             book_name,
@@ -279,7 +284,7 @@ pub struct Meta2 {
 #[serde(rename_all = "camelCase")]
 pub struct Over {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<Option<Value>>,
     #[serde(rename = "game_id")]
@@ -310,7 +315,7 @@ pub struct Over {
 #[serde(rename_all = "camelCase")]
 pub struct Under {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
@@ -341,7 +346,7 @@ pub struct Under {
 #[serde(rename_all = "camelCase")]
 pub struct MlAway {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
@@ -372,7 +377,7 @@ pub struct MlAway {
 #[serde(rename_all = "camelCase")]
 pub struct MlHome {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
@@ -403,7 +408,7 @@ pub struct MlHome {
 #[serde(rename_all = "camelCase")]
 pub struct AwayOver {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<String>,
     #[serde(rename = "game_id")]
@@ -430,7 +435,7 @@ pub struct AwayOver {
 #[serde(rename_all = "camelCase")]
 pub struct HomeOver {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<String>,
     #[serde(rename = "game_id")]
@@ -457,7 +462,7 @@ pub struct HomeOver {
 #[serde(rename_all = "camelCase")]
 pub struct AwayUnder {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<String>,
     #[serde(rename = "game_id")]
@@ -484,7 +489,7 @@ pub struct AwayUnder {
 #[serde(rename_all = "camelCase")]
 pub struct HomeUnder {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<String>,
     #[serde(rename = "game_id")]
@@ -511,7 +516,7 @@ pub struct HomeUnder {
 #[serde(rename_all = "camelCase")]
 pub struct SpreadAway {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
@@ -542,7 +547,7 @@ pub struct SpreadAway {
 #[serde(rename_all = "camelCase")]
 pub struct SpreadHome {
     #[serde(rename = "outcome_id")]
-    pub outcome_id: i64,
+    pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
     pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
@@ -573,12 +578,12 @@ pub struct SpreadHome {
 #[serde(rename_all = "camelCase")]
 pub struct LineStatus {
     pub draw: Option<i64>,
-    pub over: i64,
-    pub under: i64,
+    pub over: Option<i64>,
+    pub under: Option<i64>,
     #[serde(rename = "ml_away")]
-    pub ml_away: i64,
+    pub ml_away: Option<i64>,
     #[serde(rename = "ml_home")]
-    pub ml_home: i64,
+    pub ml_home: Option<i64>,
     #[serde(rename = "away_over")]
     pub away_over: Option<i64>,
     #[serde(rename = "home_over")]
@@ -588,16 +593,16 @@ pub struct LineStatus {
     #[serde(rename = "home_under")]
     pub home_under: Option<i64>,
     #[serde(rename = "spread_away")]
-    pub spread_away: i64,
+    pub spread_away: Option<i64>,
     #[serde(rename = "spread_home")]
-    pub spread_home: i64,
+    pub spread_home: Option<i64>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Broadcast {
-    pub network: String,
+    pub network: Option<String>,
     pub internet: Option<Value>,
-    pub satellite: String,
+    pub satellite: Option<String>,
 }
 

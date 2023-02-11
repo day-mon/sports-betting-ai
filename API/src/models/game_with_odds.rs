@@ -111,7 +111,7 @@ pub struct Odds {
     pub predicted_score: f64
 }
 
-#[derive(Identifiable, Insertable, Queryable, Serialize, Deserialize)]
+#[derive(Identifiable, Insertable, Queryable, Serialize, Deserialize, Debug)]
 #[diesel(primary_key(game_id, model_name))]
 #[diesel(table_name = saved_games)]
 pub struct SavedGame {
