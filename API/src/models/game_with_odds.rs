@@ -108,8 +108,7 @@ pub struct Odds {
     pub book_name: String,
     pub home_team_odds: i32,
     pub away_team_odds: i32,
-    pub home_team_opening_odds: i32,
-    pub away_team_opening_odds: i32,
+    pub predicted_score: f64
 }
 
 #[derive(Identifiable, Insertable, Queryable, Serialize, Deserialize)]

@@ -21,10 +21,9 @@ export interface Odd {
   book_name: string;
   home_team_odds: number;
   away_team_odds: number;
+  predicted_score: number
   home_team_odds_trend: string;
   away_team_odds_trend: string;
-  home_team_opening_odds: number;
-  away_team_opening_odds: number;
 }
 
 export interface HistoryDates {

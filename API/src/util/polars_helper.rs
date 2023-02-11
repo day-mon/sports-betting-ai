@@ -39,7 +39,7 @@ pub fn drop_columns(df: &mut DataFrame, model_name: &str)  {
     }
 
     for column in columns_to_drop_all {
-        let _ = df.drop_in_place(column).expect("Unable to drop column");
-        let _ = df.drop_in_place(&format!("{}_duplicated_0", column)).expect("Unable to drop column");
+        let _ = df.drop_in_place(column);
+        let _ = df.drop_in_place(&format!("{column}_duplicated_0"));
     }
 }

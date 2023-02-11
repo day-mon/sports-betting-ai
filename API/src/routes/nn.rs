@@ -1,7 +1,7 @@
 
 use std::collections::BTreeSet;
 use std::ops::{DerefMut, Not};
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{HttpResponse, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::ConnectionManager;
 use log::{debug, error, warn};
@@ -13,13 +13,12 @@ use crate::{models::game_with_odds::GameWithOdds, util::io_helper::{directory_ex
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::{DailyGames, Match};
 use crate::models::game_odds::GameOdds;
-use crate::models::game_with_odds::{get_data_dates, get_model_win_rate, get_saved_games_by_date, Injuries};
+use crate::models::game_with_odds::{get_data_dates, get_model_win_rate, get_saved_games_by_date, Injuries, Odds};
 use crate::models::prediction::Prediction;
 use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
 
 const DAILY_GAMES_URL: &str = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
-const DAILY_ODDS_URL: &str = "https://www.sportsbookreview.com/_next/data/48_-pK5MYrcr1wHsVIcs6/betting-odds/compare/money-line/full-game.json?oddsType=money-line&oddsScope=full-game";
 const DAILY_INJURIES_URL: &str = "https://www.rotowire.com/basketball/tables/injury-report.php?team=ALL&pos=ALL";
 
 #[derive(Deserialize)]
@@ -39,7 +38,7 @@ pub async fn predict_all(
         ApiError::Unknown
     })?;
 
-    if !directory_exists(&format!("{}/{}", dir, model_name)) {
+    if !directory_exists(&format!("{dir}/{model_name}")) {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
@@ -120,7 +119,7 @@ pub async fn model_accuracy(
     let inner_params = params.into_inner();
     let model_name = inner_params.model_name;
 
-    if !directory_exists(&format!("{}/{}", dir, model_name)) {
+    if !directory_exists(&format!("{dir}/{model_name}")) {
         error!("Could find model with the name {}", model_name);
         return Err(ApiError::ModelNotFound)
     }
@@ -144,39 +143,15 @@ pub async fn model_accuracy(
 pub async fn games() -> Result<HttpResponse, ApiError> {
     let game_odds = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
 
+
     let games = game_odds.scoreboard.games;
 
     if games.is_empty() {
         return Err(ApiError::GamesNotFound)
     }
-
-    let date = game_odds.scoreboard.game_date;
+    let date = game_odds.scoreboard.game_date
+        .replace('-', "");
     let mut g_w_o = games.iter().map(|g| GameWithOdds::from_g(g, &date)).collect::<Vec<GameWithOdds>>();
-    let game_odds = match get_t_from_source::<GameOdds>(DAILY_ODDS_URL).await {
-        Ok(odds) => odds,
-        Err(_) => {
-            warn!("Could not get odds");
-            return Ok(HttpResponse::Ok().json(g_w_o))
-        }
-    };
-    // game_odds.page_props.odds_tables.retain(|go| go.is_some());
-   let Some(nba_odds) = game_odds.page_props.odds_tables.into_iter().find(|g| g.league == "NBA") else {
-        warn!("Returned early. No odds available.");
-        return Ok(HttpResponse::Ok().json(g_w_o));
-    };
-
-    let odds_table_model = nba_odds.odds_table_model;
-
-    for mut item in odds_table_model.game_rows.into_iter() {
-        let game_view = item.game_view;
-        let Some(mut game_to_edit) = g_w_o.iter_mut().find(|gwo| gwo.home_team_name == game_view.home_team.full_name || gwo.away_team_name == game_view.away_team.full_name) else {
-            debug!("Couldnt find a game for {}", game_view.home_team.full_name);
-            continue
-        };
-
-        item.odds_views.retain(|o| o.is_some());
-        game_to_edit.odds = item.odds_views.into_iter().map(|go| go.unwrap().into_odds()).collect();
-    }
 
     let Ok(injuries) = get_t_from_source::<Vec<Injuries>>(DAILY_INJURIES_URL).await else{
         warn!("Could not get injuries");
@@ -195,6 +170,38 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
         game.home_team_injuries = Some(home_injuries);
         game.away_team_injuries = Some(away_injuries);
     }
+
+    let daily_odds_url = format!("https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date={date}");
+
+    let game_odds = match get_t_from_source::<GameOdds>(daily_odds_url.as_str()).await {
+        Ok(odds) => odds,
+        Err(_) => {
+            warn!("Could not get odds");
+            return Ok(HttpResponse::Ok().json(g_w_o))
+        }
+    };
+
+    if game_odds.games.is_empty() {
+        warn!("Returned early. No odds available.");
+        return Ok(HttpResponse::Ok().json(g_w_o));
+    }
+
+    let ids_to_skip = [15, 30, 264, 110, 75];
+    for game in game_odds.games.into_iter() {
+
+        let teams_abrv = game.teams.iter().map(|g| g.abbr.clone())
+            .collect::<Vec<String>>();
+        let Some (game_to_edit) = g_w_o.iter_mut().find(|gwo| teams_abrv.contains(&gwo.away_team_abbr) || teams_abrv.contains(&gwo.home_team_abbr)) else {
+            debug!("Couldnt find a game for {} vs {}", teams_abrv[0], teams_abrv[1]);
+            continue
+        };
+        game_to_edit.odds = game.odds.into_iter()
+            .skip_while(|o| ids_to_skip.contains(&o.book_id))
+            .map(|i| i.into_odds())
+            .collect::<Vec<Odds>>();
+
+    }
+
     Ok(HttpResponse::Ok().json(g_w_o))
 }
 

@@ -25,6 +25,7 @@ redis = { version = "0.22.1 ", features = ["json"]}
 thiserror = "1.0.37"
 diesel = { version = "2.0.2", features = ["postgres", "r2d2"] }
 dotenvy = "0.15"
+phf = { version = "0.11.1", features = ["macros"] }
 
 [dev-dependencies]
 # I dont know if the deployed version will have a gpu or not, so I'm going to assume it doesn't
