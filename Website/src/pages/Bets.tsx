@@ -245,7 +245,7 @@ const Bets: Component = () => {
                                 <h5 class="text-base text-white font-bold text-center">
                                     We predicted
                                     <span class={`${getPredictedWinColor(getWinPercentage())}`}>
-                                        {getWinPercentage()}%
+                                        {` ${getWinPercentage()}`}%
                                     </span> of the games correctly on <span class="font-bold underline">{bets()[0].date}</span>
                                 </h5>
                             </Show>
