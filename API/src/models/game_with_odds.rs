@@ -6,7 +6,7 @@ use crate::models::schema::*;
 use crate::routes::nn::HistoryQueryParams;
 use diesel::dsl::sql;
 use diesel::prelude::*;
-use diesel::sql_types::{Bool, Double, Float, Float4, Float8};
+use diesel::sql_types::{Bool, Float8};
 use diesel::{Insertable, PgConnection, Queryable};
 use log::error;
 use serde::{Deserialize, Serialize};

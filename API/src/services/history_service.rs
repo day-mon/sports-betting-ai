@@ -1,23 +1,59 @@
 use std::collections::HashMap;
 use std::ops::{DerefMut};
+use actix_web::{ResponseError, web};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::{ConnectionManager};
 use log::{error, info, warn};
+use reqwest::StatusCode;
 use crate::models::game_with_odds::{GameWithOdds, InjuryStore, SavedGame};
 use crate::models::prediction::Prediction;
+use crate::routes::nn;
 use crate::util::io_helper::{directory_exists, get_t_from_source};
+
+const ONE_HOUR_IN_SECONDS: u64 = 60 * 60;
+const FIFTEEN_MINUTES_IN_SECONDS: u64 = 60 * 15;
 
 pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
 {
     loop
     {
         info!("Attempting to grab game for history");
-        let Ok(games) = get_t_from_source::<Vec<GameWithOdds>>("http://127.0.0.1:8080/sports/games").await else {
+
+
+        let response = match nn::games().await {
+            Ok(response) => response,
+            Err(error) => {
+                match error.status_code() {
+                    StatusCode::NOT_FOUND => {
+                        info!("No games found for today, sleeping for 1 hour");
+                        actix_rt::time::sleep(std::time::Duration::from_secs(ONE_HOUR_IN_SECONDS)).await;
+                        continue;
+                    }
+                    _ => {
+                        error!("Error occurred while trying to get games: {error}");
+                        actix_rt::time::sleep(std::time::Duration::from_secs(20)).await;
+                        continue;
+                    }
+                }
+            }
+        };
+
+        let body = response.into_body();
+        let Ok(body_bytes) = actix_web::body::to_bytes(body).await else {
+            error!("Error occurred while trying to get the bytes of the response body");
+            actix_rt::time::sleep(std::time::Duration::from_secs(20)).await;
+            continue;
+        };
+        let Ok(string) = String::from_utf8(body_bytes.to_vec()) else {
+            error!("Error occurred while converting bytes to string");
+            actix_rt::time::sleep(std::time::Duration::from_secs(20)).await;
+            continue;
+        };
+        let Ok(games) = serde_json::from_str::<Vec<GameWithOdds>>(string.as_str()) else {
             error!("Error occurred while trying to get games");
             actix_rt::time::sleep(std::time::Duration::from_secs(20)).await;
             continue;
         };
-
 
 
         let mut injury_map: HashMap<String, Vec<InjuryStore>> = HashMap::new();
@@ -36,11 +72,10 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
         }
 
 
-        let one_hour_in_secs = 60 * 60;
         if games.is_empty()
         {
-            warn!("No games found, sleeping for {} seconds", one_hour_in_secs / 60);
-            actix_rt::time::sleep(std::time::Duration::from_secs(one_hour_in_secs)).await;
+            warn!("No games found, sleeping for {} seconds", ONE_HOUR_IN_SECONDS / 60);
+            actix_rt::time::sleep(std::time::Duration::from_secs(ONE_HOUR_IN_SECONDS)).await;
             continue;
         }
 
@@ -49,9 +84,8 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
 
         if !all_games_finished
         {
-            let fifteen_mins_in_secs = 60 * 15;
-            warn!("Not all games finished, sleeping for {} minutes", fifteen_mins_in_secs / 60);
-            actix_rt::time::sleep(std::time::Duration::from_secs(fifteen_mins_in_secs)).await;
+            warn!("Not all games finished, sleeping for {} minutes", FIFTEEN_MINUTES_IN_SECONDS / 60);
+            actix_rt::time::sleep(std::time::Duration::from_secs(FIFTEEN_MINUTES_IN_SECONDS)).await;
             continue;
         }
 
@@ -108,7 +142,7 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
             if unsaved_games.is_empty()
             {
                 info!("No games to save, sleeping for 1 hour");
-                actix_rt::time::sleep(std::time::Duration::from_secs(one_hour_in_secs)).await;
+                actix_rt::time::sleep(std::time::Duration::from_secs(ONE_HOUR_IN_SECONDS)).await;
                 continue;
             }
 
@@ -142,6 +176,6 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
 
             info!("Saved {}/{:?} games and {}/{:?} injuries. Sleeping for one hour.", games_saved, saved_games_len, injuries_saved, total_injuries);
         }
-        actix_rt::time::sleep(std::time::Duration::from_secs(one_hour_in_secs)).await;
-   }
+        actix_rt::time::sleep(std::time::Duration::from_secs(ONE_HOUR_IN_SECONDS)).await;
+    }
 }
