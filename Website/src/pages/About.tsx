@@ -79,13 +79,12 @@ const About: Component = () => {
                 </div>
                 <div class="flex flex-col items-center">
                     <div class="text-white text-center font-bold text-base mb-5">
-                        <Show when={typeof winRate() === 'string'} keyed>
-                            {winRate()}
+                        <Show when={model_name === 'ou'} keyed>
+                            <span> Average Score Difference: {winRate()}</span>
                         </Show>
-                        <Show when={typeof winRate() === 'number'} keyed>
+                        <Show when={model_name !== 'ou'} keyed>
                             <span>Win Rate: <span class={`${getPredictedWinColor(winRate() as number)}`}>{winRate()}%</span></span>
                         </Show>
-                        {/*<span> {typeof winRate() === 'string' ? winRate() : `Win rate ${winRate()}%`}</span>*/}
                     </div>
                 </div>
                 <div class="flex flex-col items-center">

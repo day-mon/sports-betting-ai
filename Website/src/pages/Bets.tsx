@@ -57,6 +57,7 @@ const Bets: Component = () => {
             setDisabled(false);
             setPredictionFetchFailed(true)
             setPredictionsErrorResponse(data.message)
+
             setTimeout(() => setPredictionFetchFailed(false), 2000)
             return;
         }
@@ -266,12 +267,6 @@ const Bets: Component = () => {
                     <span class="font-extrabold">Disclaimer:</span> The model we wrote is not aware of injuries,
                     suspensions or any thing of that nature. Take the predictions with a grain of salt. 😊
                 </p>
-                {modelPredictions().length > 0 && modelPredictions()[0].prediction_type === 'score' && (
-                    <p class="text-xs text-gray-500">
-                        <span class="font-extrabold">Disclaimer 2:</span> This model in particular is in its testing
-                        phase. We dont really know the accuracy.
-                    </p>
-                )}
                 <p class="text-xs text-gray-500">
                     <span class="font-extrabold">Legal Disclaimer: </span> Our sports betting AI is provided for
                     informational and entertainment purposes only. We do not guarantee the accuracy of our predictions

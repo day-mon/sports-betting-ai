@@ -1,15 +1,15 @@
-use diesel::{Insertable, PgConnection, Queryable};
-use diesel::dsl::sql;
-use serde::{Deserialize, Serialize};
-use diesel::prelude::*;
-use diesel::sql_types::{Bool, Float8,};
-use log::{error};
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Game;
 use crate::models::prediction::Prediction;
-use crate::models::schema::*;
 use crate::models::schema::saved_games::model_name;
+use crate::models::schema::*;
 use crate::routes::nn::HistoryQueryParams;
+use diesel::dsl::sql;
+use diesel::prelude::*;
+use diesel::sql_types::{Bool, Double, Float, Float4, Float8};
+use diesel::{Insertable, PgConnection, Queryable};
+use log::error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct GameWithOdds {
@@ -33,8 +33,7 @@ pub struct GameWithOdds {
     pub away_team_id: i64,
     pub odds: Vec<Odds>,
     pub home_team_injuries: Option<Vec<Injuries>>,
-    pub away_team_injuries: Option<Vec<Injuries>>
-
+    pub away_team_injuries: Option<Vec<Injuries>>,
 }
 
 impl GameWithOdds {
@@ -46,8 +45,14 @@ impl GameWithOdds {
             home_team_record: (match_up.home_team.wins, match_up.home_team.losses),
             away_team_record: (match_up.away_team.wins, match_up.away_team.losses),
             start_time: match_up.game_et.clone(),
-            home_team_name: format!("{} {}", &match_up.home_team.team_city, &match_up.home_team.team_name),
-            away_team_name: format!("{} {}", &match_up.away_team.team_city, &match_up.away_team.team_name),
+            home_team_name: format!(
+                "{} {}",
+                &match_up.home_team.team_city, &match_up.home_team.team_name
+            ),
+            away_team_name: format!(
+                "{} {}",
+                &match_up.away_team.team_city, &match_up.away_team.team_name
+            ),
             home_team_score: match_up.home_team.score.to_string(),
             away_team_score: match_up.away_team.score.to_string(),
             home_team_id: match_up.home_team.team_id,
@@ -64,21 +69,17 @@ impl GameWithOdds {
     pub fn into_saved_game(
         self,
         our_prediction: Option<&Prediction>,
-        saved_model_name: &str
+        saved_model_name: &str,
     ) -> SavedGame {
         let home_team_score = self.home_team_score.parse::<i32>().unwrap_or(0);
         let away_team_score = self.away_team_score.parse::<i32>().unwrap_or(0);
 
-
         let prediction = our_prediction.map(|prediction| prediction.prediction.clone());
 
         let confidence = match our_prediction {
-            Some(prediction) => {
-                prediction.confidence.map(|confidence| confidence as f64)
-            },
-            None => None
+            Some(prediction) => prediction.confidence.map(|confidence| confidence as f64),
+            None => None,
         };
-
 
         SavedGame {
             game_id: self.game_id,
@@ -108,7 +109,7 @@ pub struct Odds {
     pub book_name: String,
     pub home_team_odds: i32,
     pub away_team_odds: i32,
-    pub predicted_score: f64
+    pub predicted_score: f64,
 }
 
 #[derive(Identifiable, Insertable, Queryable, Serialize, Deserialize, Debug)]
@@ -127,7 +128,6 @@ pub struct SavedGame {
     pub confidence: Option<f64>,
 }
 
-
 impl SavedGame {
     pub fn insert(&self, conn: &mut PgConnection) -> bool {
         diesel::insert_into(saved_games::table)
@@ -135,7 +135,6 @@ impl SavedGame {
             .execute(conn)
             .is_ok()
     }
-
 
     pub fn is_saved(&self, conn: &mut PgConnection) -> Result<bool, diesel::result::Error> {
         {
@@ -149,53 +148,75 @@ impl SavedGame {
     }
 }
 
-
-pub fn get_model_win_rate(other_model_name: &str, conn: &mut PgConnection) -> Result<f64, ApiError> {
-    let select = format!("CAST(COUNT(prediction) AS FLOAT) / (SELECT COUNT(*) FROM saved_games WHERE model_name = '{}') * 100 AS percentage_correct", other_model_name);
-    let percentage_correct: f64 = saved_games::table
-        .select(sql::<Float8>(select.as_str()))
-        .filter(sql::<Bool>("prediction = winner"))
-        .filter(model_name.eq(other_model_name))
-        .get_result(conn)
-        .map_err(|error|  {
-            error!("Error occurred while getting win rate for model {}: {}", other_model_name, error);
-            ApiError::DatabaseError
-        })?;
-
+pub fn get_model_win_rate(
+    other_model_name: &str,
+    conn: &mut PgConnection,
+) -> Result<f64, ApiError> {
+    let percentage_correct: f64 = if other_model_name == "ou" {
+        let select = "CAST(AVG(ABS((home_team_score::int + away_team_score::int) - prediction::int)) AS FLOAT) AS avg_score_difference";
+        saved_games::table
+            .select(sql::<Float8>(select))
+            .filter(sql::<Bool>("prediction ~ '^\\d+$'"))
+            .filter(model_name.eq(other_model_name))
+            .get_result(conn)
+            .map_err(|error| {
+                error!(
+                    "Error occurred while getting win rate for model {}: {}",
+                    other_model_name, error
+                );
+                ApiError::DatabaseError
+            })?
+    } else {
+        let select = format!("CAST(COUNT(prediction) AS FLOAT) / (SELECT COUNT(*) FROM saved_games WHERE model_name = '{}') * 100 AS percentage_correct", other_model_name);
+        saved_games::table
+            .select(sql::<Float8>(select.as_str()))
+            .filter(sql::<Bool>("prediction = winner"))
+            .filter(model_name.eq(other_model_name))
+            .get_result(conn)
+            .map_err(|error| {
+                error!(
+                    "Error occurred while getting win rate for model {}: {}",
+                    other_model_name, error
+                );
+                ApiError::DatabaseError
+            })?
+    };
 
     Ok(percentage_correct)
-
 }
 
-pub fn get_saved_games_by_date(params: &HistoryQueryParams, con: &mut PgConnection) -> Result<Vec<HistoryModel>, ApiError> {
-
+pub fn get_saved_games_by_date(
+    params: &HistoryQueryParams,
+    con: &mut PgConnection,
+) -> Result<Vec<HistoryModel>, ApiError> {
     let date = &params.date;
     let other_model_name = &params.model_name;
 
     let games: Vec<SavedGame> = saved_games::table
         .filter(saved_games::date.eq(date))
         .filter(model_name.eq(other_model_name))
-        .load::<SavedGame>(con).unwrap();
-
+        .load::<SavedGame>(con)
+        .unwrap();
 
     let mut games_with_injuries: Vec<(SavedGame, Vec<InjuryStore>)> = Vec::new();
-    for game in games
-    {
+    for game in games {
         let injs = get_injuries_by_game_id(&game.game_id, con)?;
         games_with_injuries.push((game, injs));
     }
 
-    let history_models = games_with_injuries.into_iter().map(|(game, injuries)| { HistoryModel { game, injuries}}).collect::<Vec<HistoryModel>>();
+    let history_models = games_with_injuries
+        .into_iter()
+        .map(|(game, injuries)| HistoryModel { game, injuries })
+        .collect::<Vec<HistoryModel>>();
     Ok(history_models)
 }
-
-
 
 pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<DateModel>, ApiError> {
     let model_names: Vec<String> = match saved_games::table
         .select(model_name)
         .distinct()
-        .load::<String>(con) {
+        .load::<String>(con)
+    {
         Ok(names) => Ok(names),
         Err(e) => {
             error!("Error getting model names: {}", e);
@@ -209,19 +230,18 @@ pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<DateModel>, ApiError
             .select(saved_games::date)
             .filter(model_name.eq(&model))
             .distinct()
-            .load::<String>(con) {
+            .load::<String>(con)
+        {
             Ok(dates) => Ok(dates),
             Err(e) => {
                 error!("Error getting saved games dates: {}", e);
                 Err(ApiError::DatabaseError)
             }
         }?;
-        model_and_dates.push(
-            DateModel {
-                model_name: model,
-                dates
-            }
-        );
+        model_and_dates.push(DateModel {
+            model_name: model,
+            dates,
+        });
     }
 
     Ok(model_and_dates)
@@ -232,7 +252,6 @@ pub struct DateModel {
     pub dates: Vec<String>,
     pub model_name: String,
 }
-
 
 #[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct Injuries {
@@ -299,10 +318,14 @@ impl InjuryStore {
     }
 }
 
-fn get_injuries_by_game_id(game_id: &String, conn: &mut PgConnection) -> Result<Vec<InjuryStore>, ApiError> {
+fn get_injuries_by_game_id(
+    game_id: &String,
+    conn: &mut PgConnection,
+) -> Result<Vec<InjuryStore>, ApiError> {
     match injuries::table
         .filter(injuries::game_id.eq(game_id))
-        .load::<InjuryStore>(conn) {
+        .load::<InjuryStore>(conn)
+    {
         Ok(injuries) => Ok(injuries),
         Err(e) => {
             error!("Error getting injuries by game id: {}", e);
@@ -311,10 +334,8 @@ fn get_injuries_by_game_id(game_id: &String, conn: &mut PgConnection) -> Result<
     }
 }
 
-
 #[derive(Serialize, Deserialize)]
 pub struct HistoryModel {
     pub game: SavedGame,
     pub injuries: Vec<InjuryStore>,
 }
-

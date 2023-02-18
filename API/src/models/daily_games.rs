@@ -140,13 +140,12 @@ pub struct PbOdds {
     pub suspended: i64,
 }
 
-
 pub struct Match {
     pub game_id: String,
     pub home_team_id: i64,
     pub home_team_name: String,
-    pub away_team_id : i64,
-    pub away_team_name: String
+    pub away_team_id: i64,
+    pub away_team_name: String,
 }
 
 impl Match {
@@ -155,8 +154,14 @@ impl Match {
             game_id: game.game_id,
             home_team_id: game.home_team.team_id,
             away_team_id: game.away_team.team_id,
-            home_team_name: format!("{} {}", &game.home_team.team_city, &game.home_team.team_name),
-            away_team_name: format!("{} {}", &game.away_team.team_city, &game.away_team.team_name)
+            home_team_name: format!(
+                "{} {}",
+                &game.home_team.team_city, &game.home_team.team_name
+            ),
+            away_team_name: format!(
+                "{} {}",
+                &game.away_team.team_city, &game.away_team.team_name
+            ),
         }
     }
 }
