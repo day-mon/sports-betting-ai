@@ -5,7 +5,7 @@
 
 <h2 align="center">Accuribet</h2>
 <p align="center">
-  A new way to bet on sports. Accuribet utilizes machine learning to predict the outcome of sporting events. We use 42-48 different data points to predict the outcome of a game. In our testing phase we have been able to predict the outcome of games with 60-70% accuracy.
+  A new way to bet on sports. Accuribet utilizes machine learning to predict the outcome of sporting events. We use 42-48 different data points to predict the outcome of a game. In our testing phase we have been able to predict the outcome of games with ~60% accuracy.
   <br/>
     <a href="https://accuribet.win">View Live Website</a>
     ·
@@ -29,7 +29,7 @@ This project was a final project for CS 1783 (Artificial Intelligence) at the Un
 
 
 ## Contributing
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)

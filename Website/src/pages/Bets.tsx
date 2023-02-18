@@ -27,6 +27,7 @@ const Bets: Component = () => {
     const [loading, setLoading] = createSignal(true);
     const [error, setError] = createSignal(false);
     const [disabled, setDisabled] = createSignal(false);
+    const [errorMessage, setErrorMessage] = createSignal<string>('');
     const [modelSelected, setModelSelected] = createSignal('')
 
     const fetchPredictions = async (model_name: string) => {
@@ -80,13 +81,17 @@ const Bets: Component = () => {
         if (!res && !refresh) {
             setError(true);
             setLoading(false);
+            setErrorMessage('Failed to fetch games')
             return;
         }
 
         let response = res!;
+        let data = await response.json();
+
 
         if (response.status !== 200 && !refresh) {
             setError(true);
+            setErrorMessage(data.message)
             setLoading(false);
             return;
         }
@@ -96,9 +101,8 @@ const Bets: Component = () => {
         }
 
         setError(false);
-
-        const data = await response.json() as Game[]
-        setBets(data);
+        setErrorMessage('')
+        setBets(data as Game[]);
     };
 
 
@@ -223,7 +227,12 @@ const Bets: Component = () => {
                     <Loading/>
                 </Show>
                 <Show when={error() && !loading()} keyed>
-                    <NoData message={'There was an error fetching the data'}/>
+                    <NoData message={ errorMessage() ?? 'There was an error fetching the data'}>
+                        {/* yikes */}
+                        <Show when={errorMessage() === 'No games found for today'} keyed>
+                            <a target={'_blank'} href={'https://www.nba.com/schedule'} class="text-white underline font-semibold text-center">View the NBA Schedule</a>
+                        </Show>
+                    </NoData>
                 </Show>
                 <Show when={!loading() && bets().length === 0} keyed>
                     <NoData message={'There are no games at the moment'}/>
