@@ -196,7 +196,11 @@ pub fn get_saved_games_by_date(
         .filter(saved_games::date.eq(date))
         .filter(model_name.eq(other_model_name))
         .load::<SavedGame>(con)
-        .unwrap();
+        .map_err(|error| {
+            error!("{error}");
+            ApiError::DatabaseError
+        })?;
+
 
     let mut games_with_injuries: Vec<(SavedGame, Vec<InjuryStore>)> = Vec::new();
     for game in games {

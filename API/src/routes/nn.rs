@@ -16,7 +16,7 @@ use crate::models::game_with_odds::{
 use crate::models::prediction::Prediction;
 use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
-use crate::{models::game_with_odds::GameWithOdds, util::io_helper::directory_exists};
+use crate::{DataDir, ModelDir, models::game_with_odds::GameWithOdds, util::io_helper::directory_exists};
 
 const DAILY_GAMES_URL: &str =
     "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
@@ -32,16 +32,15 @@ pub struct PredictQueryParams {
 pub async fn predict_all(
     params: web::Query<PredictQueryParams>,
     redis: web::Data<Option<Client>>,
+    model_dir: web::Data<ModelDir>,
+    data_dir: web::Data<DataDir>
 ) -> Result<HttpResponse, ApiError> {
     let inner = params.into_inner();
     let model_name = inner.model_name;
-    let dir = std::env::var("MODEL_DIR").map_err(|error| {
-        error!("Error while attempting to get model directory env variable. This should've never happened?. Error: {}", error);
-        ApiError::Unknown
-    })?;
+    let directory = &model_dir.into_inner().0;
 
-    if !directory_exists(&format!("{dir}/{model_name}")) {
-        error!("Could find model with the name {}", model_name);
+    if !directory_exists(&format!("{directory}/{model_name}")) {
+        error!("Could find model with the name {model_name}");
         return Err(ApiError::ModelNotFound);
     }
 
@@ -59,11 +58,10 @@ pub async fn predict_all(
         .flat_map(str::parse::<u64>)
         .collect::<BTreeSet<_>>();
     let prediction_key = format!(
-        "{}:{:?}:{}",
-        model_name, game_key, daily_games.scoreboard.game_date
+        "{model_name}:{:?}:{}",
+        game_key, daily_games.scoreboard.game_date
     );
-    let bypass_cache = ((inner.ignore_cache.is_none())
-        || (inner.ignore_cache.is_some() && !inner.ignore_cache.unwrap()))
+    let bypass_cache = ((inner.ignore_cache.is_none()) || (inner.ignore_cache.is_some() && !inner.ignore_cache.unwrap()))
     .not();
     let client = redis.into_inner();
 
@@ -84,8 +82,9 @@ pub async fn predict_all(
         .into_iter()
         .map(Match::from_game)
         .collect();
-    let model_data = get_model_data(&matches, date, &model_name).await?;
-    let prediction = call_model(&model_data, &matches, &model_name)?;
+    let data_dir = &data_dir.into_inner().0;
+    let model_data = get_model_data(&matches, date, &model_name, data_dir).await?;
+    let prediction = call_model(&model_data, &matches, &model_name, directory)?;
     if !bypass_cache {
         store_in_cache(&client, &prediction_key, &prediction);
     }
@@ -104,7 +103,7 @@ pub async fn history(
 ) -> Result<HttpResponse, ApiError> {
     let params = params.into_inner();
     let mut pooled_conn = pool.get().map_err(|error| {
-        warn!("Could not get connection from pool. Error: {}", error);
+        warn!("Could not get connection from pool. Error: {error}");
         ApiError::DatabaseError
     })?;
     let connection = pooled_conn.deref_mut();
@@ -117,7 +116,7 @@ pub async fn history_dates(
     pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
 ) -> Result<HttpResponse, ApiError> {
     let mut pooled_conn = pool.get().map_err(|error| {
-        warn!("Could not get connection from pool. Error: {}", error);
+        warn!("Could not get connection from pool. Error: {error}");
         ApiError::DatabaseError
     })?;
     let connection = pooled_conn.deref_mut();
@@ -133,28 +132,26 @@ pub struct ModelAccuracy {
 pub async fn model_accuracy(
     params: web::Query<ModelAccuracy>,
     pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>,
+    model_dir: web::Data<ModelDir>,
 ) -> Result<HttpResponse, ApiError> {
-    let dir = std::env::var("MODEL_DIR").map_err(|error| {
-        error!("Error while attempting to get model directory env variable. This should've never happened?. Error: {}", error);
-        ApiError::Unknown
-    })?;
+    let directory = &model_dir.into_inner().0;
     let inner_params = params.into_inner();
     let model_name = inner_params.model_name;
 
-    if !directory_exists(&format!("{dir}/{model_name}")) {
-        error!("Could find model with the name {}", model_name);
+    if !directory_exists(&format!("{directory}/{model_name}")) {
+        error!("Could find model with the name {model_name}");
         return Err(ApiError::ModelNotFound);
     }
 
     let mut pooled_conn = pool.get().map_err(|error| {
-        warn!("Could not get connection from pool. Error: {}", error);
+        warn!("Could not get connection from pool. Error: {error}");
         ApiError::DatabaseError
     })?;
 
     let connection = pooled_conn.deref_mut();
 
-    let perc = get_model_win_rate(&model_name, connection)?;
-    Ok(HttpResponse::Ok().json(perc))
+    let model_win_rate = get_model_win_rate(&model_name, connection)?;
+    Ok(HttpResponse::Ok().json(model_win_rate))
 }
 
 pub async fn games() -> Result<HttpResponse, ApiError> {

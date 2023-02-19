@@ -7,7 +7,6 @@ use crate::util::polars_helper::{convert_rows_to_f64, drop_columns};
 use log::error;
 use polars::io::SerReader;
 use polars::prelude::{CsvReader, DataFrame};
-use std::env;
 use std::fs::File;
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 
@@ -17,22 +16,15 @@ pub async fn get_model_data(
     matches: &Vec<Match>,
     date: &String,
     model_name: &str,
+    data_dir: &String,
 ) -> Result<DataFrame, ApiError> {
-    let data_dir = env::var("DATA_DIR").map_err(|error| {
-        error!(
-            "Some how you got an error while trying to get the data_dir. Here's the error: {}",
-            error
-        );
-        ApiError::Unknown
-    })?;
-
-    let file_name = format!("{}/{}.csv", data_dir, date);
+    let file_name = format!("{data_dir}/{date}.csv" );
     if let Ok(file) = File::open(file_name) {
         let mut df = CsvReader::new(file)
             .has_header(true)
             .finish()
             .map_err(|error| {
-                error!("Error occurred trying to read CSV. Error: {:?}", error);
+                error!("Error occurred trying to read CSV. Error: {error}");
                 ApiError::IOError
             })?;
 
@@ -43,24 +35,21 @@ pub async fn get_model_data(
     }
 
     let response = reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
-        error!("Error getting team data: {}", error);
+        error!("Error getting team data: {error}");
         ApiError::DependencyError
     })?;
 
     let response_body = response.text().await.map_err(|error| {
-        error!("Error getting team data: {}", error);
+        error!("Error getting team data: {error}");
         ApiError::DependencyError
     })?;
 
     let daily_stats = serde_json::from_str::<TeamStats>(&response_body).map_err(|error| {
-        error!(
-            "Error occurred trying to deserialize response body: {}",
-            error
-        );
+        error!("Error occurred trying to deserialize response body: {error}");
         ApiError::DeserializationError
     })?;
 
-    let written = write_to_csv(matches, &daily_stats, date)?;
+    let written = write_to_csv(matches, &daily_stats, date, data_dir)?;
 
     let mut df = CsvReader::new(written)
         .infer_schema(None)
@@ -81,9 +70,9 @@ pub fn call_model(
     df: &DataFrame,
     matches: &[Match],
     model_name: &String,
+    model_dir: &String,
 ) -> Result<Vec<Prediction>, ApiError> {
-    let model_dir = env::var("MODEL_DIR").unwrap();
-    let model_path = format!("{}/{}", model_dir, model_name);
+    let model_path = format!("{model_dir}/{model_name}");
     let sig_in_name = if model_name != "v2" {
         "input_layer_input"
     } else {
@@ -109,7 +98,7 @@ pub fn call_model(
         let tensor = Tensor::new(&[1, columns as u64])
             .with_values(&initial_values)
             .map_err(|error| {
-                error!("Error occurred trying to create tensor: {}", error);
+                error!("Error occurred trying to create tensor: {error}");
                 ApiError::ModelError
             })?;
 
@@ -117,7 +106,7 @@ pub fn call_model(
         let bundle =
             SavedModelBundle::load(&SessionOptions::new(), ["serve"], &mut graph, &model_path)
                 .map_err(|err| {
-                    error!("Error occurred trying to load model: {}", err);
+                    error!("Error occurred trying to load model: {err}" );
                     ApiError::ModelError
                 })?;
 
@@ -126,19 +115,18 @@ pub fn call_model(
             .meta_graph_def()
             .get_signature("serving_default")
             .map_err(|e| {
-                error!("Error occurred trying to get signature. {}", e);
+                error!("Error occurred trying to get signature. {e}");
                 ApiError::ModelError
             })?;
 
         let input_info = signature.get_input(sig_in_name).map_err(|e| {
-            error!("Error occurred trying to get input info. | Error: {}", e);
+            error!("Error occurred trying to get input info. | Error: {e}");
             ApiError::ModelError
         })?;
 
         let output_info = signature.get_output(sig_out_name).map_err(|error| {
             error!(
-                "Error occurred trying to get output info | Error: {}",
-                error
+                "Error occurred trying to get output info | Error: {error}"
             );
             ApiError::ModelError
         })?;
@@ -146,14 +134,14 @@ pub fn call_model(
         let input_op = graph
             .operation_by_name_required(&input_info.name().name)
             .map_err(|error| {
-                error!("Error occurred trying to get input op | Error: {}", error);
+                error!("Error occurred trying to get input op | Error: {error}");
                 ApiError::ModelError
             })?;
 
         let output_op = graph
             .operation_by_name_required(&output_info.name().name)
             .map_err(|error| {
-                error!("Error occurred trying to get output op | Error: {}", error);
+                error!("Error occurred trying to get output op | Error: {error}");
                 ApiError::ModelError
             })?;
 
@@ -162,12 +150,12 @@ pub fn call_model(
         let output_tensor = args.request_fetch(&output_op, 0);
 
         session.run(&mut args).map_err(|error| {
-            error!("Error occurred trying to run session | Error: {}", error);
+            error!("Error occurred trying to run session | Error: {error}");
             ApiError::ModelError
         })?;
 
         let output = args.fetch::<f32>(output_tensor).map_err(|error| {
-            error!("Error occurred trying to fetch output | Error: {}", error);
+            error!("Error occurred trying to fetch output | Error: {error}");
             ApiError::ModelError
         })?;
 

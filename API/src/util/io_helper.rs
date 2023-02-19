@@ -1,6 +1,6 @@
+use std::fs;
 use std::fs::File;
 use std::path::Path;
-use std::{env, fs};
 
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
@@ -14,8 +14,8 @@ pub fn write_to_csv(
     matches: &Vec<Match>,
     team_stats: &TeamStats,
     date: &String,
+    data_dir: &String,
 ) -> Result<File, ApiError> {
-    let data_dir = env::var("DATA_DIR").unwrap();
     let mut csv = String::new();
     for i in 0..2 {
         if i == 1 {
@@ -77,29 +77,24 @@ pub fn directory_exists(path: &String) -> bool {
 
 pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, ApiError> {
     let request_start = std::time::Instant::now();
-    debug!("Getting data from: {}", source);
+    debug!("Getting data from: {source}");
 
     let response = reqwest::get(source).await.map_err(|error| {
-        debug!(
-            "Request to {} took: {:?}, but failed.",
-            source,
-            request_start.elapsed()
-        );
-        error!(
-            "Error has occurred while making the request | {}",
-            error.to_string()
-        );
+        debug!("Request to {source} took: {:?}, but failed.", request_start.elapsed());
+        error!("Error has occurred while making the request, {error}");
         ApiError::DependencyError
     })?;
     debug!("Request took: {:?}", request_start.elapsed());
 
     let response_body = response.text().await.map_err(|error| {
+        error!("Error has occurred while getting body, {error}, Came from {source}");
         ApiError::DeserializationError
     })?;
 
+    debug!("Response looks like: {response_body}");
 
     let generic = serde_json::from_str::<T>(&response_body).map_err(|error| {
-        error!("Error has occurred while deserializing | {error}. Came from {source}");
+        error!("Error has occurred while deserializing, {error}. Came from {source}");
         ApiError::DeserializationError
     })?;
     Ok(generic)
@@ -117,16 +112,11 @@ pub fn get_from_cache<T: DeserializeOwned>(
 
     let value: String = redis_connection
         .get(key)
-        .map_err(|error| {
-            error!(
-                "Error occurred while trying to get value from KV store. Error: {}",
-                error
-            )
-        })
+        .map_err(|error|  error!("Error occurred while trying to get value from KV store. Error: {error}"))
         .ok()?;
 
     serde_json::from_str::<T>(&value)
-        .map_err(|error| error!("Error occurred during serialization. Error: {}", error))
+        .map_err(|error| error!("Error occurred during serialization. Error: {error}"))
         .ok()
 }
 
@@ -138,17 +128,15 @@ pub fn store_in_cache<T: Serialize>(redis_client_opt: &Option<Client>, key: &Str
 
     let redis_connection_result = redis_client.get_connection();
     let Ok(mut redis_connection) = redis_connection_result
-        .map_err(|error| error!("Error has occurred while trying to get the redis connection. Error: {}", error))
+        .map_err(|error| error!("Error has occurred while trying to get the redis connection. Error: {error}"))
         else { return; };
 
     let Ok(generic_json) = serde_json::to_string(&value).map_err(|error| {
-        error!("Error has occurred while trying to serialize. Error: {}", error);
+        error!("Error has occurred while trying to serialize. Error: {error}");
     }) else { return; };
 
     redis_connection
         .set(key, generic_json)
-        .map_err(|error| {
-            error!("Error setting the key. Error: {}", error);
-        })
+        .map_err(|error| error!("Error setting the key. Error: {error}"))
         .unwrap_or(())
 }

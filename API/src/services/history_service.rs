@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::ops::{DerefMut};
-use actix_web::{ResponseError, web};
+use actix_web::{ResponseError};
 use diesel::{PgConnection, r2d2};
 use diesel::r2d2::{ConnectionManager};
 use log::{error, info, warn};
@@ -13,13 +13,14 @@ use crate::util::io_helper::{directory_exists, get_t_from_source};
 const ONE_HOUR_IN_SECONDS: u64 = 60 * 60;
 const FIFTEEN_MINUTES_IN_SECONDS: u64 = 60 * 15;
 
-pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
+pub async fn run(
+    pool: r2d2::Pool<ConnectionManager<PgConnection>>,
+    model_dir: String
+)
 {
     loop
     {
         info!("Attempting to grab game for history");
-
-
         let response = match nn::games().await {
             Ok(response) => response,
             Err(error) => {
@@ -89,14 +90,23 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
             continue;
         }
 
-        let model_dir = std::env::var("MODEL_DIR").unwrap_or_else(|_| panic!("MODEL_DIR not set"));
         if !directory_exists(&model_dir)
         {
             panic!("MODEL_DIR does not exist");
         }
 
         // walk the directory and get all the models
-        let models: Vec<String> = std::fs::read_dir(&model_dir).unwrap().map(|r| r.unwrap().path().file_name().unwrap().to_str().unwrap().to_string()).collect();
+        let models: Vec<String> = std::fs::read_dir(&model_dir)
+            .expect("Error reading directory")
+            .map(|r|
+                r.expect("Error reading directory")
+                    .path()
+                    .file_name()
+                    .expect("Error getting file name")
+                    .to_str()
+                    .expect("Error converting to str")
+                    .to_string()
+            ).collect();
 
 
         for model in models
@@ -133,7 +143,7 @@ pub async fn run(pool: r2d2::Pool<ConnectionManager<PgConnection>>)
                 match gg.is_saved(conn) {
                     Ok(b) => !b,
                     Err(e) => {
-                        error!("Error has occurred while checking if game is saved | Error: {}", e);
+                        error!("Error has occurred while checking if game is saved | Error: {e}");
                         false
                     }
                 }
