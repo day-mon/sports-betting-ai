@@ -1,3 +1,4 @@
+use polars::frame::DataFrame;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
@@ -149,6 +150,35 @@ pub struct Match {
 }
 
 impl Match {
+    pub fn from_dataframe(
+        dataframe: &DataFrame,
+        date: &String
+    ) -> Vec<Self> {
+        let home_team_names = dataframe.column("TEAM_NAME")?;
+        let away_team_names = dataframe.column("TEAM_NAME__duplicated_0")?;
+        let home_team_ids = dataframe.column("TEAM_ID")?;
+        let away_team_ids = dataframe.column("TEAM_ID__duplicated_0")?;
+        let game_id = date.replace("-", "");
+
+        let mut matches: Vec<Match> = vec![];
+        for index in home_team_names.len() {
+            let home_team_name  = home_team_names.get(i).to_string();
+            let away_team_name = away_team_names.get(i).to_string();
+            let home_team_id = home_team_ids.get(i)
+                .to_string()
+                .parse::<u64>()
+                .unwrap();
+            // make error type error for Match creation
+            let away_team_id = home_team_ids.get(i)
+                .to_string()
+                .parse::<u64>()
+                .unwrap();
+            // make error type error for Match creation
+        }
+
+        matches
+    }
+
     pub fn from_game(game: Game) -> Self {
         Match {
             game_id: game.game_id,
