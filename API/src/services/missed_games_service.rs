@@ -92,7 +92,11 @@ pub async fn run(
 
         let mut saved_games = 0;
 
-        for date in database_dates {
+        for (index, date) in database_dates.iter().enumerate() {
+            if index != 0 {
+                sleep(Duration::from_secs(60));
+            }
+
             let file_name = format!("{data_dir}/{date}.csv");
             let Ok(file) = File::open(&file_name).inspect_err(|error| error!("Error has occurred while trying to acquire the file in directory ({file_name}), Error here: {error}")) else {
                 continue;
@@ -100,7 +104,7 @@ pub async fn run(
 
             let models = database_date_models
                 .iter()
-                .filter(|model| !model.dates.contains(&date))
+                .filter(|model| !model.dates.contains(date))
                 .map(|model| model.model_name.clone())
                 .collect::<Vec<String>>();
 
@@ -120,7 +124,7 @@ pub async fn run(
             };
             for model in models {
                 info!("Getting information for {date} for the {model} model");
-                let Ok(model_data) = get_model_data(None, &date, &model, &data_dir).await.inspect_err(|e| info!("{e}")) else {
+                let Ok(model_data) = get_model_data(None, date, &model, &data_dir).await.inspect_err(|e| info!("{e}")) else {
                     continue;
                 };
                 let Ok(predictions) = call_model(&model_data, &matches, &model, &_model_dir).inspect_err(|e| error!("{e}")) else {
@@ -145,7 +149,7 @@ pub async fn run(
                     };
                     let d = &game.boxscore.clone().unwrap();
                     let f = d.clone();
-                    let Some(mgdto) = MissedGameDTO::new(&date, game_match, game, &model, &f, &prediction)
+                    let Some(mgdto) = MissedGameDTO::new(date, game_match, game, &model, &f, &prediction)
                         else {
                             error!("Couldnt create the missed game dto");
                             continue;
