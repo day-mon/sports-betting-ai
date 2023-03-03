@@ -1,5 +1,3 @@
-#![feature(result_option_inspect)]
-
 use std::env;
 use std::path::Path;
 use actix_cors::Cors;
