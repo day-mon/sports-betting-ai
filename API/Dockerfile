@@ -1,4 +1,4 @@
-FROM rust:latest AS build
+FROM rustlang/rust:nightly AS build
 
 WORKDIR /app
 COPY ./Cargo.toml ./Cargo.lock ./
@@ -25,8 +25,6 @@ COPY --from=build /app/src/trained_models/useable /app/trained_models/useable
 ENV MODEL_DIR /app/trained_models/useable
 ENV DATA_DIR /app/data
 ENV LOG_LEVEL info
-
-# this is really bad because i have root perms but i just need this to work rn tbh
 
 EXPOSE 8080
 ENTRYPOINT ["sports-betting-api-rs"]
