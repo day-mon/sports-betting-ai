@@ -5,8 +5,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("No games found for today")]
-    GamesNotFound,
+    #[error("Games not found for date `{0}`")]
+    GamesNotFound(String),
     #[error("Error deserializing response")]
     DeserializationError,
     #[error("Error occurred while calling the model")]
@@ -25,7 +25,7 @@ pub enum ApiError {
 impl ApiError {
     pub fn name(&self) -> String {
         match self {
-            Self::GamesNotFound => "Games not found".to_string(),
+            Self::GamesNotFound(_) => "Games not found".to_string(),
             Self::DeserializationError => "Failed to deserialize".to_string(),
             Self::ModelError => "Error occurred while calling the model".to_string(),
             Self::IOError => "An Error occurred during IO".to_string(),
@@ -40,7 +40,7 @@ impl ApiError {
 impl ResponseError for ApiError {
     fn status_code(&self) -> StatusCode {
         match *self {
-            Self::GamesNotFound  => StatusCode::NOT_FOUND,
+            Self::GamesNotFound(_)  => StatusCode::NOT_FOUND,
             Self::DeserializationError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::IOError => StatusCode::INTERNAL_SERVER_ERROR,
             Self::ModelNotFound => StatusCode::NOT_FOUND,

@@ -1,15 +1,18 @@
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Game;
 use crate::models::prediction::Prediction;
+use crate::models::schema::injuries::{player, position, status, team};
 use crate::models::schema::saved_games::model_name;
 use crate::models::schema::*;
 use crate::routes::nn::HistoryQueryParams;
+use crate::services::missed_games_service::MissedGameDTO;
 use diesel::dsl::sql;
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Float8};
 use diesel::{Insertable, PgConnection, Queryable};
 use log::error;
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct GameWithOdds {
@@ -129,6 +132,29 @@ pub struct SavedGame {
 }
 
 impl SavedGame {
+    pub fn from_prediction(missed_game_dto: MissedGameDTO) -> Self {
+        SavedGame {
+            game_id: missed_game_dto.prediction.game_id.clone(),
+            home_team_name: missed_game_dto.game_match.home_team_name.clone(),
+            home_team_score: missed_game_dto.box_score.total_home_points.to_string(),
+            away_team_name: missed_game_dto.game_match.away_team_name.clone(),
+            away_team_score: missed_game_dto.box_score.total_away_points.to_string(),
+            winner: if missed_game_dto.box_score.total_home_points
+                > missed_game_dto.box_score.total_away_points
+            {
+                missed_game_dto.game_match.home_team_name.clone()
+            } else {
+                missed_game_dto.game_match.away_team_name.clone()
+            },
+            prediction: Some(missed_game_dto.prediction.prediction.clone()),
+            date: missed_game_dto.date.clone(),
+            model_name: missed_game_dto.model_name.clone(),
+            confidence: missed_game_dto
+                .prediction
+                .confidence
+                .map(|pred| pred as f64),
+        }
+    }
     pub fn insert(&self, conn: &mut PgConnection) -> bool {
         diesel::insert_into(saved_games::table)
             .values(self)
@@ -200,7 +226,6 @@ pub fn get_saved_games_by_date(
             error!("{error}");
             ApiError::DatabaseError
         })?;
-
 
     let mut games_with_injuries: Vec<(SavedGame, Vec<InjuryStore>)> = Vec::new();
     for game in games {

@@ -166,9 +166,6 @@ const History: Component = () => {
                             type="date"
                             value={currentDates()[currentDates().length - 1].toISOString().split('T')[0]}
                             min={currentDates()[0].toISOString().split('T')[0]}
-                            onkeydown={(e) => e.preventDefault()}
-                            onkeypress={(e) => e.preventDefault()}
-                            onkeyup={(e) => e.preventDefault()}
                             max={currentDates()[currentDates().length - 1].toISOString().split('T')[0]}
                             onInput={async (e) => {
                                 let modelDates = savedDates().find((date) => date.model_name.includes(model()));
@@ -177,10 +174,13 @@ const History: Component = () => {
                                     return;
                                 }
                                 let selectedDate = e.currentTarget.value;
-                                let dateExists = modelDates.dates.some((date) => date === selectedDate);
-                                if (!dateExists) {
+                                if (new Date(selectedDate) > currentDates()[currentDates().length - 1]) {
                                     e.currentTarget.value = date()!.toISOString().split('T')[0];
-                                    console.error('Date does not exist for model: ' + model());
+                                    return;
+                                }
+
+                                if (new Date(selectedDate) < currentDates()[0]) {
+                                    e.currentTarget.value = date()!.toISOString().split('T')[0];
                                     return;
                                 }
 
@@ -206,6 +206,10 @@ const History: Component = () => {
                     </div>
                     <For each={sortByWinner()}>{(game) => <SavedGameCard savedHistory={game}/>}</For>
                 </Show>
+                <Show when={savedHistory().length == 0 && currentDates().length !== 0} keyed>
+                    <NoData message={'There are no games we have saved for this date :('}/>
+                </Show>
+
             </Show>
         </Suspense>
     )

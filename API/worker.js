@@ -1,6 +1,3 @@
-## Requirements before running the app
-- Because the NBA API doesnt like CORS, we use a Cloudflare worker to get the data. This means that you need to have a Cloudflare account and a worker. You can either use the code below or whats in worker.js its the same.
-```javascript
 /*
 This is the cloudflare worker that runs to get the CSV data from the NBA API.
 We use this to get the data because the NBA API does not allow CORS and after a second request is made the api will not give us a response.
@@ -50,51 +47,3 @@ async function gatherResponse(response) {
     }
     return response.text();
 }
-```
-
-
-
-
-## Getting started with Docker
-
-This is a quick guide to get you started with Docker. 
-
-### Prerequisites
-- [Docker](https://docs.docker.com/get-docker/)
-- this
-
-## Environment variables
-- `DATABASE_URL` - The URL of the database. This is used for saving Historical data.
-
-## Running the app
-- With docker run you can do the following:
-```shell
-docker run -p 8080:8080 -e DATABASE_URL=postgres://user:password@host:port/database -d --name app app
-```
-
-## Getting Started without Docker
-
-
-## Environment variables
-- `DATABASE_URL` - The URL of the database. This is used for saving Historical data.
-- `MODEL_DIR` - The directory where the model is stored. This is used for loading the model.
-- `DATA_DIR` - The directory where the data is stored. This is used for loading the data.
-
-
-## Running the app
-- Install the dependencies
-```shell
-cargo build -j <NUM_OF_CPU_JOBS> --release
-```
-
-- Run the app
-```shell
-cd target/release
-./app
-```
-
-## Contributing
-- Fork the repo
-- Create a new branch
-- Make your changes
-- Create a pull request

@@ -13,13 +13,13 @@ use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor
 const TEAM_DATA_URL: &str = "https://lively-fire-943d.alexanderjoemc.workers.dev/";
 
 pub async fn get_model_data(
-    matches: &Vec<Match>,
+    matches: Option<&Vec<Match>>,
     date: &String,
     model_name: &str,
     data_dir: &String,
 ) -> Result<DataFrame, ApiError> {
     let file_name = format!("{data_dir}/{date}.csv" );
-    if let Ok(file) = File::open(file_name) {
+    if let Ok(file) = File::open(&file_name) {
         let mut df = CsvReader::new(file)
             .has_header(true)
             .finish()
@@ -33,6 +33,11 @@ pub async fn get_model_data(
 
         return Ok(df);
     }
+
+    let Some(matches) = matches else {
+        error!("Matches were passed in as a none. Only pass in None if you know for certain that the file exist!. File name {file_name}");
+        return Err(ApiError::Unknown);
+    };
 
     let response = reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
         error!("Error getting team data: {error}");

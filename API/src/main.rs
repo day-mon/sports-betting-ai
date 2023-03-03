@@ -78,6 +78,12 @@ async fn main() -> std::io::Result<()> {
 
     let history_pool = pool.clone();
     let history_model_dir = model_dir.clone();
+
+    let missed_games_pool = pool.clone();
+    let missed_games_model_dir = model_dir.clone();
+    let missed_games_data_dir = data_dir.clone();
+
+    actix_rt::spawn(async move { services::missed_games_service::run(missed_games_pool, missed_games_model_dir, missed_games_data_dir).await });
     actix_rt::spawn(async move { services::history_service::run(history_pool, history_model_dir).await });
 
 

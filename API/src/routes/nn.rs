@@ -83,7 +83,7 @@ pub async fn predict_all(
         .map(Match::from_game)
         .collect();
     let data_dir = &data_dir.into_inner().0;
-    let model_data = get_model_data(&matches, date, &model_name, data_dir).await?;
+    let model_data = get_model_data(Some(&matches), date, &model_name, data_dir).await?;
     let prediction = call_model(&model_data, &matches, &model_name, directory)?;
     if !bypass_cache {
         store_in_cache(&client, &prediction_key, &prediction);
@@ -158,10 +158,10 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let game_odds = get_t_from_source::<DailyGames>(DAILY_GAMES_URL).await?;
     let games = game_odds.scoreboard.games;
 
-    if games.is_empty() {
-        return Err(ApiError::GamesNotFound);
-    }
     let date = game_odds.scoreboard.game_date;
+    if games.is_empty() {
+        return Err(ApiError::GamesNotFound(date));
+    }
     let mut g_w_o = games
         .iter()
         .filter(|g| g.away_team.team_name != "" && g.home_team.team_name != "")
@@ -199,12 +199,9 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     let url_date = date.replace('-', "");
     let daily_odds_url = format!("https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date={url_date}");
 
-    let game_odds = match get_t_from_source::<GameOdds>(daily_odds_url.as_str()).await {
-        Ok(odds) => odds,
-        Err(_) => {
-            warn!("Could not get odds");
-            return Ok(HttpResponse::Ok().json(g_w_o));
-        }
+    let Ok(game_odds) = get_t_from_source::<GameOdds>(daily_odds_url.as_str()).await else {
+        warn!("Could not get odds");
+        return Ok(HttpResponse::Ok().json(g_w_o));
     };
 
     if game_odds.games.is_empty() {
