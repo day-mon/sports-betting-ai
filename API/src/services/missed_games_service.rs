@@ -20,24 +20,27 @@ use crate::util::nn_helper::{call_model, get_model_data};
 const TWENTY_FOUR_HOURS: Duration = Duration::from_secs(86400);
 const ONE_HOUR: Duration = Duration::from_secs(3600);
 
+// TODO: GET INSPECT_ERR BACK
+
 pub async fn run(
     pool: r2d2::Pool<ConnectionManager<PgConnection>>,
     _model_dir: String,
     data_dir: String,
 ) {
     loop {
-        let Ok(mut pooled_connection) = pool.get().inspect_err(|error| error!("Error has occurred while trying to get a connection, Error: {error}")) else {
+        let Ok(mut pooled_connection) = pool.get() else {
+            error!("Couldnt get a pooled connection");
             sleep(ONE_HOUR);
             continue;
         };
 
-        let Ok(dates_in_fs) = fs::read_dir(&data_dir).inspect_err(|error| error!("Error {error}")) else {
+        let Ok(dates_in_fs) = fs::read_dir(&data_dir) else {
             panic!("Couldnt read the data directory. Panicking becuase this or most likely not something that will be fixed by sleeping");
         };
 
         let dates_in_fs = dates_in_fs
             .map(|dir| {
-                dir.unwrap()
+                dir.expect("Couldnt get the dir")
                     .path()
                     .file_name()
                     .expect("Couldnt get the file name")
@@ -78,7 +81,7 @@ pub async fn run(
 
         if database_dates.len() == 1 {
             let date = database_dates.iter().next().unwrap();
-            let Ok(date) = date.parse::<chrono::NaiveDate>().inspect_err(|error| error!("Error {error}")) else {
+            let Ok(date) = date.parse::<chrono::NaiveDate>() else {
                 error!("Couldnt parse the date");
                 sleep(ONE_HOUR);
                 continue;
@@ -98,7 +101,8 @@ pub async fn run(
             }
 
             let file_name = format!("{data_dir}/{date}.csv");
-            let Ok(file) = File::open(&file_name).inspect_err(|error| error!("Error has occurred while trying to acquire the file in directory ({file_name}), Error here: {error}")) else {
+            let Ok(file) = File::open(&file_name) else {
+                error!("Couldnt open the file {file_name}");
                 continue;
             };
 
@@ -115,19 +119,25 @@ pub async fn run(
 
             let formatted_date = date.replace('-', "");
             let request_url = format!("https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&date={formatted_date}");
-            let response = get_t_from_source::<GameOdds>(&request_url).await.unwrap();
-            let Ok(dataframe) = CsvReader::new(file).has_header(true).finish().inspect_err(|error| error!("{error}")) else {
+            let Ok(response) = get_t_from_source::<GameOdds>(&request_url).await else {
+                error!("Couldnt get the response from the api");
                 continue;
             };
-            let Ok(matches) = Match::from_dataframe(&dataframe, &response.games).inspect_err(|error| error!("{error}")) else {
+            let Ok(dataframe) = CsvReader::new(file).has_header(true).finish() else {
+                error!("Couldnt get the dataframe");
+                continue;
+            };
+            let Ok(matches) = Match::from_dataframe(&dataframe, &response.games) else {
+                error!("Couldnt get the matches");
                 continue;
             };
             for model in models {
                 info!("Getting information for {date} for the {model} model");
-                let Ok(model_data) = get_model_data(None, date, &model, &data_dir).await.inspect_err(|e| info!("{e}")) else {
+                let Ok(model_data) = get_model_data(None, date, &model, &data_dir).await else {
+                    error!("Couldnt get the model data");
                     continue;
                 };
-                let Ok(predictions) = call_model(&model_data, &matches, &model, &_model_dir).inspect_err(|e| error!("{e}")) else {
+                let Ok(predictions) = call_model(&model_data, &matches, &model, &_model_dir) else {
                     continue;
                 };
                 let prediction_len = predictions.len();
@@ -147,7 +157,10 @@ pub async fn run(
                         error!("Couldnt find game id in matches");
                         continue;
                     };
-                    let d = &game.boxscore.clone().unwrap();
+                    let Some(d) = &game.boxscore.clone() else {
+                        error!("Couldnt find the boxscore");
+                        continue;
+                    };
                     let f = d.clone();
                     let Some(mgdto) = MissedGameDTO::new(date, game_match, game, &model, &f, &prediction)
                         else {

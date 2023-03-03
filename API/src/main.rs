@@ -1,5 +1,3 @@
-#![feature(result_option_inspect)]
-
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
