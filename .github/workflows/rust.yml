@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "$GITHUB_CONTEXT"
       - name: Install Rust
-        run: rustup update stable
+        run: rustup update nightly
         working-directory: ./API
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
