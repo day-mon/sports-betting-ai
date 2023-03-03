@@ -3,7 +3,7 @@ FROM rust:latest AS build
 WORKDIR /app
 COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./src/ src/
-RUN cargo build --release -j 32
+RUN cargo build -r
 RUN find . -type f -name libtensorflow.so.1 -exec cp {} . \; \
     && find . -type f -name libtensorflow_framework.so.1 -exec cp {} . \;
 
@@ -13,10 +13,12 @@ RUN apt-get update \
     && apt-get install -y \
         ca-certificates \
             libpq-dev \
+            libssl-dev \
     && apt-get autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN update-ca-certificates
 WORKDIR /app
 COPY --from=build /app/target/release/sports-betting-api-rs /usr/local/bin/sports-betting-api-rs
 COPY --from=build /app/*.so.1 /usr/lib/
