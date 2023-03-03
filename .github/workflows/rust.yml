@@ -16,7 +16,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_STABLE: stable
 
 jobs:
   build:
@@ -35,7 +34,7 @@ jobs:
       - name: Install Rust ${{ env.RUST_STABLE }}
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ env.RUST_STABLE }}
+          toolchain: nightly
           override: true
       - name: Show Context
         run: |
