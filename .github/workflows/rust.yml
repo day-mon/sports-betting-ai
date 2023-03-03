@@ -16,7 +16,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_STABLE: stable
 
 jobs:
   build:
@@ -35,13 +34,13 @@ jobs:
       - name: Install Rust ${{ env.RUST_STABLE }}
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ env.RUST_STABLE }}
+          toolchain: nightly
           override: true
       - name: Show Context
         run: |
           echo "$GITHUB_CONTEXT"
       - name: Install Rust
-        run: rustup update stable
+        run: rustup update nightly
         working-directory: ./API
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'

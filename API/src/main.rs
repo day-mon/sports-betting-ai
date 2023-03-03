@@ -1,24 +1,25 @@
+#![feature(result_option_inspect)]
+
+use actix_cors::Cors;
+use actix_web::middleware::Logger;
+use actix_web::{web, App, HttpServer};
+use diesel::r2d2::ConnectionManager;
+use diesel::{r2d2, PgConnection};
+use routes::nn;
 use std::env;
 use std::path::Path;
-use actix_cors::Cors;
-use actix_web::{App, HttpServer, web};
-use actix_web::middleware::Logger;
-use diesel::{PgConnection, r2d2};
-use diesel::r2d2::ConnectionManager;
-use routes::nn;
 
 pub struct ModelDir(pub String);
 pub struct DataDir(pub String);
 
-mod routes;
 mod models;
-mod util;
+mod routes;
 mod services;
+mod util;
 
 extern crate emoji_logger;
 #[macro_use]
 extern crate log;
-
 
 const TENSOR_FLOW_LOGGING_FLAG: &str = "TF_CPP_MIN_LOG_LEVEL";
 
@@ -43,7 +44,6 @@ async fn main() -> std::io::Result<()> {
         error!("DATA_DIR environment variable not set");
         std::process::exit(1);
     };
-
 
     let Ok(database_url) = env::var("DATABASE_URL") else {
         error!("DATABASE_URL environment variable not set");
@@ -76,8 +76,22 @@ async fn main() -> std::io::Result<()> {
 
     let history_pool = pool.clone();
     let history_model_dir = model_dir.clone();
-    actix_rt::spawn(async move { services::history_service::run(history_pool, history_model_dir).await });
 
+    let missed_games_pool = pool.clone();
+    let missed_games_model_dir = model_dir.clone();
+    let missed_games_data_dir = data_dir.clone();
+
+    actix_rt::spawn(async move {
+        services::missed_games_service::run(
+            missed_games_pool,
+            missed_games_model_dir,
+            missed_games_data_dir,
+        )
+        .await
+    });
+    actix_rt::spawn(async move {
+        services::history_service::run(history_pool, history_model_dir).await
+    });
 
     HttpServer::new(move || {
         App::new()
@@ -93,10 +107,10 @@ async fn main() -> std::io::Result<()> {
                     .route("/games", web::get().to(nn::games))
                     .route("/history", web::get().to(nn::history))
                     .route("/history/dates", web::get().to(nn::history_dates))
-                    .route("/model/accuracy", web::get().to(nn::model_accuracy))
+                    .route("/model/accuracy", web::get().to(nn::model_accuracy)),
             )
     })
-        .bind(endpoint)?
-        .run()
-        .await
+    .bind(endpoint)?
+    .run()
+    .await
 }

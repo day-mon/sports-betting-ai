@@ -8,7 +8,7 @@ export interface Game {
   home_team_id: number;
   away_team_id: number;
   home_team_score: string;
-  away_team_score: string;s
+  away_team_score: string;
   time_left?: string;
   odds?: Odd[];
   away_team_injuries?: Injury[];

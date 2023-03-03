@@ -20,7 +20,6 @@ static BOOKIES: phf::Map<&'static str, &'static str> = phf_map! {
     "76" => "Pointsbet",
 };
 
-
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
@@ -73,8 +72,7 @@ pub struct League {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CalendarInfo {
-}
+pub struct CalendarInfo {}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -105,6 +103,7 @@ pub struct Game {
     pub start_time: Option<String>,
     #[serde(rename = "away_team_id")]
     pub away_team_id: Option<i64>,
+    pub boxscore: Option<Boxscore>,
     #[serde(rename = "home_team_id")]
     pub home_team_id: Option<i64>,
     #[serde(rename = "winning_team_id")]
@@ -129,6 +128,76 @@ pub struct Game {
     pub broadcast: Option<Broadcast>,
 }
 
+impl Game {
+    pub fn get_winner(&self) -> Option<String> {
+        let box_score = &self.boxscore.clone().unwrap();
+        let teams = &self.teams;
+        if teams.len() != 2 {
+            return None;
+        }
+
+        if let [away_team, home_team] = teams.as_slice() {
+            return if box_score.total_home_points > box_score.total_away_points {
+                home_team.display_name.clone()
+            } else {
+                away_team.display_name.clone()
+            };
+        }
+        None
+    }
+
+    pub fn get_final_score(&self) -> Option<String> {
+        let box_score = &self.boxscore.clone()?;
+        let score = box_score.total_away_points + box_score.total_home_points;
+        Some(score.to_string())
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Outcome {
+    #[serde(rename = "times_tied")]
+    pub times_tied: i64,
+    #[serde(rename = "lead_changes")]
+    pub lead_changes: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Boxscore {
+    pub clock: Option<String>,
+    pub period: Option<i64>,
+    pub outcome: Option<Outcome>,
+    pub duration: Option<String>,
+    pub linescore: Vec<Linescore>,
+    #[serde(rename = "total_away_points")]
+    pub total_away_points: i64,
+    #[serde(rename = "total_home_points")]
+    pub total_home_points: i64,
+    #[serde(rename = "total_away_firsthalf_points")]
+    pub total_away_firsthalf_points: Option<i64>,
+    #[serde(rename = "total_home_firsthalf_points")]
+    pub total_home_firsthalf_points: Option<i64>,
+    #[serde(rename = "total_away_secondhalf_points")]
+    pub total_away_secondhalf_points: Option<i64>,
+    #[serde(rename = "total_home_secondhalf_points")]
+    pub total_home_secondhalf_points: Option<i64>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Linescore {
+    pub id: i64,
+    pub abbr: String,
+    #[serde(rename = "display_name")]
+    pub display_name: String,
+    #[serde(rename = "full_name")]
+    pub full_name: String,
+    #[serde(rename = "away_points")]
+    pub away_points: Option<i64>,
+    #[serde(rename = "home_points")]
+    pub home_points: Option<i64>,
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -169,8 +238,7 @@ pub struct Standings {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Meta {
-}
+pub struct Meta {}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -242,16 +310,16 @@ pub struct Odd {
 impl Odd {
     pub fn into_odds(self) -> Odds {
         let book_id = self.book_id.to_string();
-        let book_name = BOOKIES.get(&book_id)
+        let book_name = BOOKIES
+            .get(&book_id)
             .map(|&book| book.to_string())
             .unwrap_or("Unknown".to_string());
-
 
         Odds {
             book_name,
             home_team_odds: self.ml_home as i32,
             away_team_odds: self.ml_away as i32,
-            predicted_score: self.total
+            predicted_score: self.total,
         }
     }
 }
@@ -605,4 +673,3 @@ pub struct Broadcast {
     pub internet: Option<Value>,
     pub satellite: Option<String>,
 }
-
