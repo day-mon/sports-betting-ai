@@ -80,7 +80,10 @@ pub async fn get_t_from_source<T: DeserializeOwned>(source: &str) -> Result<T, A
     debug!("Getting data from: {source}");
 
     let response = reqwest::get(source).await.map_err(|error| {
-        debug!("Request to {source} took: {:?}, but failed.", request_start.elapsed());
+        debug!(
+            "Request to {source} took: {:?}, but failed.",
+            request_start.elapsed()
+        );
         error!("Error has occurred while making the request, {error}");
         ApiError::DependencyError
     })?;
@@ -110,10 +113,14 @@ pub fn get_from_cache<T: DeserializeOwned>(
         .map_err(|err| error!("Error getting Redis connection. Error: {}", err))
         .ok()?;
 
-    let value: String = redis_connection
+    let value: Option<String> = redis_connection
         .get(key)
-        .map_err(|error|  error!("Error occurred while trying to get value from KV store. Error: {error}"))
+        .map_err(|error| {
+            error!("Error occurred while trying to get value from KV store. Error: {error}")
+        })
         .ok()?;
+
+    let value = value?;
 
     serde_json::from_str::<T>(&value)
         .map_err(|error| error!("Error occurred during serialization. Error: {error}"))

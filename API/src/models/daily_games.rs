@@ -152,9 +152,8 @@ pub enum MatchCreationError {
         source: polars::error::PolarsError,
     },
     #[error("Unknown error")]
-    UnknownError
+    UnknownError,
 }
-
 
 pub struct Match {
     pub game_id: String,
@@ -167,43 +166,61 @@ pub struct Match {
 impl Match {
     pub fn from_dataframe(
         dataframe: &DataFrame,
-        game: &Vec<crate::models::game_odds::Game>
+        game: &[crate::models::game_odds::Game],
     ) -> Result<Vec<Self>, MatchCreationError> {
-        let home_team_names = dataframe.column("TEAM_NAME")
+        let home_team_names = dataframe
+            .column("TEAM_NAME")
             .map_err(|e| MatchCreationError::PolarsError { source: e })?;
-        let away_team_names = dataframe.column("TEAM_NAME_duplicated_0")
+        let away_team_names = dataframe
+            .column("TEAM_NAME_duplicated_0")
             .map_err(|e| MatchCreationError::PolarsError { source: e })?;
-        let home_team_ids = dataframe.column("TEAM_ID")
+        let home_team_ids = dataframe
+            .column("TEAM_ID")
             .map_err(|e| MatchCreationError::PolarsError { source: e })?;
-        let away_team_ids = dataframe.column("TEAM_ID_duplicated_0")
+        let away_team_ids = dataframe
+            .column("TEAM_ID_duplicated_0")
             .map_err(|e| MatchCreationError::PolarsError { source: e })?;
 
         let mut matches: Vec<Match> = vec![];
         for index in 0..home_team_names.len() {
-            let home_team_name  = home_team_names.get(index)
-                .to_string()
-                .replace("\"", "");
-            let away_team_name = away_team_names.get(index)
-                .to_string()
-                .replace("\"", "");
-            let home_team_id = home_team_ids.get(index)
+            let home_team_name = home_team_names.get(index).to_string().replace('\"', "");
+            let away_team_name = away_team_names.get(index).to_string().replace('\"', "");
+            let home_team_id = home_team_ids
+                .get(index)
                 .to_string()
                 .parse::<u64>()
-                .map_err(|e| MatchCreationError::MatchCreationError(format!("Error parsing home team id: {e}")))?;
+                .map_err(|e| {
+                    MatchCreationError::MatchCreationError(format!(
+                        "Error parsing home team id: {e}"
+                    ))
+                })?;
             // make error type error for Match creation
-            let away_team_id = away_team_ids.get(index)
+            let away_team_id = away_team_ids
+                .get(index)
                 .to_string()
                 .parse::<u64>()
-                .map_err(|e| MatchCreationError::MatchCreationError(format!("Error parsing away team id: {e}")))?;
+                .map_err(|e| {
+                    MatchCreationError::MatchCreationError(format!(
+                        "Error parsing away team id: {e}"
+                    ))
+                })?;
 
-            let id = game.iter().find(|p|{
-                    let home_team_found = p.teams[0].full_name == home_team_name || p.teams[1].full_name == home_team_name;
-                    let away_team_found = p.teams[0].full_name == away_team_name || p.teams[1].full_name == away_team_name;
+            let id = game
+                .iter()
+                .find(|p| {
+                    let home_team_found = p.teams[0].full_name == home_team_name
+                        || p.teams[1].full_name == home_team_name;
+                    let away_team_found = p.teams[0].full_name == away_team_name
+                        || p.teams[1].full_name == away_team_name;
                     home_team_found || away_team_found
                 })
-                .ok_or(MatchCreationError::MatchCreationError(format!("Error finding initial match id for {home_team_name} vs {away_team_name}")))?
+                .ok_or(MatchCreationError::MatchCreationError(format!(
+                    "Error finding initial match id for {home_team_name} vs {away_team_name}"
+                )))?
                 .id
-                .ok_or(MatchCreationError::MatchCreationError(format!("Error unwrapping match id for {home_team_name} vs {away_team_name}")))?
+                .ok_or(MatchCreationError::MatchCreationError(format!(
+                    "Error unwrapping match id for {home_team_name} vs {away_team_name}"
+                )))?
                 .to_string();
             matches.push(Match {
                 game_id: id,

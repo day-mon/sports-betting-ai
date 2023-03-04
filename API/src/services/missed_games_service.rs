@@ -8,6 +8,7 @@ use diesel::r2d2::ConnectionManager;
 use diesel::{r2d2, PgConnection};
 use polars::export::ahash::HashSet;
 use polars::export::chrono;
+use polars::export::chrono::NaiveDate;
 use polars::prelude::{CsvReader, SerReader};
 
 use crate::models::daily_games::Match;
@@ -24,9 +25,11 @@ const ONE_HOUR: Duration = Duration::from_secs(3600);
 
 pub async fn run(
     pool: r2d2::Pool<ConnectionManager<PgConnection>>,
-    _model_dir: String,
+    model_dir: String,
     data_dir: String,
+    worker_url: String,
 ) {
+    info!("Starting Missed Games Service");
     loop {
         let Ok(mut pooled_connection) = pool.get() else {
             error!("Couldnt get a pooled connection");
@@ -35,7 +38,7 @@ pub async fn run(
         };
 
         let Ok(dates_in_fs) = fs::read_dir(&data_dir) else {
-            panic!("Couldnt read the data directory. Panicking becuase this or most likely not something that will be fixed by sleeping");
+            panic!("Couldnt read the data directory. Panicking because this or most likely not something that will be fixed by sleeping");
         };
 
         let dates_in_fs = dates_in_fs
@@ -73,24 +76,18 @@ pub async fn run(
                     .all(|model| model.dates.contains(date))
         });
 
+        database_dates.retain(|date| {
+            let date = NaiveDate::parse_from_str(date, "%Y-%m-%d");
+            let Ok(date) = date else {
+                return false;
+            };
+            date < chrono::Utc::now().naive_utc().date() - chrono::Duration::days(1)
+        });
+
         if database_dates.is_empty() {
             info!("No games missing. Sleeping for 24 hours");
             sleep(TWENTY_FOUR_HOURS);
             continue;
-        }
-
-        if database_dates.len() == 1 {
-            let date = database_dates.iter().next().unwrap();
-            let Ok(date) = date.parse::<chrono::NaiveDate>() else {
-                error!("Couldnt parse the date");
-                sleep(ONE_HOUR);
-                continue;
-            };
-            if date > chrono::Utc::now().naive_utc().date() - chrono::Duration::days(1) {
-                info!("No games missing. Sleeping for 24 hours");
-                sleep(TWENTY_FOUR_HOURS);
-                continue;
-            }
         }
 
         let mut saved_games = 0;
@@ -128,16 +125,16 @@ pub async fn run(
                 continue;
             };
             let Ok(matches) = Match::from_dataframe(&dataframe, &response.games) else {
-                error!("Couldnt get the matches");
+                error!("Couldnt get the matches for {date}");
                 continue;
             };
             for model in models {
                 info!("Getting information for {date} for the {model} model");
-                let Ok(model_data) = get_model_data(None, date, &model, &data_dir).await else {
+                let Ok(model_data) = get_model_data(None, date, &model, &data_dir, &worker_url).await else {
                     error!("Couldnt get the model data");
                     continue;
                 };
-                let Ok(predictions) = call_model(&model_data, &matches, &model, &_model_dir) else {
+                let Ok(predictions) = call_model(&model_data, &matches, &model, &model_dir) else {
                     continue;
                 };
                 let prediction_len = predictions.len();

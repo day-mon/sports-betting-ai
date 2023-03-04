@@ -2,7 +2,7 @@ use crate::models::api_error::ApiError;
 use crate::models::daily_games::Match;
 use crate::models::prediction::Prediction;
 use crate::models::team_stats::TeamStats;
-use crate::util::io_helper::write_to_csv;
+use crate::util::io_helper::{get_t_from_source, write_to_csv};
 use crate::util::polars_helper::{convert_rows_to_f64, drop_columns};
 use log::error;
 use polars::io::SerReader;
@@ -10,15 +10,14 @@ use polars::prelude::{CsvReader, DataFrame};
 use std::fs::File;
 use tensorflow::{Graph, SavedModelBundle, SessionOptions, SessionRunArgs, Tensor};
 
-const TEAM_DATA_URL: &str = "https://lively-fire-943d.alexanderjoemc.workers.dev/";
-
 pub async fn get_model_data(
     matches: Option<&Vec<Match>>,
     date: &String,
     model_name: &str,
     data_dir: &String,
+    worker_url: &str,
 ) -> Result<DataFrame, ApiError> {
-    let file_name = format!("{data_dir}/{date}.csv" );
+    let file_name = format!("{data_dir}/{date}.csv");
     if let Ok(file) = File::open(&file_name) {
         let mut df = CsvReader::new(file)
             .has_header(true)
@@ -39,20 +38,7 @@ pub async fn get_model_data(
         return Err(ApiError::Unknown);
     };
 
-    let response = reqwest::get(TEAM_DATA_URL).await.map_err(|error| {
-        error!("Error getting team data: {error}");
-        ApiError::DependencyError
-    })?;
-
-    let response_body = response.text().await.map_err(|error| {
-        error!("Error getting team data: {error}");
-        ApiError::DependencyError
-    })?;
-
-    let daily_stats = serde_json::from_str::<TeamStats>(&response_body).map_err(|error| {
-        error!("Error occurred trying to deserialize response body: {error}");
-        ApiError::DeserializationError
-    })?;
+    let daily_stats = get_t_from_source::<TeamStats>(worker_url).await?;
 
     let written = write_to_csv(matches, &daily_stats, date, data_dir)?;
 
@@ -111,7 +97,7 @@ pub fn call_model(
         let bundle =
             SavedModelBundle::load(&SessionOptions::new(), ["serve"], &mut graph, &model_path)
                 .map_err(|err| {
-                    error!("Error occurred trying to load model: {err}" );
+                    error!("Error occurred trying to load model: {err}");
                     ApiError::ModelError
                 })?;
 
@@ -130,9 +116,7 @@ pub fn call_model(
         })?;
 
         let output_info = signature.get_output(sig_out_name).map_err(|error| {
-            error!(
-                "Error occurred trying to get output info | Error: {error}"
-            );
+            error!("Error occurred trying to get output info | Error: {error}");
             ApiError::ModelError
         })?;
 

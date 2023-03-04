@@ -1,5 +1,5 @@
 ## Requirements before running the app
-- Because the NBA API doesnt like CORS, we use a Cloudflare worker to get the data. This means that you need to have a Cloudflare account and a worker. You can either use the code below or whats in worker.js its the same.
+- Because of CORS we use a Cloudflare worker to get the data. This means that you need to have a Cloudflare account and a worker. You can either use the code below or whats in worker.js its the same.
 ```javascript
 /*
 This is the cloudflare worker that runs to get the CSV data from the NBA API.
@@ -53,7 +53,12 @@ async function gatherResponse(response) {
 ```
 
 
-
+## Environment variables
+- `DATABASE_URL` - The URL of the database. This is used for saving Historical data.
+- `MODEL_DIR` - The directory where the model is stored. This is used for loading the model.
+- `DATA_DIR` - The directory where the data is stored. This is used for loading the data.
+- `MISSED_GAMES_SERVICE` - A boolean value that determines if the missed games service should run. This is used for games that may have been missed and have a CSV file for them.
+- `WORKER_URL` - The URL of the Cloudflare worker that gets the CSV data from the NBA API.
 
 ## Getting started with Docker
 
@@ -61,10 +66,9 @@ This is a quick guide to get you started with Docker.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
-- this
+- A relational database. This can be any database that is supported by [Diesel](https://diesel.rs/guides/getting-started/). This is used for saving historical data.
 
-## Environment variables
-- `DATABASE_URL` - The URL of the database. This is used for saving Historical data.
+
 
 ## Running the app
 - With docker run you can do the following:
@@ -73,18 +77,12 @@ docker run -p 8080:8080 -e DATABASE_URL=postgres://user:password@host:port/datab
 ```
 
 ## Getting Started without Docker
-
-
-## Environment variables
-- `DATABASE_URL` - The URL of the database. This is used for saving Historical data.
-- `MODEL_DIR` - The directory where the model is stored. This is used for loading the model.
-- `DATA_DIR` - The directory where the data is stored. This is used for loading the data.
-
+***You may need the postgres dev libraries installed on your system. This is needed for Diesel to compile.***
 
 ## Running the app
 - Install the dependencies
 ```shell
-cargo build -j <NUM_OF_CPU_JOBS> --release
+cargo build -r
 ```
 
 - Run the app

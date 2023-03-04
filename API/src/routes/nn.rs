@@ -16,7 +16,10 @@ use crate::models::game_with_odds::{
 use crate::models::prediction::Prediction;
 use crate::util::io_helper::{get_from_cache, get_t_from_source, store_in_cache};
 use crate::util::nn_helper::{call_model, get_model_data};
-use crate::{DataDir, ModelDir, models::game_with_odds::GameWithOdds, util::io_helper::directory_exists};
+use crate::{
+    models::game_with_odds::GameWithOdds, util::io_helper::directory_exists, DataDir, ModelDir,
+    WorkerUrl,
+};
 
 const DAILY_GAMES_URL: &str =
     "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
@@ -33,7 +36,8 @@ pub async fn predict_all(
     params: web::Query<PredictQueryParams>,
     redis: web::Data<Option<Client>>,
     model_dir: web::Data<ModelDir>,
-    data_dir: web::Data<DataDir>
+    data_dir: web::Data<DataDir>,
+    worker_url: web::Data<WorkerUrl>,
 ) -> Result<HttpResponse, ApiError> {
     let inner = params.into_inner();
     let model_name = inner.model_name;
@@ -61,7 +65,8 @@ pub async fn predict_all(
         "{model_name}:{:?}:{}",
         game_key, daily_games.scoreboard.game_date
     );
-    let bypass_cache = ((inner.ignore_cache.is_none()) || (inner.ignore_cache.is_some() && !inner.ignore_cache.unwrap()))
+    let bypass_cache = ((inner.ignore_cache.is_none())
+        || (inner.ignore_cache.is_some() && !inner.ignore_cache.unwrap()))
     .not();
     let client = redis.into_inner();
 
@@ -83,7 +88,8 @@ pub async fn predict_all(
         .map(Match::from_game)
         .collect();
     let data_dir = &data_dir.into_inner().0;
-    let model_data = get_model_data(Some(&matches), date, &model_name, data_dir).await?;
+    let worker = &worker_url.into_inner().0;
+    let model_data = get_model_data(Some(&matches), date, &model_name, data_dir, worker).await?;
     let prediction = call_model(&model_data, &matches, &model_name, directory)?;
     if !bypass_cache {
         store_in_cache(&client, &prediction_key, &prediction);
@@ -164,7 +170,7 @@ pub async fn games() -> Result<HttpResponse, ApiError> {
     }
     let mut g_w_o = games
         .iter()
-        .filter(|g| g.away_team.team_name != "" && g.home_team.team_name != "")
+        .filter(|g| !g.away_team.team_name.is_empty() && !g.home_team.team_name.is_empty())
         .map(|g| GameWithOdds::from_g(g, &date))
         .collect::<Vec<GameWithOdds>>();
 

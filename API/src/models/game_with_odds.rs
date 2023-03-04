@@ -1,7 +1,6 @@
 use crate::models::api_error::ApiError;
 use crate::models::daily_games::Game;
 use crate::models::prediction::Prediction;
-use crate::models::schema::injuries::{player, position, status, team};
 use crate::models::schema::saved_games::model_name;
 use crate::models::schema::*;
 use crate::routes::nn::HistoryQueryParams;
@@ -60,10 +59,10 @@ impl GameWithOdds {
             away_team_score: match_up.away_team.score.to_string(),
             home_team_id: match_up.home_team.team_id,
             away_team_id: match_up.away_team.team_id,
-            time_left: Option::from(match_up.game_clock.clone()),
+            time_left: Some(match_up.game_clock.clone()),
             home_team_abbr: match_up.home_team.team_tricode.clone(),
             away_team_abbr: match_up.away_team.team_tricode.clone(),
-            odds: Vec::new(),
+            odds: vec![],
             home_team_injuries: None,
             away_team_injuries: None,
         }
@@ -248,7 +247,7 @@ pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<DateModel>, ApiError
     {
         Ok(names) => Ok(names),
         Err(e) => {
-            error!("Error getting model names: {}", e);
+            error!("Error getting model names: {e}");
             Err(ApiError::DatabaseError)
         }
     }?;
@@ -263,7 +262,7 @@ pub fn get_data_dates(con: &mut PgConnection) -> Result<Vec<DateModel>, ApiError
         {
             Ok(dates) => Ok(dates),
             Err(e) => {
-                error!("Error getting saved games dates: {}", e);
+                error!("Error getting saved games dates: {e}");
                 Err(ApiError::DatabaseError)
             }
         }?;
