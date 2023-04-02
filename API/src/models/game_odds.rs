@@ -438,7 +438,7 @@ pub struct MlAway {
     #[serde(rename = "ExternalEventId")]
     pub external_event_id: Option<String>,
     #[serde(rename = "GlobalSelectionId")]
-    pub global_selection_id: Option<String>,
+    pub global_selection_id: Option<Value>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -469,7 +469,7 @@ pub struct MlHome {
     #[serde(rename = "ExternalEventId")]
     pub external_event_id: Option<String>,
     #[serde(rename = "GlobalSelectionId")]
-    pub global_selection_id: Option<String>,
+    pub global_selection_id: Option<Value>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -478,11 +478,11 @@ pub struct AwayOver {
     #[serde(rename = "outcome_id")]
     pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
-    pub selection_id: Option<String>,
+    pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
     pub game_id: Option<i64>,
     #[serde(rename = "market_id")]
-    pub market_id: Option<i64>,
+    pub market_id: Option<Value>,
     #[serde(rename = "result_id")]
     pub result_id: Option<i64>,
     #[serde(rename = "Sport")]
@@ -492,7 +492,7 @@ pub struct AwayOver {
     #[serde(rename = "LeagueName")]
     pub league_name: Option<String>,
     #[serde(rename = "GlobalMarketId")]
-    pub global_market_id: Option<String>,
+    pub global_market_id: Option<Value>,
     #[serde(rename = "ExternalEventId")]
     pub external_event_id: Option<String>,
     #[serde(rename = "GlobalSelectionId")]
@@ -505,11 +505,11 @@ pub struct HomeOver {
     #[serde(rename = "outcome_id")]
     pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
-    pub selection_id: Option<String>,
+    pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
     pub game_id: Option<i64>,
     #[serde(rename = "market_id")]
-    pub market_id: Option<i64>,
+    pub market_id: Option<Value>,
     #[serde(rename = "result_id")]
     pub result_id: Option<i64>,
     #[serde(rename = "Sport")]
@@ -532,11 +532,11 @@ pub struct AwayUnder {
     #[serde(rename = "outcome_id")]
     pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
-    pub selection_id: Option<String>,
+    pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
     pub game_id: Option<i64>,
     #[serde(rename = "market_id")]
-    pub market_id: Option<i64>,
+    pub market_id: Option<Value>,
     #[serde(rename = "result_id")]
     pub result_id: Option<i64>,
     #[serde(rename = "Sport")]
@@ -550,7 +550,7 @@ pub struct AwayUnder {
     #[serde(rename = "ExternalEventId")]
     pub external_event_id: Option<String>,
     #[serde(rename = "GlobalSelectionId")]
-    pub global_selection_id: Option<String>,
+    pub global_selection_id: Option<Value>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -559,11 +559,11 @@ pub struct HomeUnder {
     #[serde(rename = "outcome_id")]
     pub outcome_id: Option<i64>,
     #[serde(rename = "selection_id")]
-    pub selection_id: Option<String>,
+    pub selection_id: Option<Value>,
     #[serde(rename = "game_id")]
     pub game_id: Option<i64>,
     #[serde(rename = "market_id")]
-    pub market_id: Option<i64>,
+    pub market_id: Option<Value>,
     #[serde(rename = "result_id")]
     pub result_id: Option<i64>,
     #[serde(rename = "Sport")]
