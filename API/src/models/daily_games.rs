@@ -61,8 +61,8 @@ pub struct HomeTeam {
     pub wins: i64,
     pub losses: i64,
     pub score: i64,
-    pub seed: Value,
-    pub in_bonus: Value,
+    pub seed: Option<Value>,
+    pub in_bonus: Option<Value>,
     pub timeouts_remaining: i64,
     pub periods: Vec<Period>,
 }
@@ -85,7 +85,7 @@ pub struct AwayTeam {
     pub wins: i64,
     pub losses: i64,
     pub score: i64,
-    pub seed: Value,
+    pub seed: Option<Value>,
     pub in_bonus: Value,
     pub timeouts_remaining: i64,
     pub periods: Vec<Period2>,
@@ -114,7 +114,7 @@ pub struct HomeLeaders {
     pub jersey_num: String,
     pub position: String,
     pub team_tricode: String,
-    pub player_slug: Value,
+    pub player_slug: Option<Value>,
     pub points: i64,
     pub rebounds: i64,
     pub assists: i64,
@@ -128,7 +128,7 @@ pub struct AwayLeaders {
     pub jersey_num: String,
     pub position: String,
     pub team_tricode: String,
-    pub player_slug: Value,
+    pub player_slug: Option<Value>,
     pub points: i64,
     pub rebounds: i64,
     pub assists: i64,
@@ -137,7 +137,7 @@ pub struct AwayLeaders {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PbOdds {
-    pub team: Value,
+    pub team: Option<Value>,
     pub odds: f64,
     pub suspended: i64,
 }
