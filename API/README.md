@@ -79,6 +79,17 @@ docker run -p 8080:8080 -e DATABASE_URL=postgres://user:password@host:port/datab
 ## Getting Started without Docker
 ***You may need the postgres dev libraries installed on your system. This is needed for Diesel to compile.***
 
+### Arch
+```shell
+sudo pacman -S postgresql-libs
+```
+
+### MacOS
+```shell
+brew install libpq
+brew link --force libpq
+```
+
 ## Running the app
 - Install the dependencies
 ```shell

@@ -155,6 +155,7 @@ pub enum MatchCreationError {
     UnknownError,
 }
 
+#[derive(Debug, Clone)]
 pub struct Match {
     pub game_id: String,
     pub home_team_id: i64,

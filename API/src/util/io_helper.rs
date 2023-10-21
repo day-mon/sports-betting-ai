@@ -26,6 +26,8 @@ pub fn write_to_csv(
 
     csv.push('\n');
 
+    println!("Matches: {:?}", matches);
+
     for mat in matches {
         let teams = vec![mat.home_team_id, mat.away_team_id];
         for team in teams {
@@ -42,7 +44,7 @@ pub fn write_to_csv(
 
             if csv_data.is_empty() {
                 error!("Unable to find team stats for team: {team}");
-                return Err(ApiError::DependencyError);
+                continue
             }
 
             csv.push_str(csv_data.as_str());

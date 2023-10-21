@@ -6,6 +6,7 @@ use diesel::{r2d2, PgConnection};
 use routes::nn;
 use std::path::Path;
 use std::{env, thread};
+use dotenvy::dotenv;
 
 pub struct ModelDir(pub String);
 pub struct WorkerUrl(pub String);
@@ -24,6 +25,7 @@ const TENSOR_FLOW_LOGGING_FLAG: &str = "TF_CPP_MIN_LOG_LEVEL";
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let _ = dotenv();
     emoji_logger::init_custom_env("LOG_LEVEL");
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let endpoint = format!("0.0.0.0:{port}");

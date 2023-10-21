@@ -84,7 +84,10 @@ pub fn call_model(
             .collect::<Vec<String>>();
         let initial_values = conv
             .iter()
-            .map(|val| val.parse::<f32>().unwrap())
+            .map(|val| {
+                println!("Val: {val}");
+                val.parse::<f32>().unwrap_or(0f32)
+            })
             .collect::<Vec<f32>>();
         let tensor = Tensor::new(&[1, columns as u64])
             .with_values(&initial_values)
