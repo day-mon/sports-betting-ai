@@ -38,7 +38,7 @@ Contributions are what make the open source community such an amazing place to l
 5. Open a Pull Request
 
 # Contributors
-* [Damon Montague](mailto:dam286@pitt.edi)
+* [Damon Montague](mailto:dam286@pitt.edu)
 * [Connor Smith](mailto:ces156@pitt.edu)
 * [Alexander Diaz](mailto:ajd159@pitt.edu)
 
