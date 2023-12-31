@@ -1,17 +1,18 @@
 import os
+from functools import lru_cache
 from typing import Literal, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class CacheSettings(BaseSettings):
-    CACHE_TYPE: Literal["disk", "redis"] = "redis"
-    CACHE_CONNECTION_URL: Optional[str] = None
-    CACHE_DIR: Optional[str] = None
-    CACHE_HOST: Optional[str] = None
-    CACHE_PORT: Optional[int] = None
-    CACHE_DB: Optional[int] = None
-    CACHE_PASSWORD: Optional[str] = None
+    TYPE: Literal["disk", "redis", "none"] = "none"
+    CONNECTION_URL: Optional[str] = None
+    DIR: Optional[str] = None
+    HOST: Optional[str] = None
+    PORT: Optional[int] = None
+    NAME: Optional[int] = None
+    PASSWORD: Optional[str] = None
 
 
     model_config = SettingsConfigDict(
@@ -21,6 +22,10 @@ class CacheSettings(BaseSettings):
         env_prefix="CACHE_"
 
     )
+
+@lru_cache
+def get_cache_settings():
+    return CacheSettings()
 
 
 

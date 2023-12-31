@@ -5,7 +5,7 @@ import os
 
 
 class AppSettings(BaseSettings):
-    APP_ENVIRONMENT: Literal["development", "production"] = "development"
+    ENVIRONMENT: Literal["development", "production"] = "development"
     DAILY_GAMES_SOURCE: Literal["nba"] = "nba"
     PLAYER_INJURY_SOURCE: Literal["rotowire"] = "rotowire"
     ODDS_SOURCE: Literal["actionnetwork"] = "actionnetwork"
@@ -18,8 +18,8 @@ class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=os.getenv(
             "ENV_FILE_OVERRIDE", f"./api/resources/env/{os.getenv('ENVIRONMENT', 'development')}.env"
-        )
-
+        ),
+        extra="ignore"
     )
 
 

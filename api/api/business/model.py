@@ -2,9 +2,10 @@ import csv
 import os
 import uuid
 from abc import ABC, abstractmethod
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 import httpx
+import numpy
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -15,12 +16,12 @@ from pydantic import BaseModel
 from api.business.daily_games import DailyGame
 from api.business.factory import AbstractFactory
 from api.config.application import get_settings
-from api.model.model import TeamStats
+from api.model.model.model import TeamStats
 
 
 class Prediction(BaseModel):
-    prediction_type: Literal["win-loss", "score"]
-    prediction: str
+    prediction_type: Literal["win-loss", "total-score"]
+    prediction: Union[str, int, float]
     game_id: str
     confidence: Optional[float] = None
 
@@ -30,14 +31,11 @@ class PredictionModel(ABC):
     model_dir: str
     columns_to_drop: list[str]
     stats_source: Optional[str] = None
-    model: tf.keras.models.Model
 
     def __init__(self, model_name: str, columns_to_drop: list[str], model_dir: str, stats_source: Optional[str] = None):
         self.stats_source = stats_source
         self.model_name = model_name
-        self.model = tf.keras.models.load_model(
-            f"{model_dir}/{self.model_name}"
-        )
+        self.model_dir = model_dir
         self.columns_to_drop = columns_to_drop
 
     @abstractmethod
@@ -49,10 +47,11 @@ class PredictionModel(ABC):
         pass
 
 
-class WinLossPredictionModel(PredictionModel):
+class TFPredictionModel(PredictionModel):
     _data_dir: str
     prediction_type: Literal["win-loss", "total-score"] = "win-loss"
     client: httpx.Client
+    model: tf.keras.models.Model
 
     def __init__(
             self,
@@ -66,6 +65,7 @@ class WinLossPredictionModel(PredictionModel):
                          stats_source=settings.CF_WORKER_URL)
         self._data_dir = settings.DATA_DIR
         self.prediction_type = prediction_type
+        self.model = tf.keras.models.load_model(f"{self.model_dir}/{self.model_name}")
         self.client = httpx.Client()
 
     def predict(self, data: DataFrame) -> list[Prediction]:
@@ -138,10 +138,14 @@ class WinLossPredictionModel(PredictionModel):
 
 
 class LLMBasedPredictionModel(PredictionModel):
-    pass
+    def predict(self, data: DataFrame) -> list[Prediction]:
+        pass
+
+    def fetch_stats(self, **kwargs) -> DataFrame:
+        pass
 
 
-class FortyTwoDPModel(WinLossPredictionModel):
+class FortyTwoDPModel(TFPredictionModel):
     def __init__(self, model_name: str, model_dir: str):
         columns = [
             "TEAM_NAME", "TEAM_ID", "GP",
@@ -153,7 +157,7 @@ class FortyTwoDPModel(WinLossPredictionModel):
         super().__init__(model_name, columns_to_drop=columns, model_dir=model_dir)
 
 
-class FortyEightDPModel(WinLossPredictionModel):
+class FortyEightDPModel(TFPredictionModel):
     def __init__(self, model_name: str, model_dir: str):
         columns = [
             "TEAM_NAME",
@@ -167,10 +171,32 @@ class FortyEightDPModel(WinLossPredictionModel):
         columns = columns + [f"{column}.1" for column in columns]
         super().__init__(model_name, columns_to_drop=columns, model_dir=model_dir)
 
+class OUPredictionModel(FortyEightDPModel):
+    def __init__(self, model_name: str, model_dir: str):
+        super().__init__(model_name, model_dir)
+        self.prediction_type = "total-score"
+
+    def predict(self, data: DataFrame) -> list[Prediction]:
+        logger.debug(f"Predicting with data: {data.shape}")
+        filtered_data = data.drop(self.columns_to_drop, axis=1, errors="ignore")
+        predictions_raw: numpy.ndarray = self.model.predict(filtered_data)
+        logger.debug(f"Raw Predictions: {predictions_raw}")
+        predictions = predictions_raw.flatten().tolist()
+        predicts: list[Prediction] = []
+        for prediction in predictions:
+            predicts.append(
+                Prediction(
+                    prediction_type=self.prediction_type,
+                    prediction=prediction,
+                    game_id=str(uuid.uuid4()),
+                )
+            )
+        return predicts
+
 
 class PredictionModelFactory(AbstractFactory):
     _values = {
         "v2": FortyTwoDPModel,
         "v1": FortyEightDPModel,
-        "ou": FortyEightDPModel
+        "ou": OUPredictionModel
     }

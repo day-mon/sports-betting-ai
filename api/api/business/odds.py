@@ -60,7 +60,6 @@ class ActionNetworkOddsSource(OddsSource):
                 return None
 
             home_team = teams[0]
-            away_team = teams[1]
 
             odds = game.get("odds", None)
             if not odds:
@@ -80,7 +79,6 @@ class ActionNetworkOddsSource(OddsSource):
 
                 if book_id in self.book_ids_to_skip:
                     continue
-
 
                 odds_return_value[home_team.get("abbr")].append(
                     Odds(
