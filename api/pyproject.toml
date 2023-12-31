@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = ["Damon L. Montague Jr. <damon@montague.im>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.0"
+fastapi = { version = "^0.108.0", extras = ["all"] }
+tensorflow = "2.15.0"
+uvicorn = "^0.25.0"
+loguru = "^0.7.2"
+httpx = "^0.26.0"
+pandas = "^2.1.4"
+python-dotenv = "^1.0.0"
+redis = {extras = ["hiredis"], version = "^5.0.1"}
+
+
+[tool.poetry.dev-dependencies]
+poethepoet = "^0.24.4"
+
+[tool.poe.tasks.run]
+help = 'Runs the API server locally'
+cmd = 'python api/main.py'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
