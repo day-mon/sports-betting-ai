@@ -9,17 +9,20 @@ import LoadingSelect from "../components/LoadingSelect";
 import {MODEL_OPTIONS} from "../constants";
 import {getPredictedWinColor} from "./History";
 import {ErrorPopup} from "../components/ErrorPopup";
+import { DailyGame, DailyGames } from '../model/game';
 
 const getBaseUrl = (useRemote?: boolean) => {
     // check if current url is localhost
     const remoteUrl = 'https://api.accuribet.win';
     if (useRemote) return remoteUrl;
-    return window.location.href.includes('localhost') ? 'http://localhost:8080' : remoteUrl;
+    let url =  window.location.href.includes('localhost') ? 'http://localhost:8000' : remoteUrl;
+    url += '/api/v1';
+    return url;
 };
 
 
 const Bets: Component = () => {
-    const [bets, setBets] = createSignal<Game[]>([]);
+    const [bets, setBets] = createSignal<DailyGames>({} as DailyGames);
     const [cardsShow, setCardsShow] = createSignal<boolean[]>([]);
     const [predictionFetchFailed, setPredictionFetchFailed] = createSignal<boolean>(false)
     const [predictionsErrorResponse, setPredictionsErrorResponse] = createSignal<string>()
@@ -35,7 +38,7 @@ const Bets: Component = () => {
         let predictions = sessionStorage.getItem(`predictions_${model_name}`);
         if (predictions) {
             let parsedPredictions = JSON.parse(predictions) as Prediction[];
-            let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
+            let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.id));
             if (allGamesInPredictions) {
                 setPredictions(parsedPredictions);
                 return;
@@ -44,7 +47,7 @@ const Bets: Component = () => {
 
         setDisabled(true);
         const BASE_URL = getBaseUrl();
-        let response = await fetchHelper(`${BASE_URL}/sports/predict/all?model_name=${model_name}`);
+        let response = await fetchHelper(`${BASE_URL}/model/predict/${model_name}`);
         if (!response) {
             setDisabled(false);
             setPredictionFetchFailed(true)
@@ -76,7 +79,7 @@ const Bets: Component = () => {
         if (!refresh) setLoading(true);
         const BASE_URL = getBaseUrl();
 
-        const res = await fetchHelper(`${BASE_URL}/sports/games`);
+        const res = await fetchHelper(`${BASE_URL}/games/daily`);
 
         if (!res && !refresh) {
             setError(true);
@@ -102,21 +105,21 @@ const Bets: Component = () => {
 
         setError(false);
         setErrorMessage('')
-        setBets(data as Game[]);
+        setBets(data as DailyGames);
     };
 
 
-    const findPrediction = (game: Game): Prediction | undefined => modelPredictions().find((prediction) => prediction.game_id === game.game_id);
+    const findPrediction = (game: DailyGame): Prediction | undefined => modelPredictions().find((prediction) => prediction.game_id === game.id);
 
 
     const getWinPercentage = () => {
-        let won = bets().filter(game => game.game_status.includes('Final'))
-            .map(game => game.away_team_score > game.home_team_score ? [game.away_team_name, game.game_id] : [game.home_team_name, game.game_id])
+        let won = bets().filter(game => game.status.includes('Final'))
+            .map(game => game.away_team.score > game.home_team.score ? [game.away_team.name, game.id] : [game.home_team.name, game.id  ])
             .filter(game => {
                 let foundPrediction = modelPredictions().find(predict => predict.game_id == game[1]);
                 return foundPrediction?.prediction == game[0]
         }).length;
-        return Math.round((won / bets().filter(game => game.game_status.includes('Final')).length) * 100);
+        return Math.round((won / bets().filter(game => game.status.includes('Final')).length) * 100);
     }
 
     onMount(async () => {
@@ -128,7 +131,7 @@ const Bets: Component = () => {
             return;
         }
         let parsedPredictions = JSON.parse(predictions) as Prediction[];
-        let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.game_id));
+        let allGamesInPredictions = bets().every((game) => parsedPredictions.some((prediction) => prediction.game_id === game.id));
         if (allGamesInPredictions) {
             setLoading(false);
             setPredictions(parsedPredictions);
@@ -140,39 +143,37 @@ const Bets: Component = () => {
     });
 
 
-    const getWinner = (game: Game) => {
-        let home_score = game.home_team_score;
-        let away_score = game.away_team_score;
+    const getWinner = (game: DailyGame) => {
+        let home_score = game.home_team.score;
+        let away_score = game.away_team.score;
 
-        let home_score_int = parseInt(home_score);
-        let away_score_int = parseInt(away_score);
 
-        return home_score_int > away_score_int ? game.home_team_name : game.away_team_name;
+        return home_score > away_score ? game.home_team.name : game.away_team.name;
     };
 
 
     const betInterval = setInterval(async () => await fetchBets(true), 45_000);
 
 
-    const sortedBetsByTime = (games: Game[]) =>
+    const sortedBetsByTime = (games: DailyGames) =>
         games.sort((a, b) => {
-            if (a.game_status.includes('Q') || a.game_status.includes('Halftime')) {
-                if (a.game_status.includes('Q') && b.game_status.includes('Q')) {
-                    return parseInt(a.game_status.split(' ')[1]) - parseInt(b.game_status.split(' ')[1]);
-                } else if (a.game_status.includes('Q') && b.game_status.includes('Halftime')) {
+            if (a.status.includes('Q') || a.status.includes('Halftime')) {
+                if (a.status.includes('Q') && b.status.includes('Q')) {
+                    return parseInt(a.status.split(' ')[1]) - parseInt(b.status.split(' ')[1]);
+                } else if (a.status.includes('Q') && b.status.includes('Halftime')) {
                     return -1;
-                } else if (a.game_status.includes('Halftime') && b.game_status.includes('Q')) {
+                } else if (a.status.includes('Halftime') && b.status.includes('Q')) {
                     return 1;
                 } else {
                     return 0;
                 }
             }
-            if (b.game_status.includes('Q') || b.game_status.includes('Halftime')) {
-                if (b.game_status.includes('Q') && a.game_status.includes('Q')) {
-                    return parseInt(b.game_status.split(' ')[1]) - parseInt(a.game_status.split(' ')[1]);
-                } else if (b.game_status.includes('Q') && a.game_status.includes('Halftime')) {
+            if (b.status.includes('Q') || b.status.includes('Halftime')) {
+                if (b.status.includes('Q') && a.status.includes('Q')) {
+                    return parseInt(b.status.split(' ')[1]) - parseInt(a.status.split(' ')[1]);
+                } else if (b.status.includes('Q') && a.status.includes('Halftime')) {
                     return 1;
-                } else if (b.game_status.includes('Halftime') && a.game_status.includes('Q')) {
+                } else if (b.status.includes('Halftime') && a.status.includes('Q')) {
                     return -1;
                 } else {
                     return 0;
@@ -180,21 +181,21 @@ const Bets: Component = () => {
             }
 
 
-            if (a.game_status.includes('Final')) {
+            if (a.status.includes('Final')) {
                 let prediction = findPrediction(a);
                 if (!prediction) return 1;
                 let won = prediction.prediction == getWinner(a)
                 return won ? -1 : 1;
             }
-            if (b.game_status.includes('Final')) {
+            if (b.status.includes('Final')) {
                 let prediction = findPrediction(a);
                 if (!prediction) return 1;
                 let won = prediction.prediction == getWinner(a)
                 return won ? -1 : 1;
             }
 
-            const aTime = a.game_status.split(' ')[0].split(':');
-            const bTime = b.game_status.split(' ')[0].split(':');
+            const aTime = a.status.split(' ')[0].split(':');
+            const bTime = b.status.split(' ')[0].split(':');
             const aHour = parseInt(aTime[0]);
             const bHour = parseInt(bTime[0]);
             const aMinute = parseInt(aTime[1]);
@@ -250,7 +251,7 @@ const Bets: Component = () => {
                         <Show when={modelSelected() !== 'None' && modelSelected() !== ''} keyed>
                             <a href={`/about/${modelSelected()}`} class="text-white hover:underline text-center mt-4">Learn
                                 more about {modelSelected().toUpperCase()}</a>
-                            <Show when={bets().every(game => game.game_status.includes('Final')) && modelPredictions().length !== 0 && modelSelected() !== 'ou'} keyed>
+                            <Show when={bets().every(game => game.status.includes('Final')) && modelPredictions().length !== 0 && modelSelected() !== 'ou'} keyed>
 
                                 <h5 class="text-base text-white font-bold text-center">
                                     We predicted

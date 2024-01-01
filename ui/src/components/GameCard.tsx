@@ -3,17 +3,18 @@ import {Game, Injury, Odd, Prediction, SavedGame} from '../models';
 import {Transition} from 'solid-transition-group';
 import Modal from './Modal';
 import InjuryModal from './modals/InjuryModal';
+import { DailyGame } from '../model/game';
 
 interface IBetCards {
-    game: Game;
+    game: DailyGame ;
     prediction?: Prediction;
     showDropdown: boolean;
     setShowDropdown: () => void;
 }
 
-export const getTotalScore = (game: Game | SavedGame) => {
-    let home_score = game.home_team_score;
-    let away_score = game.away_team_score;
+export const getTotalScore = (game: DailyGame | SavedGame) => {
+    let home_score = game.home_team.score;
+    let away_score = game.away_team.score;
 
     let home_score_int = parseInt(home_score);
     let away_score_int = parseInt(away_score);
@@ -23,26 +24,24 @@ export const getTotalScore = (game: Game | SavedGame) => {
 export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     const [showInjury, setShowInjury] = createSignal(false);
 
-    const getWinner = (game: Game) => {
-        let home_score = game.home_team_score;
-        let away_score = game.away_team_score;
+    const getWinner = (game: DailyGame) => {
+        let home_score = game.home_team.score;
+        let away_score = game.away_team.score;
 
-        let home_score_int = parseInt(home_score);
-        let away_score_int = parseInt(away_score);
 
-        return home_score_int > away_score_int ? game.home_team_name : game.away_team_name;
+        return home_score > away_score ? game.home_team.name : game.away_team.name;
     };
 
 
-    const getInjuries = (game: Game): Injury[] => {
+    const getInjuries = (game: DailyGame): Injury[] => {
         const arr = [];
-        if (game.home_team_injuries) {
-            arr.push(...game.home_team_injuries);
+        if (game.home_team.injuries) {
+            arr.push(...game.home_team.injuries);
         }
 
 
-        if (game.away_team_injuries) {
-            arr.push(...game.away_team_injuries);
+        if (game.away_team.injuries) {
+            arr.push(...game.away_team.injuries);
         }
 
 
@@ -52,15 +51,15 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
     const getPredictionAgainstOdds = (odd: Odd, prediction: Prediction) => {
         // in betting is negative number or positive number better
         let home_team_winning = Math.min(odd.home_team_odds, odd.away_team_odds) === odd.home_team_odds;
-        let our_prediction = prediction.prediction === props.game.home_team_name;
+        let our_prediction = prediction.prediction === props.game.home_team.name
         return home_team_winning === our_prediction ? 'WITH ODDS' : 'AGAINST ODDS';
     };
 
     const getGameStatus = () => {
-        if (props.game.game_status.includes('ET')) {
-            return `Starting @ ${props.game.game_status}`;
+        if (props.game.status.includes('ET')) {
+            return `Starting @ ${props.game.status}`;
         } else {
-            return props.game.game_status;
+            return props.game.status;
         }
     };
 
@@ -75,28 +74,26 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
         <div
             class="max-2xl mt-10 p-4 border border-gray-500 rounded-lg shadow-2xl mb-4 bg-gray-800 hover:hover:bg-gray-800 text-white">
             <h6 class="flex mb-1 text-xl flex-row justify-center items-center">
-                {` ${props.game.home_team_name} vs ${props.game.away_team_name}`}
+                {` ${props.game.home_team.name} vs ${props.game.away_team.name}`}
             </h6>
 
 
-            <Show when={props.game.home_team_score != '' || props.game.away_team_score != ''} keyed>
                 <div class="flex flex-row justify-center">
-                    <Show when={props.game.away_team_score !== '0' || props.game.home_team_score != '0'} keyed>
+                    <Show when={props.game.home_team.score !== 0 || props.game.away_team.score != 0} keyed>
                         {/* show the score of the game */}
                         <div class="flex flex-col">
-                <span class="text-base">{`${props.game.home_team_score} - ${props.game.away_team_score}`}
+                <span class="text-base">{`${props.game.home_team.score} - ${props.game.away_team.score}`}
                 </span>
                         </div>
                     </Show>
                 </div>
-            </Show>
             <div class="flex flex-row justify-center ">{getGameStatus()}</div>
             {props.prediction !== undefined && (
                 <div class="flex flex-row font-extrabold flex-row justify-center ">
                     <Show when={props.prediction!.prediction_type === "win-loss"} keyed>
                         {`Projected Winner:`}
                         <span
-                            class={`flex flex-row pl-2 ${!props.game.game_status.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.game_status.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
+                            class={`flex flex-row pl-2 ${!props.game.status.includes('Final') ? 'text-white' : `${props.prediction?.prediction === getWinner(props.game) && props.game.status.includes('Final') ? 'text-green-500' : 'text-red-500'}`}`}>{` ${props.prediction?.prediction}`}</span>
                     </Show>
 
                     <Show when={props.prediction!.prediction_type === 'score'} keyed>
@@ -106,7 +103,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 </div>
             )}
 
-            <Show when={props.game.game_status.includes('Final')} keyed>
+            <Show when={props.game.status.includes('Final')} keyed>
                 <div
                     class="flex flex-row justify-center">{props.prediction?.prediction_type === 'score' ? `Total Score: ${getTotalScore(props.game)}` : `Winner: ${getWinner(props.game)}`}</div>
                 {props.prediction?.prediction_type == "score" && <div
@@ -127,7 +124,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                 </div>
             </Show>
             <Show
-                when={(props.game.home_team_injuries || props.game.away_team_injuries) && (props.game.home_team_injuries!.length > 0 || props.game.away_team_injuries!.length > 0)}
+                when={(props.game.home_team.injuries || props.game.away_team.injuries) && (props.game.home_team.injuries!.length > 0 || props.game.away_team.injuries!.length > 0)}
                 keyed>
                 <div class="flex flex-row justify-center">
           <span onclick={() => setShowInjury(true)} class="text-xs cursor-pointer hover:underline text-yellow-300">
@@ -146,7 +143,7 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                             <tr class="order-b bg-gray-800 border-gray-700">
                                 <For
                                     each={props.game.odds && props.game.odds.length > 0 && Object.keys(props.game.odds[0])}>{(key) =>
-                                    <th class="px-4 text-center text-white py-3">{key.replace('home_team', props.game.home_team_name).replace('away_team', props.game.away_team_name).replace(/_/g, ' ')}</th>}</For>
+                                    <th class="px-4 text-center text-white py-3">{key.replace('home_team', props.game.home_team.name).replace('away_team', props.game.away_team.name).replace(/_/g, ' ')}</th>}</For>
                                 <Show
                                     when={props.prediction && props.game.odds && props.game.odds.length !== 0 && props.prediction.prediction_type == "win-loss"}
                                     keyed>
@@ -159,9 +156,9 @@ export const GameCard: Component<IBetCards> = (props: IBetCards) => {
                                 {(odd) => (
                                     <tr class="bg-gray-800 border-gray-700">
                                         <th class="py-4 text-center text-white px-6">{odd.book_name.replace(/_/g, ' ').toUpperCase()}</th>
-                                        <th class="py-4 text-center text-white px-6">{odd.home_team_odds > 0 ? '+' + odd.home_team_odds : odd.home_team_odds}</th>
-                                        <th class="py-4 text-center text-white px-6">{odd.away_team_odds > 0 ? '+' + odd.away_team_odds : odd.away_team_odds}</th>
-                                        <th class="py-4 text-center text-white px-6">{odd.predicted_score}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.home_money_line > 0 ? '+' + odd.home_money_line : odd.home_money_line}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.away_money_line > 0 ? '+' + odd.away_money_line : odd.away_money_line}</th>
+                                        <th class="py-4 text-center text-white px-6">{odd.over_under}</th>
                                         <Show
                                             when={props.prediction && props.game.odds && props.game.odds.length !== 0 && props.prediction.prediction_type == "win-loss"}
                                             keyed>

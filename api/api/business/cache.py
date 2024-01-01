@@ -18,7 +18,9 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def set(self, key: str, value: Union[str, bytes, int, float, dict, list, tuple]):
+    async def set(
+        self, key: str, value: Union[str, bytes, int, float, dict, list, tuple]
+    ):
         pass
 
 
@@ -41,7 +43,9 @@ class RedisCache(Cache):
         logger.debug(f"Cache hit for key: {key} -> {item}")
         return item
 
-    async def set(self, key: str, value: Union[str, bytes, int, float, dict, list, tuple]):
+    async def set(
+        self, key: str, value: Union[str, bytes, int, float, dict, list, tuple]
+    ):
         return self.redis_client.set(key, value)
 
 

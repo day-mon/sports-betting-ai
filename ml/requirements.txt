@@ -1,5 +1,0 @@
-tensorflow
-keras
-numpy
-pandas
-openpyxl

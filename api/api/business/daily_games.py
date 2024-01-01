@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from loguru import logger
 import httpx
-from pydantic import BaseModel
-from api import constants
 from api.business.factory import AbstractFactory
 from api.model.games.daily_game import NBALiveData, DailyGame, TeamData
 
@@ -22,13 +19,17 @@ class DailyGamesSource(ABC):
 
 class NBAGAmesSource(DailyGamesSource):
     def __init__(self):
-        super().__init__(constants.DAILY_GAMES_URL)
+        super().__init__(
+            "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+        )
 
     async def fetch(self) -> list[DailyGame]:
         nba_daily_stats_response = await self.client.get(self.source_url)
         nba_daily_stats_response.raise_for_status()
 
-        game_data: NBALiveData = NBALiveData.model_validate(nba_daily_stats_response.json())
+        game_data: NBALiveData = NBALiveData.model_validate(
+            nba_daily_stats_response.json()
+        )
         daily_games: list[DailyGame] = []
 
         games = game_data.scoreboard.games
@@ -56,7 +57,7 @@ class NBAGAmesSource(DailyGamesSource):
                         score=game.awayTeam.score,
                         wins=game.awayTeam.wins,
                         losses=game.awayTeam.losses,
-                        abbreviation=game.awayTeam.teamTricode
+                        abbreviation=game.awayTeam.teamTricode,
                     ),
                 )
             )
@@ -65,6 +66,4 @@ class NBAGAmesSource(DailyGamesSource):
 
 
 class DailyGameFactory(AbstractFactory):
-    _values = {
-        "nba": NBAGAmesSource
-    }
+    _values = {"nba": NBAGAmesSource}

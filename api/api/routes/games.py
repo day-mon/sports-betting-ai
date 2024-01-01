@@ -10,10 +10,7 @@ from api.config.application import AppSettings, get_settings
 from api.model.games.daily_game import Odds, DailyGameResponse
 from api.model.games.injury import InjuryItem
 
-router = APIRouter(
-    prefix="/games",
-    tags=["Games"]
-)
+router = APIRouter(prefix="/games", tags=["Games"])
 
 client = httpx.AsyncClient()
 
@@ -25,14 +22,14 @@ client = httpx.AsyncClient()
     response_model=list[DailyGameResponse],
 )
 async def games(
-        settings: AppSettings = Depends(get_settings),
-        no_odds: Optional[bool] = False,
+    settings: AppSettings = Depends(get_settings),
+    no_odds: Optional[bool] = False,
 ) -> list[DailyGameResponse]:
     game_fetcher = DailyGameFactory.compute_or_get(
         name=settings.DAILY_GAMES_SOURCE,
     )
 
-    games: list[DailyGame] = await game_fetcher.fetch()
+    daily_games: list[DailyGame] = await game_fetcher.fetch()
 
     injury_fetcher = PlayerInjuryFactory.compute_or_get(
         name=settings.PLAYER_INJURY_SOURCE,
@@ -44,11 +41,11 @@ async def games(
         name=settings.ODDS_SOURCE,
     )
     odds: Optional[dict[str, list[Odds]]] = (
-        await odds_fetcher.fetch(games=games) if not no_odds else None
+        await odds_fetcher.fetch(games=daily_games) if not no_odds else None
     )
 
     return DailyGameResponse.craft_response(
-        games=games,
+        games=daily_games,
         injuries=injuries,
         odds=odds
     )

@@ -15,14 +15,22 @@ httpx = "^0.26.0"
 pandas = "^2.1.4"
 python-dotenv = "^1.0.0"
 redis = {extras = ["hiredis"], version = "^5.0.1"}
+openai = "^1.6.1"
 
 
 [tool.poetry.dev-dependencies]
 poethepoet = "^0.24.4"
+black = "^23.12.1"
+
+
 
 [tool.poe.tasks.run]
 help = 'Runs the API server locally'
 cmd = 'python api/main.py'
+
+[tool.poe.tasks.lint]
+help = 'Runs the linter'
+cmd = 'black api'
 
 [build-system]
 requires = ["poetry-core"]

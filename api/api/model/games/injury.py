@@ -13,9 +13,8 @@ class InjuryItem(BaseModel):
     injury: str
     status: str
 
-    model_config = SettingsConfigDict(
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(extra="ignore")
+
 
 class Injuries(RootModel):
     root: List[InjuryItem]

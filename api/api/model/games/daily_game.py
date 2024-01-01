@@ -140,8 +140,6 @@ class DailyGame(BaseModel):
     away_team: TeamData
 
 
-
-
 class Odds(BaseModel):
     book_name: str
     home_money_line: int
@@ -150,10 +148,9 @@ class Odds(BaseModel):
     num_bets: Optional[int] = None
 
 
-
-
 class TeamDataExt(TeamData):
     injuries: list[InjuryItem]
+
 
 class DailyGameResponse(BaseModel):
     id: str
@@ -163,11 +160,14 @@ class DailyGameResponse(BaseModel):
     away_team: TeamDataExt
     odds: Optional[list[Odds]] = None
 
+    def is_finished(self) -> bool:
+        return self.status == "Final"
+
     @staticmethod
     def craft_response(
         games: list[DailyGame],
         injuries: list[InjuryItem],
-        odds: Optional[dict[str, Odds]] = None
+        odds: Optional[dict[str, Odds]] = None,
     ) -> list[DailyGameResponse]:
         return [
             DailyGameResponse(
@@ -182,10 +182,10 @@ class DailyGameResponse(BaseModel):
                     losses=game.home_team.losses,
                     abbreviation=game.home_team.abbreviation,
                     injuries=[
-                        injury for injury in injuries
+                        injury
+                        for injury in injuries
                         if injury.team == game.home_team.abbreviation
                     ],
-
                 ),
                 away_team=TeamDataExt(
                     id=game.away_team.id,
@@ -195,12 +195,12 @@ class DailyGameResponse(BaseModel):
                     losses=game.away_team.losses,
                     abbreviation=game.away_team.abbreviation,
                     injuries=[
-                        injury for injury in injuries
+                        injury
+                        for injury in injuries
                         if injury.team == game.away_team.abbreviation
                     ],
-
                 ),
-                odds=odds.get(game.home_team.abbreviation, None) if odds else None
+                odds=odds.get(game.home_team.abbreviation, None) if odds else None,
             )
             for game in games
         ]

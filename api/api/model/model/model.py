@@ -49,16 +49,10 @@ class ResultSet(BaseModel):
 
     def get_team_stats(self, team_id: int) -> List[List[Union[float, str]]]:
         team_id_index = 0
-        return [
-            row
-            for row in self.rowSet
-            if row[team_id_index] == team_id
-        ]
+        return [row for row in self.rowSet if row[team_id_index] == team_id]
 
 
 class TeamStats(BaseModel):
     resource: str
     parameters: Parameters
     resultSets: List[ResultSet]
-
-

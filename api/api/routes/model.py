@@ -15,10 +15,8 @@ from api.config.application import get_settings
 from api.config.cache import CacheSettings, get_cache_settings
 from api.utils.daily_game import get_cache_key
 
-router = APIRouter(
-    prefix="/model",
-    tags=["Model"]
-)
+router = APIRouter(prefix="/model", tags=["Model"])
+
 
 @router.get(
     "/predict/{model_name}",
@@ -26,21 +24,16 @@ router = APIRouter(
     description="Predicts the outcome of a Sports game given a model, will serve from cache if available",
     response_model=list[Prediction],
     responses={
-        200: {
-            "description": "Returns predictions for the given model"
-        },
-        404: {
-            "description": "Either the model or the games were not found",
-
-        }
-    }
+        200: {"description": "Returns predictions for the given model"},
+        404: {"description": "Either the model or the games were not found"},
+    },
 )
 async def predict(
     model_name: str,
     app_settings: AppSettings = Depends(get_settings),
     cache_setting: CacheSettings = Depends(get_cache_settings),
 ) -> list[Prediction]:
-    if not os.path.exists(f"{app_settings.MODEL_DIR}/{model_name}"):
+    if model_name not in PredictionModelFactory.keys():
         logger.debug(f"Requested {app_settings.MODEL_DIR}/{model_name}")
         raise HTTPException(status_code=404, detail=f"Model {model_name} not found")
 
@@ -63,7 +56,10 @@ async def predict(
         cached_predictions: Optional[str] = await cache.get(cache_key)
         if cached_predictions:
             cached_predictions: list[dict[str, Any]] = json.loads(cached_predictions)
-            cached_predictions: list[Prediction] = [Prediction.model_validate(prediction) for prediction in cached_predictions]
+            cached_predictions: list[Prediction] = [
+                Prediction.model_validate(prediction)
+                for prediction in cached_predictions
+            ]
             logger.debug(f"Using cached predictions for {cache_key}")
             return cached_predictions
 
@@ -73,10 +69,8 @@ async def predict(
         model_dir=app_settings.MODEL_DIR,
     )
 
-    stats: DataFrame = prediction_model.fetch_stats(
-        daily_games=daily_games
-    )
-    predictions: list[Prediction] = prediction_model.predict(data=stats)
+    stats: DataFrame = prediction_model.fetch_stats(daily_games=daily_games)
+    predictions: list[Prediction] = await prediction_model.predict(data=stats)
     if cache_setting.TYPE != "none":
         cache_key = get_cache_key(daily_games, model_name)
         logger.debug(f"Setting with key {cache_key}")
@@ -90,7 +84,7 @@ async def predict(
     return predictions
 
 
-@router.get("/history{name}")
+@router.get("/history/{name}")
 async def history():
     return {"message": "History"}
 

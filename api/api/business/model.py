@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import uuid
 from abc import ABC, abstractmethod
@@ -29,17 +30,20 @@ class Prediction(BaseModel):
 class PredictionModel(ABC):
     model_name: str
     model_dir: str
-    columns_to_drop: list[str]
     stats_source: Optional[str] = None
 
-    def __init__(self, model_name: str, columns_to_drop: list[str], model_dir: str, stats_source: Optional[str] = None):
+    def __init__(
+        self,
+        model_name: str,
+        model_dir: str,
+        stats_source: Optional[str] = None,
+    ):
         self.stats_source = stats_source
         self.model_name = model_name
         self.model_dir = model_dir
-        self.columns_to_drop = columns_to_drop
 
     @abstractmethod
-    def predict(self, data: DataFrame) -> list[Prediction]:
+    async def predict(self, data: DataFrame) -> list[Prediction]:
         pass
 
     @abstractmethod
@@ -50,27 +54,35 @@ class PredictionModel(ABC):
 class TFPredictionModel(PredictionModel):
     _data_dir: str
     prediction_type: Literal["win-loss", "total-score"] = "win-loss"
+    columns_to_drop: list[str]
     client: httpx.Client
     model: tf.keras.models.Model
 
     def __init__(
-            self,
-            model_name: str,
-            columns_to_drop: list[str],
-            model_dir: str,
-            prediction_type: Literal["win-loss", "total-score"] = "win-loss"
-        ):
+        self,
+        model_name: str,
+        columns_to_drop: list[str],
+        model_dir: str,
+        prediction_type: Literal["win-loss", "total-score"] = "win-loss",
+    ):
         settings = get_settings()
-        super().__init__(model_name, columns_to_drop=columns_to_drop, model_dir=model_dir,
-                         stats_source=settings.CF_WORKER_URL)
+        super().__init__(
+            model_name,
+            model_dir=model_dir,
+            stats_source=settings.CF_WORKER_URL,
+        )
+        self.columns_to_drop = columns_to_drop
         self._data_dir = settings.DATA_DIR
         self.prediction_type = prediction_type
         self.model = tf.keras.models.load_model(f"{self.model_dir}/{self.model_name}")
         self.client = httpx.Client()
 
-    def predict(self, data: DataFrame) -> list[Prediction]:
+    async def predict(self, data: DataFrame) -> list[Prediction]:
         logger.debug(f"Predicting with data: {data.shape}")
-        di = {index: {"home_team": row["TEAM_NAME"], "away_team": row["TEAM_NAME.1"]} for index, row in data.iterrows()}
+        di = {
+            index: {"home_team": row["TEAM_NAME"], "away_team": row["TEAM_NAME.1"]}
+            for index, row in data.iterrows()
+        }
         filtered_data = data.drop(self.columns_to_drop, axis=1, errors="ignore")
         predictions_raw = self.model.predict(filtered_data)
         logger.debug(f"Raw Predictions: {predictions_raw}")
@@ -84,9 +96,11 @@ class TFPredictionModel(PredictionModel):
             predicts.append(
                 Prediction(
                     prediction_type=self.prediction_type,
-                    prediction=di[index]["home_team"] if prediction == 0 else di[index]["away_team"],
+                    prediction=di[index]["home_team"]
+                    if prediction == 0
+                    else di[index]["away_team"],
                     game_id=str(uuid.uuid4()),
-                    confidence=confidence
+                    confidence=confidence,
                 )
             )
         return predicts
@@ -109,11 +123,19 @@ class TFPredictionModel(PredictionModel):
         logger.debug(f"Stats: {stats}")
         return stats
 
-    def _write_stats_to_csv(self, response: TeamStats, matches: list[DailyGame], date: str) -> DataFrame:
+    def _write_stats_to_csv(
+        self, response: TeamStats, matches: list[DailyGame], date: str
+    ) -> DataFrame:
         result_set_name = "LeagueDashTeamStats"
         csv_str = ""
         correct_result_set = next(
-            (result_set for result_set in response.resultSets if result_set.name == result_set_name), None)
+            (
+                result_set
+                for result_set in response.resultSets
+                if result_set.name == result_set_name
+            ),
+            None,
+        )
         logger.debug(f"Correct Result Set: {correct_result_set}")
         if not correct_result_set:
             logger.error(f"Unable to find result set: {result_set_name}")
@@ -137,20 +159,26 @@ class TFPredictionModel(PredictionModel):
         return pd.read_csv(os.path.join(self._data_dir, f"{date}.csv"))
 
 
-class LLMBasedPredictionModel(PredictionModel):
-    def predict(self, data: DataFrame) -> list[Prediction]:
-        pass
-
-    def fetch_stats(self, **kwargs) -> DataFrame:
-        pass
-
+class OpenRouterLLMBackedPrediction(PredictionModel):
+    pass
 
 class FortyTwoDPModel(TFPredictionModel):
     def __init__(self, model_name: str, model_dir: str):
         columns = [
-            "TEAM_NAME", "TEAM_ID", "GP",
-            "GP_RANK", "CFID", "MIN", "CFPARAMS", "W", "L", "PLUS_MINUS",
-            "PLUS_MINUS_RANK", "W_RANK", "L_RANK", "MIN_RANK"
+            "TEAM_NAME",
+            "TEAM_ID",
+            "GP",
+            "GP_RANK",
+            "CFID",
+            "MIN",
+            "CFPARAMS",
+            "W",
+            "L",
+            "PLUS_MINUS",
+            "PLUS_MINUS_RANK",
+            "W_RANK",
+            "L_RANK",
+            "MIN_RANK",
         ]
 
         columns = columns + [f"{column}.1" for column in columns]
@@ -170,6 +198,7 @@ class FortyEightDPModel(TFPredictionModel):
         ]
         columns = columns + [f"{column}.1" for column in columns]
         super().__init__(model_name, columns_to_drop=columns, model_dir=model_dir)
+
 
 class OUPredictionModel(FortyEightDPModel):
     def __init__(self, model_name: str, model_dir: str):
@@ -195,8 +224,4 @@ class OUPredictionModel(FortyEightDPModel):
 
 
 class PredictionModelFactory(AbstractFactory):
-    _values = {
-        "v2": FortyTwoDPModel,
-        "v1": FortyEightDPModel,
-        "ou": OUPredictionModel
-    }
+    _values = {"v2": FortyTwoDPModel, "v1": FortyEightDPModel, "ou": OUPredictionModel}

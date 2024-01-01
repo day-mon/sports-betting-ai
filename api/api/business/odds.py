@@ -37,14 +37,18 @@ class ActionNetworkOddsSource(OddsSource):
 
     def __init__(self):
         super().__init__(
-            "https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date=")
+            "https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date="
+        )
 
     async def fetch(self, games: list[DailyGame]) -> Optional[dict[str, list[Odds]]]:
         date = games[0].game_date.replace("-", "")
         url = f"{self.source_url}{date}"
-        response = await self.client.get(url, headers={
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
-        })
+        response = await self.client.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
+            },
+        )
         response.raise_for_status()
         odds_response = response.json()
         games = odds_response.get("games", None)
