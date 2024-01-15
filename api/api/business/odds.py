@@ -4,7 +4,7 @@ from typing import Any, Optional
 import httpx
 from pydantic import BaseModel
 
-from api.business.factory import AbstractFactory
+from api.business.factory import AbstractFactory, FactoryItem
 from api.model.games.daily_game import Odds, DailyGame
 from loguru import logger
 
@@ -37,7 +37,8 @@ class ActionNetworkOddsSource(OddsSource):
 
     def __init__(self):
         super().__init__(
-            "https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,76&date="
+            "https://api.actionnetwork.com/web/v1/scoreboard/nba?period=game&bookIds=255,280,68,246,264,74,1906,"
+            "76&date="
         )
 
     async def fetch(self, games: list[DailyGame]) -> Optional[dict[str, list[Odds]]]:
@@ -97,6 +98,9 @@ class ActionNetworkOddsSource(OddsSource):
 
 
 class OddsFactory(AbstractFactory):
-    _values = {
-        "actionnetwork": ActionNetworkOddsSource,
+    _values: dict[str, FactoryItem] = {
+        "actionnetwork": FactoryItem(
+            name="actionnetwork",
+            factory_item=ActionNetworkOddsSource,
+        )
     }

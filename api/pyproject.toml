@@ -5,6 +5,7 @@ description = ""
 authors = ["Damon L. Montague Jr. <damon@montague.im>"]
 readme = "README.md"
 
+
 [tool.poetry.dependencies]
 python = "3.11.0"
 fastapi = { version = "^0.108.0", extras = ["all"] }
@@ -16,6 +17,7 @@ pandas = "^2.1.4"
 python-dotenv = "^1.0.0"
 redis = {extras = ["hiredis"], version = "^5.0.1"}
 openai = "^1.6.1"
+server-thread = "^0.2.0"
 
 
 [tool.poetry.dev-dependencies]

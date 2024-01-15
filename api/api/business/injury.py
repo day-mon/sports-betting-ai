@@ -3,13 +3,15 @@ from abc import ABC, abstractmethod
 import httpx
 from pydantic import BaseModel
 
-from api.business.factory import AbstractFactory
+from api.business.factory import AbstractFactory, FactoryItem
 from api.model.games.injury import InjuryItem, Injuries
 
 
 class PlayerInjurySource(ABC):
     source_url: str
-    client: httpx.AsyncClient = httpx.AsyncClient()
+    client: httpx.AsyncClient = httpx.AsyncClient(
+        timeout=60
+    )
 
     def __init__(self, source_url: str):
         self.source_url = source_url
@@ -34,6 +36,11 @@ class RotowireInjurySource(PlayerInjurySource):
 
 
 class PlayerInjuryFactory(AbstractFactory):
-    _values = {
-        "rotowire": RotowireInjurySource,
+    _values: dict[str, FactoryItem] = {
+        "rotowire": FactoryItem(
+            name="rotowire",
+            factory_item=RotowireInjurySource,
+        ),
+
+
     }

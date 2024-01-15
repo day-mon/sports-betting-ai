@@ -19,7 +19,16 @@ router = APIRouter(prefix="/model", tags=["Model"])
 
 
 @router.get(
-    "/predict/{model_name}",
+    "/list",
+    summary="Lists all available models",
+    description="Lists all available models",
+    response_model=list[str],
+)
+async def list_models() -> list[str]:
+    return PredictionModelFactory.keys()
+
+@router.get(
+    "/predict/{name}",
     summary="Predicts the outcome of a sports game",
     description="Predicts the outcome of a Sports game given a model, will serve from cache if available",
     response_model=list[Prediction],
@@ -29,13 +38,13 @@ router = APIRouter(prefix="/model", tags=["Model"])
     },
 )
 async def predict(
-    model_name: str,
+    name: str,
     app_settings: AppSettings = Depends(get_settings),
     cache_setting: CacheSettings = Depends(get_cache_settings),
 ) -> list[Prediction]:
-    if model_name not in PredictionModelFactory.keys():
-        logger.debug(f"Requested {app_settings.MODEL_DIR}/{model_name}")
-        raise HTTPException(status_code=404, detail=f"Model {model_name} not found")
+    if name not in PredictionModelFactory.keys():
+        logger.debug(f"Requested {app_settings.MODEL_DIR}/{name}")
+        raise HTTPException(status_code=404, detail=f"Model {name} not found")
 
     games = DailyGameFactory.compute_or_get(
         name=app_settings.DAILY_GAMES_SOURCE,
@@ -48,7 +57,7 @@ async def predict(
     logger.debug(f"Caching is set to {cache_setting.TYPE}")
 
     if cache_setting.TYPE != "none":
-        cache_key = get_cache_key(daily_games, model_name)
+        cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Using cache key {cache_key}")
         cache = CacheFactory.compute_or_get(
             name=cache_setting.TYPE,
@@ -64,15 +73,15 @@ async def predict(
             return cached_predictions
 
     prediction_model: PredictionModel = PredictionModelFactory.compute_or_get(
-        name=model_name,
-        model_name=model_name,
+        name=name,
+        model_name=name,
         model_dir=app_settings.MODEL_DIR,
     )
 
     stats: DataFrame = prediction_model.fetch_stats(daily_games=daily_games)
     predictions: list[Prediction] = await prediction_model.predict(data=stats)
     if cache_setting.TYPE != "none":
-        cache_key = get_cache_key(daily_games, model_name)
+        cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Setting with key {cache_key}")
         cache = CacheFactory.compute_or_get(
             name=cache_setting.TYPE,

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import httpx
-from api.business.factory import AbstractFactory
+from api.business.factory import AbstractFactory, FactoryItem
 from api.model.games.daily_game import NBALiveData, DailyGame, TeamData
 
 
@@ -66,4 +66,9 @@ class NBAGAmesSource(DailyGamesSource):
 
 
 class DailyGameFactory(AbstractFactory):
-    _values = {"nba": NBAGAmesSource}
+    _values: dict[str, FactoryItem] = {
+        "nba": FactoryItem(
+            name="nba",
+            factory_item=NBAGAmesSource,
+        ),
+    }

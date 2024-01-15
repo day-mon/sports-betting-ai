@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "services"
+version = "0.1.0"
+description = ""
+authors = ["Damon L. Montague Jr. <damon@montague.im>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.0"
+api = {path = "../api"}
+loguru = "^0.7.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

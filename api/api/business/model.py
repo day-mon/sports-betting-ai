@@ -15,7 +15,7 @@ from pandas import DataFrame
 from pydantic import BaseModel
 
 from api.business.daily_games import DailyGame
-from api.business.factory import AbstractFactory
+from api.business.factory import AbstractFactory, FactoryItem
 from api.config.application import get_settings
 from api.model.model.model import TeamStats
 
@@ -205,7 +205,7 @@ class OUPredictionModel(FortyEightDPModel):
         super().__init__(model_name, model_dir)
         self.prediction_type = "total-score"
 
-    def predict(self, data: DataFrame) -> list[Prediction]:
+    async def predict(self, data: DataFrame) -> list[Prediction]:
         logger.debug(f"Predicting with data: {data.shape}")
         filtered_data = data.drop(self.columns_to_drop, axis=1, errors="ignore")
         predictions_raw: numpy.ndarray = self.model.predict(filtered_data)
@@ -223,5 +223,19 @@ class OUPredictionModel(FortyEightDPModel):
         return predicts
 
 
+class ModelFactoryItem(FactoryItem):
+    is_enabled: bool = True
+
 class PredictionModelFactory(AbstractFactory):
-    _values = {"v2": FortyTwoDPModel, "v1": FortyEightDPModel, "ou": OUPredictionModel}
+    _values = {
+        "v2": ModelFactoryItem(name="v2", factory_item=FortyTwoDPModel),
+        "v1": ModelFactoryItem(name="v1", factory_item=FortyEightDPModel, is_enabled=False),
+        "ou": ModelFactoryItem(name="ou", factory_item=OUPredictionModel),
+    }
+
+    @classmethod
+    def keys(cls):
+        return [key for key, value in cls._values.items() if value.is_enabled]
+    @classmethod
+    def values(cls):
+        return {key: value for key, value in cls._values.items() if value.is_enabled}

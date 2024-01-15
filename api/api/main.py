@@ -1,5 +1,6 @@
 import asyncio
 import json
+import threading
 import time
 import traceback
 import uuid
@@ -16,7 +17,20 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from api.routes import games, model, ping
-from api.service.history import History
+from api.services.history.history import HistoryService
+from server_thread import ServerThread
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # noinspection PyAsyncCall
+    d = asyncio.create_task(
+        HistoryService().start()
+    )
+    d.add_done_callback(lambda _: logger.info("History Service has stopped"))
+    print(d)
+    yield
+    print("shutdown")
 
 
 
@@ -28,6 +42,7 @@ app = FastAPI(
     version="0.1.0",
     openapi_url=f"{BASE_PATH}/openapi.json",
     docs_url=f"{BASE_PATH}/docs",
+    lifespan=lifespan,
     redoc_url=f"{BASE_PATH}/redoc",
     responses={
         422: {
@@ -49,10 +64,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[
+        'http://localhost:3000',
+    ],
+    # allow_credentials=True,
+    # allow_methods=["*"],
+    # allow_headers=["*"],
 )
 
 
@@ -82,8 +99,10 @@ async def general_exception_handler(request: Request, exc: Exception):
             "headers": dict(request.headers),
             "body": body,
         },
-        "exception": str(exc),
-        "traceback": traceback.format_exc(),
+        "exception": {
+            "type": exc.__class__.__name__,
+            "message": str(exc),
+        }
     }
 
     logger.error(
@@ -138,5 +157,11 @@ routers = [games.router, model.router, ping.router]
 for router in routers:
     app.include_router(router, prefix=BASE_PATH, dependencies=[Depends(log_body)])
 
-if __name__ == "__main__":
+
+
+
+if __name__ == '__main__':
+
+
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False)
