@@ -3,11 +3,11 @@ name: Docker Build
 on:
   push:
     paths:
-      - '**.rs'
+      - 'api/api/**'
       - '**.toml'
-      - 'API/Dockerfile'
+      - 'api/Dockerfile'
       - '.github/workflows/docker-publish-api.yml'
-    branches: [ main, ci-test ]
+    branches: [ main, ci-test , feature/revamp ]
 
 env:
   IMAGE_NAME: api
@@ -20,11 +20,11 @@ jobs:
 
       - name: Build image
         run: docker build . --build-arg VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,') --file Dockerfile --tag $IMAGE_NAME
-        working-directory: ./API
+        working-directory: ./api
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-        working-directory: ./API
+        working-directory: ./api
 
       - name: Push image
         run: |
@@ -37,7 +37,8 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:latest
           docker push --all-tags $IMAGE_ID
-        working-directory: ./API
+        working-directory: ./api
+
   deploy:
     needs:
       - build-api
