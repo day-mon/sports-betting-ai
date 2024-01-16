@@ -9,9 +9,7 @@ from api.model.games.injury import InjuryItem, Injuries
 
 class PlayerInjurySource(ABC):
     source_url: str
-    client: httpx.AsyncClient = httpx.AsyncClient(
-        timeout=60
-    )
+    client: httpx.AsyncClient = httpx.AsyncClient(timeout=60)
 
     def __init__(self, source_url: str):
         self.source_url = source_url
@@ -41,6 +39,4 @@ class PlayerInjuryFactory(AbstractFactory):
             name="rotowire",
             factory_item=RotowireInjurySource,
         ),
-
-
     }

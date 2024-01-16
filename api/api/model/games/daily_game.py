@@ -54,24 +54,12 @@ class AwayTeam(BaseModel):
     periods: List[Period1]
 
 
-class HomeLeaders(BaseModel):
+class GamePlayerLeader(BaseModel):
     personId: int
-    name: str
-    jerseyNum: str
-    position: str
-    teamTricode: str
-    playerSlug: Any
-    points: int
-    rebounds: int
-    assists: int
-
-
-class AwayLeaders(BaseModel):
-    personId: int
-    name: str
-    jerseyNum: str
-    position: str
-    teamTricode: str
+    name: Optional[str]
+    jerseyNum: Optional[str]
+    position: Optional[str]
+    teamTricode: Optional[str]
     playerSlug: Any
     points: int
     rebounds: int
@@ -79,8 +67,26 @@ class AwayLeaders(BaseModel):
 
 
 class GameLeaders(BaseModel):
-    homeLeaders: HomeLeaders
-    awayLeaders: AwayLeaders
+    homeLeaders: GamePlayerLeader
+    awayLeaders: GamePlayerLeader
+
+    def home_is_empty(self) -> bool:
+        if self.homeLeaders is None:
+            return True
+
+        if self.homeLeaders.name is None:
+            return True
+
+        return False
+
+    def away_is_empty(self) -> bool:
+        if self.awayLeaders is None:
+            return True
+
+        if self.awayLeaders.name is None:
+            return True
+
+        return False
 
 
 class PbOdds(BaseModel):
@@ -107,7 +113,7 @@ class Game(BaseModel):
     gameSubtype: str
     homeTeam: HomeTeam
     awayTeam: AwayTeam
-    gameLeaders: GameLeaders
+    gameLeaders: Optional[GameLeaders] = None
     pbOdds: PbOdds
 
 
@@ -123,6 +129,13 @@ class NBALiveData(BaseModel):
     scoreboard: Scoreboard
 
 
+class PlayerLeader(BaseModel):
+    name: Optional[str]
+    points: Optional[int]
+    rebounds: Optional[int]
+    assists: Optional[int]
+
+
 class TeamData(BaseModel):
     id: int
     name: str
@@ -130,6 +143,7 @@ class TeamData(BaseModel):
     wins: int
     losses: int
     abbreviation: str
+    leader: Optional[PlayerLeader] = None
 
 
 class DailyGame(BaseModel):
@@ -181,6 +195,7 @@ class DailyGameResponse(BaseModel):
                     wins=game.home_team.wins,
                     losses=game.home_team.losses,
                     abbreviation=game.home_team.abbreviation,
+                    leader=game.home_team.leader,
                     injuries=[
                         injury
                         for injury in injuries
@@ -194,13 +209,19 @@ class DailyGameResponse(BaseModel):
                     wins=game.away_team.wins,
                     losses=game.away_team.losses,
                     abbreviation=game.away_team.abbreviation,
+                    leader=game.away_team.leader,
                     injuries=[
                         injury
                         for injury in injuries
                         if injury.team == game.away_team.abbreviation
                     ],
                 ),
-                odds=odds.get(game.home_team.abbreviation, None) if odds else None,
+                odds=odds.get(
+                    game.home_team.abbreviation,
+                    odds.get(game.away_team.abbreviation, None),
+                )
+                if odds
+                else None,
             )
             for game in games
         ]

@@ -50,6 +50,10 @@ class PredictionModel(ABC):
     def fetch_stats(self, **kwargs) -> DataFrame:
         pass
 
+    @abstractmethod
+    def accuracy_statement(self) -> str:
+        pass
+
 
 class TFPredictionModel(PredictionModel):
     _data_dir: str
@@ -125,7 +129,7 @@ class TFPredictionModel(PredictionModel):
 
     def _write_stats_to_csv(
         self, response: TeamStats, matches: list[DailyGame], date: str
-    ) -> DataFrame:
+    ) -> Optional[DataFrame]:
         result_set_name = "LeagueDashTeamStats"
         csv_str = ""
         correct_result_set = next(
@@ -139,7 +143,8 @@ class TFPredictionModel(PredictionModel):
         logger.debug(f"Correct Result Set: {correct_result_set}")
         if not correct_result_set:
             logger.error(f"Unable to find result set: {result_set_name}")
-            return pd.DataFrame()
+            # this is a placeholder for now
+            raise Exception(f"Unable to find result set: {result_set_name}")
 
         for i in range(2):
             if i == 1:
@@ -158,9 +163,18 @@ class TFPredictionModel(PredictionModel):
 
         return pd.read_csv(os.path.join(self._data_dir, f"{date}.csv"))
 
+    def accuracy_statement(self) -> str:
+        return f"""
+        SELECT
+            model_name,
+            (COUNT(winner) FILTER (WHERE (winner = home_team_name AND prediction = home_team_name) OR (winner = away_team_name AND prediction = away_team_name))) * 100.0 / COUNT(winner) AS win_rate
+        FROM
+            saved_games
+        WHERE
+            model_name = $1
+        GROUP BY
+            model_name"""
 
-class OpenRouterLLMBackedPrediction(PredictionModel):
-    pass
 
 class FortyTwoDPModel(TFPredictionModel):
     def __init__(self, model_name: str, model_dir: str):
@@ -222,20 +236,36 @@ class OUPredictionModel(FortyEightDPModel):
             )
         return predicts
 
+    def accuracy_statement(self) -> str:
+        return f"""SELECT
+    CAST(AVG(ABS((home_team_score::int + away_team_score::int) - prediction::int)) AS FLOAT) AS win_rate,
+    model_name
+FROM
+    saved_games
+WHERE
+    prediction ~ '^\d+$'
+    AND model_name = $1
+GROUP BY
+    model_name"""
+
 
 class ModelFactoryItem(FactoryItem):
     is_enabled: bool = True
 
+
 class PredictionModelFactory(AbstractFactory):
     _values = {
         "v2": ModelFactoryItem(name="v2", factory_item=FortyTwoDPModel),
-        "v1": ModelFactoryItem(name="v1", factory_item=FortyEightDPModel, is_enabled=False),
+        "v1": ModelFactoryItem(
+            name="v1", factory_item=FortyEightDPModel, is_enabled=False
+        ),
         "ou": ModelFactoryItem(name="ou", factory_item=OUPredictionModel),
     }
 
     @classmethod
     def keys(cls):
         return [key for key, value in cls._values.items() if value.is_enabled]
+
     @classmethod
     def values(cls):
         return {key: value for key, value in cls._values.items() if value.is_enabled}

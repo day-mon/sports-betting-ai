@@ -1,18 +1,26 @@
 import json
 import os
+import uuid
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends
+from asyncpg import Record
+from fastapi import APIRouter, Depends, Path
 from loguru import logger
 from pandas import DataFrame
+from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
 from api.business.cache import CacheFactory
 from api.business.daily_games import DailyGameFactory, DailyGame
+from api.business.database import DatabaseFactory, Database
 from api.business.model import PredictionModelFactory, PredictionModel, Prediction
 from api.config.application import AppSettings
 from api.config.application import get_settings
 from api.config.cache import CacheSettings, get_cache_settings
+from api.config.database import DatabaseSettings, get_database_settings
+from api.model.model.accuracy import AccuracyModel
+from api.model.model.date_model import DateModel
+
 from api.utils.daily_game import get_cache_key
 
 router = APIRouter(prefix="/model", tags=["Model"])
@@ -27,6 +35,7 @@ router = APIRouter(prefix="/model", tags=["Model"])
 async def list_models() -> list[str]:
     return PredictionModelFactory.keys()
 
+
 @router.get(
     "/predict/{name}",
     summary="Predicts the outcome of a sports game",
@@ -38,7 +47,8 @@ async def list_models() -> list[str]:
     },
 )
 async def predict(
-    name: str,
+    # make sure its not blank
+    name: str = Path(..., title="Name of the model to use"),
     app_settings: AppSettings = Depends(get_settings),
     cache_setting: CacheSettings = Depends(get_cache_settings),
 ) -> list[Prediction]:
@@ -93,11 +103,45 @@ async def predict(
     return predictions
 
 
-@router.get("/history/{name}")
-async def history():
-    return {"message": "History"}
+@router.get("/accuracy/{name}")
+async def history(
+    name: str,
+    app_settings: AppSettings = Depends(get_settings),
+    db_settings: DatabaseSettings = Depends(get_database_settings),
+) -> AccuracyModel:
+    model_names: list[str] = PredictionModelFactory.keys()
+    if name not in model_names:
+        raise HTTPException(status_code=404, detail=f"Model {name} not found")
+
+    db: Database = DatabaseFactory.compute_or_get(
+        name=db_settings.DATABASE_TYPE,
+    )
+
+    model = PredictionModelFactory.compute_or_get(
+        name=name,
+        model_name=name,
+        model_dir=app_settings.MODEL_DIR,
+    )
+
+    return await AccuracyModel.from_db(
+        model=model,
+        db=db,
+    )
 
 
 @router.get("/history/dates")
-async def history_dates():
-    return {"message": "History dates"}
+async def history_dates(
+    db_settings: DatabaseSettings = Depends(get_database_settings),
+) -> list[DateModel]:
+    db: Database = DatabaseFactory.compute_or_get(
+        name=db_settings.DATABASE_TYPE,
+    )
+
+    model_names: list[str] = PredictionModelFactory.keys()
+
+    dates = await DateModel.from_db(
+        models=model_names,
+        db=db,
+    )
+
+    return dates

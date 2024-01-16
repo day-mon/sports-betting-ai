@@ -12,7 +12,7 @@ const About = lazy(() => import('./pages/About'));
 const App: Component = () => {
   return (
     <>
-      <div id="wrapper" class="bg-gray-900 min-h-screen" style="font-family: 'JetBrains Mono', sans-serif;">
+      <div id="wrapper" class="bg-red-400 min-h-screen" style="font-family: 'JetBrains Mono', sans-serif;">
         <Navbar />
         <div id="content" class="container mx-auto px-4 pb-4">
           <Routes>

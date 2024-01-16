@@ -1,5 +1,6 @@
 from typing import Optional
 
+from loguru import logger
 import httpx
 from fastapi import APIRouter, Depends
 
@@ -23,7 +24,7 @@ client = httpx.AsyncClient()
 )
 async def games(
     settings: AppSettings = Depends(get_settings),
-    no_odds: Optional[bool] = False,
+    with_odds: Optional[bool] = True,
 ) -> list[DailyGameResponse]:
     game_fetcher = DailyGameFactory.compute_or_get(
         name=settings.DAILY_GAMES_SOURCE,
@@ -41,11 +42,9 @@ async def games(
         name=settings.ODDS_SOURCE,
     )
     odds: Optional[dict[str, list[Odds]]] = (
-        await odds_fetcher.fetch(games=daily_games) if not no_odds else None
+        await odds_fetcher.fetch(daily_games) if with_odds else None
     )
 
     return DailyGameResponse.craft_response(
-        games=daily_games,
-        injuries=injuries,
-        odds=odds
+        games=daily_games, injuries=injuries, odds=odds
     )

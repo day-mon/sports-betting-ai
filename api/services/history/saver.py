@@ -2,7 +2,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from api.business.factory import AbstractFactory, FactoryItem
 from api.business.model import Prediction
@@ -14,6 +14,9 @@ class SavedGame(BaseModel):
     prediction: Prediction
     model_name: str
 
+    model_config = ConfigDict(
+        protected_namespaces=()
+    )
 
 class GameSaver(ABC):
     @abstractmethod

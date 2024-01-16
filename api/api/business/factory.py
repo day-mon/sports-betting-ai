@@ -3,9 +3,11 @@ from typing import Any
 from loguru import logger
 from pydantic import BaseModel
 
+
 class FactoryItem(BaseModel):
     name: str
     factory_item: Any
+
 
 class AbstractFactory:
     _values: dict[str, FactoryItem] = {}
@@ -24,8 +26,7 @@ class AbstractFactory:
     @classmethod
     def keys(cls):
         return cls._values.keys()
+
     @classmethod
     def values(cls):
         return cls._values
-
-

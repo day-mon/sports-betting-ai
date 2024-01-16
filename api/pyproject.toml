@@ -8,23 +8,29 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "3.11.0"
-fastapi = { version = "^0.108.0", extras = ["all"] }
-tensorflow = "2.15.0"
-uvicorn = "^0.25.0"
 loguru = "^0.7.2"
 httpx = "^0.26.0"
-pandas = "^2.1.4"
 python-dotenv = "^1.0.0"
 redis = {extras = ["hiredis"], version = "^5.0.1"}
 openai = "^1.6.1"
-server-thread = "^0.2.0"
+sqlalchemy = "^2.0.25"
+psycopg2 = {extras = ["extras"], version = "^2.9.9"}
+alembic = "^1.13.1"
+asyncpg = "^0.29.0"
+
+
+
+
+[tool.poetry.group.api.dependencies]
+fastapi = { version = "^0.108.0", extras = ["all"] }
+tensorflow = "2.15.0"
+uvicorn = "^0.25.0"
+pandas = "^2.1.4"
 
 
 [tool.poetry.dev-dependencies]
 poethepoet = "^0.24.4"
 black = "^23.12.1"
-
-
 
 [tool.poe.tasks.run]
 help = 'Runs the API server locally'

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import httpx
 from api.business.factory import AbstractFactory, FactoryItem
-from api.model.games.daily_game import NBALiveData, DailyGame, TeamData
+from api.model.games.daily_game import NBALiveData, DailyGame, TeamData, PlayerLeader
 
 
 class DailyGamesSource(ABC):
@@ -50,6 +50,14 @@ class NBAGAmesSource(DailyGamesSource):
                         wins=game.homeTeam.wins,
                         losses=game.homeTeam.losses,
                         abbreviation=game.homeTeam.teamTricode,
+                        leader=None
+                        if game.gameLeaders.home_is_empty()
+                        else PlayerLeader(
+                            name=game.gameLeaders.homeLeaders.name,
+                            points=game.gameLeaders.homeLeaders.points,
+                            rebounds=game.gameLeaders.homeLeaders.rebounds,
+                            assists=game.gameLeaders.homeLeaders.assists,
+                        ),
                     ),
                     away_team=TeamData(
                         id=game.awayTeam.teamId,
@@ -58,6 +66,14 @@ class NBAGAmesSource(DailyGamesSource):
                         wins=game.awayTeam.wins,
                         losses=game.awayTeam.losses,
                         abbreviation=game.awayTeam.teamTricode,
+                        leader=None
+                        if game.gameLeaders.away_is_empty()
+                        else PlayerLeader(
+                            name=game.gameLeaders.awayLeaders.name,
+                            points=game.gameLeaders.awayLeaders.points,
+                            rebounds=game.gameLeaders.awayLeaders.rebounds,
+                            assists=game.gameLeaders.awayLeaders.assists,
+                        ),
                     ),
                 )
             )
