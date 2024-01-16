@@ -47,8 +47,7 @@ async def list_models() -> list[str]:
     },
 )
 async def predict(
-    # make sure its not blank
-    name: str = Path(..., title="Name of the model to use"),
+    name: str,
     app_settings: AppSettings = Depends(get_settings),
     cache_setting: CacheSettings = Depends(get_cache_settings),
 ) -> list[Prediction]:
@@ -64,13 +63,13 @@ async def predict(
     if len(daily_games) == 0:
         raise HTTPException(status_code=404, detail=f"No games found")
 
-    logger.debug(f"Caching is set to {cache_setting.TYPE}")
+    logger.debug(f"Caching is set to {cache_setting.CACHE_TYPE}")
 
-    if cache_setting.TYPE != "none":
+    if cache_setting.CACHE_TYPE != "none":
         cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Using cache key {cache_key}")
         cache = CacheFactory.compute_or_get(
-            name=cache_setting.TYPE,
+            name=cache_setting.CACHE_TYPE,
         )
         cached_predictions: Optional[str] = await cache.get(cache_key)
         if cached_predictions:
@@ -90,11 +89,11 @@ async def predict(
 
     stats: DataFrame = prediction_model.fetch_stats(daily_games=daily_games)
     predictions: list[Prediction] = await prediction_model.predict(data=stats)
-    if cache_setting.TYPE != "none":
+    if cache_setting.CACHE_TYPE != "none":
         cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Setting with key {cache_key}")
         cache = CacheFactory.compute_or_get(
-            name=cache_setting.TYPE,
+            name=cache_setting.CACHE_TYPE,
         )
         predictions_json = [prediction.model_dump() for prediction in predictions]
         predictions_json = json.dumps(predictions_json)

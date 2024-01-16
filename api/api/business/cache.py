@@ -30,9 +30,9 @@ class RedisCache(Cache):
     def __init__(self):
         super().__init__()
         self.redis_client = Redis(
-            host=self.cache_settings.HOST,
-            port=self.cache_settings.PORT,
-            db=self.cache_settings.NAME,
+            host=self.cache_settings.CACHE_HOST,
+            port=self.cache_settings.CACHE_PORT,
+            db=self.cache_settings.CACHE_NAME,
         )
         self.redis_client.ping()
 
