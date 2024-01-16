@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js';
+import {Component, For, Show} from 'solid-js';
 import { Game } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
@@ -6,6 +6,7 @@ import { IoLocationOutline, IoWarning } from 'solid-icons/io';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import homeLogo from "*.svg";
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -18,19 +19,81 @@ const shortName = (name: string) => {
   return split[split.length - 1];
 };
 
-const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-};
+const formattedTimeForUser = (time: number): string => {
+  /**
+   * Takes in a unix seconds timestamp and returns a formatted time string
+   * for the user.
+   * Like so: 12:00 PM EST
+   */
+  const date = new Date(time * 1000); // Convert seconds to milliseconds
+  const options: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZoneName: 'short'
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+}
 
-const formatTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-};
+const isLive = (game: Game): boolean => {
+  console.log(game.status.includes('ET'))
+  return game.status.includes('ET')
+}
+
+const isProjectedWinner = (game: Game): string => {
+  // just going to a return a random team name
+  return Math.random() < 0.5 ? game.home_team.name : game.away_team.name
+}
+
+const formattedDateForUser = (time: number): string => {
+  /**
+   * Takes in a unix seconds timestamp and returns a formatted date string
+   * Like so: January 15, 2024
+   */
+  const date = new Date(time * 1000); // Convert seconds to milliseconds
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+}
 
 interface IDisplayCard {
   game: Game;
 }
+
+export const DisplayCardHeader: Component<IDisplayCard> = (props: IDisplayCard) => {
+  return (
+      <CardHeader class="flex items-center justify-between p-6">
+        <For each={[props.game.home_team, props.game.away_team]}>{(team, num) =>
+            <div class="flex items-center">
+              <img
+                  alt={`Team ${num} Logo`}
+                  class="mr-2 rounded-full"
+                  height={50}
+                  src={getLogo(team.abbreviation.toLowerCase())}
+                  style={{"aspect-ratio": "50/50", "object-fit": "cover"}}
+                  width={50}
+              />
+              <div>
+                <CardTitle class="text-lg font-bold text-white">
+                  {`${team.name}`}
+                </CardTitle>
+                <p class="text-sm text-gray-400">{team.wins} - {team.losses}</p>
+              </div>
+              <Show when={isProjectedWinner(props.game)}>
+                <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    Projected Winner
+                </span>
+              </Show>
+            </div>
+
+        }</For>
+      </CardHeader>
+  )
+}
+
 
 export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
@@ -58,11 +121,11 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             <div class="flex items-center justify-between mb-4">
               <div class="text-sm text-gray-400">
                 <FiCalendar class="mr-1 h-4 w-4 inline-block" />
-                {formatDate(props.game.start_time_unix)}
+                {formattedDateForUser(props.game.start_time_unix)}
               </div>
               <div class="text-sm text-gray-400">
                 <FiClock class="mr-1 h-4 w-4 inline-block" />
-                {formatTime(props.game.start_time_unix)}
+                {formattedTimeForUser(props.game.start_time_unix)}
               </div>
             </div>
           </Show>
@@ -72,22 +135,20 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <span class="text-sm text-gray-400">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
             </div>
           </Show>
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="border rounded-lg p-2">
-              <h3 class="text-sm font-bold mb-1 text-white">Key Player - {`${props.game.home_team.name}`}</h3>
-              <p class="text-xs text-gray-400">{`${props.game.home_team.leader.name}`}</p>
-              <p class="text-xs text-gray-400">Points: {`${props.game.home_team.leader.points}`}</p>
-              <p class="text-xs text-gray-400">Rebounds: {`${props.game.home_team.leader.rebounds}`}</p>
-              <p class="text-xs text-gray-400">Assists: {`${props.game.home_team.leader.assists}`}</p>
+          <Show
+              when={props.game.home_team.leader !== undefined && props.game.away_team.leader !== undefined && !isLive(props.game)}>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <For each={[props.game.home_team, props.game.away_team]}>{(team, _) =>
+                  <div class="border rounded-lg p-2">
+                    <h3 class="text-sm font-bold mb-1 text-white">Key Player - {`${team.name}`}</h3>
+                    <p class="text-xs text-gray-400">{`${team.leader.name}`}</p>
+                    <p class="text-xs text-gray-400">Points: {`${team.leader.points}`}</p>
+                    <p class="text-xs text-gray-400">Rebounds: {`${team.leader.rebounds}`}</p>
+                    <p class="text-xs text-gray-400">Assists: {`${team.leader.assists}`}</p>
+                  </div>
+              }</For>
             </div>
-            <div class="border rounded-lg p-2">
-              <h3 class="text-sm font-bold mb-1 text-white">Key Player - {`${props.game.away_team.name}`}</h3>
-              <p class="text-xs text-gray-400">{`${props.game.away_team.leader.name}`}</p>
-              <p class="text-xs text-gray-400">Points: {`${props.game.away_team.leader.points}`}</p>
-              <p class="text-xs text-gray-400">Rebounds: {`${props.game.away_team.leader.rebounds}`}</p>
-              <p class="text-xs text-gray-400">Assists: {`${props.game.away_team.leader.assists}`}</p>
-            </div>
-          </div>
+          </Show>
           <div class="mb-4">
             <h3 class="text-sm font-bold mb-1 text-white">Current Score</h3>
             <div class="text-center bg-gray-700 p-4 rounded-lg">
