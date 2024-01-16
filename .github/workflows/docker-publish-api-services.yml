@@ -6,7 +6,7 @@ on:
       - 'api/services/**'
       - '**.toml'
       - 'api/Dockerfile-services'
-      - '.github/workflows/docker-publish-api.yml'
+      - '.github/workflows/docker-publish-api-services.yml'
     branches: [ main, ci-test , feature/revamp ]
 
 env:
