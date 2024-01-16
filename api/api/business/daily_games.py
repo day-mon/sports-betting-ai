@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
+
 import httpx
 from api.business.factory import AbstractFactory, FactoryItem
 from api.model.games.daily_game import NBALiveData, DailyGame, TeamData, PlayerLeader
@@ -38,11 +40,15 @@ class NBAGAmesSource(DailyGamesSource):
             return daily_games
 
         for game in games:
+            datetime_obj = datetime.strptime(game.gameTimeUTC, "%Y-%m-%dT%H:%M:%SZ")
+            unix_timestamp = datetime_obj.timestamp()
+
             daily_games.append(
                 DailyGame(
                     game_id=game.gameId,
                     game_date=game_data.scoreboard.gameDate,
                     game_status=game.gameStatusText,
+                    game_start_unix=unix_timestamp,
                     home_team=TeamData(
                         id=game.homeTeam.teamId,
                         name=f"{game.homeTeam.teamCity} {game.homeTeam.teamName}",
