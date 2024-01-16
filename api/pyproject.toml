@@ -13,8 +13,6 @@ httpx = "^0.26.0"
 python-dotenv = "^1.0.0"
 redis = {extras = ["hiredis"], version = "^5.0.1"}
 openai = "^1.6.1"
-sqlalchemy = "^2.0.25"
-psycopg2 = {extras = ["extras"], version = "^2.9.9"}
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
 
