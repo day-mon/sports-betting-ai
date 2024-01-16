@@ -1,11 +1,9 @@
 import json
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
 
-import httpx
-import tomli
-import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +15,11 @@ from api.config.database import get_database_settings
 from api.business.database import DatabaseFactory
 from api.routes import games, model, ping
 
-with open("../pyproject.toml", "rb") as f:
+import httpx
+import tomli
+import uvicorn
+
+with open("pyproject.toml", "rb") as f:
     _META = tomli.load(f)
 
 BASE_PATH = "/api/v1"
@@ -69,7 +71,6 @@ async def lifespan(_: FastAPI):
     logger.info(f"Connecting to {db_settings.DATABASE_TYPE}")
     db = DatabaseFactory.compute_or_get(
         name=db_settings.DATABASE_TYPE,
-        db_settings=db_settings,
     )
     await db.connect()
     yield
@@ -180,4 +181,4 @@ for router in routers:
     app.include_router(router, prefix=BASE_PATH, dependencies=[Depends(log_body)])
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False, reload=os.getenv("DEBUG", 'True') == 'True')

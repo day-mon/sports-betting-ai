@@ -13,7 +13,7 @@ env:
   IMAGE_NAME: api-microservices
 
 jobs:
-  build-api:
+  build-api-services:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

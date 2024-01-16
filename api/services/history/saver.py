@@ -83,7 +83,7 @@ class DiskBasedGameSaver(GameSaver):
         saved_games = [game for game in saved_games if game not in games]
         return saved_games
 
-class RedisBasedGameSaver(GameSaver):
+class PostgresBasedGameSaver(GameSaver):
     def save(self, game: list[SavedGame]) -> int:
         """
         Saves a game to a datastore
@@ -105,6 +105,6 @@ class RedisBasedGameSaver(GameSaver):
 
 class GameSaverFactory(AbstractFactory):
     _values: dict[str, FactoryItem] = {
-        "redis": FactoryItem(name="redis", factory_item=RedisBasedGameSaver),
+        "postgres": FactoryItem(name="redis", factory_item=PostgresBasedGameSaver),
         "disk": FactoryItem(name="disk", factory_item=DiskBasedGameSaver),
     }
