@@ -5,7 +5,7 @@ on:
     paths:
       - 'api/services/**'
       - '**.toml'
-      - 'api/Dockerfile'
+      - 'api/Dockerfile-services'
       - '.github/workflows/docker-publish-api.yml'
     branches: [ main, ci-test , feature/revamp ]
 
