@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import { Component, Show } from 'solid-js';
 import { Game } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
@@ -16,6 +16,16 @@ const getLogo = (team: string) => {
 const shortName = (name: string) => {
   const split = name.split(' ');
   return split[split.length - 1];
+};
+
+const formatDate = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+};
+
+const formatTime = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 };
 
 interface IDisplayCard {
@@ -44,20 +54,24 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           </div>
         </CardHeader>
         <CardContent class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-sm text-gray-400">
-              <FiCalendar class="mr-1 h-4 w-4 inline-block" />
-              January 15, 2024
+          <Show when={props.game.start_time_unix}>
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-sm text-gray-400">
+                <FiCalendar class="mr-1 h-4 w-4 inline-block" />
+                {formatDate(props.game.start_time_unix)}
+              </div>
+              <div class="text-sm text-gray-400">
+                <FiClock class="mr-1 h-4 w-4 inline-block" />
+                {formatTime(props.game.start_time_unix)}
+              </div>
             </div>
-            <div class="text-sm text-gray-400">
-              <FiClock class="mr-1 h-4 w-4 inline-block" />
-              7:00 PM
+          </Show>
+          <Show when={props.game.location}>
+            <div class="mb-4">
+              <IoLocationOutline class="mr-1 h-4 w-4 inline-block text-gray-400" />
+              <span class="text-sm text-gray-400">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
             </div>
-          </div>
-          <div class="mb-4">
-            <IoLocationOutline class="mr-1 h-4 w-4 inline-block text-gray-400" />
-            <span class="text-sm text-gray-400">Staples Center, Los Angeles, CA</span>
-          </div>
+          </Show>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div class="border rounded-lg p-2">
               <h3 class="text-sm font-bold mb-1 text-white">Key Player - {`${props.game.home_team.name}`}</h3>

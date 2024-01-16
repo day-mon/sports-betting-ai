@@ -2,9 +2,17 @@ export interface Game {
   id: string;
   date: string;
   status: string;
+  start_time_unix: number;
+  location: Location;
   home_team: Team;
   away_team: Team;
   odds: Odds[];
+}
+
+export interface Location {
+  name: string;
+  city: string;
+  state: string;
 }
 
 export interface Team {
