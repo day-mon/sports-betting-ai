@@ -1,22 +1,25 @@
-import { Component } from "solid-js";
-import { Game } from "~/interface";
+import { Component } from 'solid-js';
+import { Game } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
-import { IoLocationOutline } from 'solid-icons/io';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Button } from "~/components/ui/button";
+import { IoLocationOutline, IoWarning } from 'solid-icons/io';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
-import homeLogo from "~/assets/teams/lal.svg";
-import awayLogo from "~/assets/teams/gsw.svg";
+const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
+
+const getLogo = (team: string) => {
+  return logos[`../assets/teams/${team}.svg`].default;
+};
+
+const shortName = (name: string) => {
+  const split = name.split(' ');
+  return split[split.length - 1];
+};
 
 interface IDisplayCard {
-    game: Game;
+  game: Game;
 }
 
 export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
@@ -25,49 +28,29 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
       <Card class="w-full max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <CardHeader class="flex items-center justify-between p-6">
           <div class="flex items-center">
-            <img
-              alt="Team 1 Logo"
-              class="mr-2 rounded-full"
-              height={50}
-              src={homeLogo}
-              style={{"aspect-ratio": "50/50", "object-fit": "cover"}}
-              width={50}
-            />
+            <img alt="Team 1 Logo" class="mr-2 rounded-full" height={50} src={getLogo(props.game.home_team.abbreviation.toLowerCase())} style={{ 'aspect-ratio': '50/50', 'object-fit': 'cover' }} width={50} />
             <div>
-              <CardTitle class="text-lg font-bold text-white">
-              {`${props.game.home_team.name}`}
-              </CardTitle>
+              <CardTitle class="text-lg font-bold text-white">{`${props.game.home_team.name}`}</CardTitle>
               <p class="text-sm text-gray-400">30-15</p>
             </div>
           </div>
           <div class="flex items-center">
             <div>
-              <CardTitle class="text-lg font-bold text-white">
-              {`${props.game.away_team.name}`}
-              </CardTitle>
+              <CardTitle class="text-lg font-bold text-white">{`${props.game.away_team.name}`}</CardTitle>
               <p class="text-sm text-gray-400">35-10</p>
             </div>
-            <img
-              alt="Team 2 Logo"
-              class="ml-2 rounded-full"
-              height={50}
-              src={awayLogo}
-              style={{"aspect-ratio": "50/50", "object-fit": "cover"}}
-              width={50}
-            />
-            <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-              Projected Winner
-            </span>
+            <img alt="Team 2 Logo" class="ml-2 rounded-full" height={50} src={getLogo(props.game.away_team.abbreviation.toLowerCase())} style={{ 'aspect-ratio': '50/50', 'object-fit': 'cover' }} width={50} />
+            <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">Projected Winner</span>
           </div>
         </CardHeader>
         <CardContent class="p-6">
           <div class="flex items-center justify-between mb-4">
             <div class="text-sm text-gray-400">
-            <FiCalendar class="mr-1 h-4 w-4 inline-block" />
+              <FiCalendar class="mr-1 h-4 w-4 inline-block" />
               January 15, 2024
             </div>
             <div class="text-sm text-gray-400">
-            <FiClock class="mr-1 h-4 w-4 inline-block" />
+              <FiClock class="mr-1 h-4 w-4 inline-block" />
               7:00 PM
             </div>
           </div>
@@ -98,7 +81,9 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <span class="text-red-500 animate-pulse mr-2">•</span>
                 <span class="text-white font-bold">Live</span>
               </div>
-              <p class="text-2xl text-white font-bold mb-2">Lakers: 95 - Warriors: 98</p>
+              <p class="text-2xl text-white font-bold mb-2">
+                {`${shortName(props.game.home_team.name)}`}: 95 - {`${shortName(props.game.away_team.name)}`}: 98
+              </p>
               <p class="text-sm text-gray-400">4th Quarter, 2:30 remaining</p>
             </div>
           </div>
@@ -159,10 +144,10 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             </div>
           </div>
           <div class="text-center mb-4 flex items-center justify-center">
-            {/* <XIcon class="mr-1 h-4 w-4 inline-block text-yellow-500" />
-            <Link class="text-yellow-500 underline" href="#">
+            <IoWarning class="mr-1 h-4 w-4 inline-block text-yellow-500" />
+            <a class="text-yellow-500 underline" href="#">
               View Injury Report
-            </Link> */}
+            </a>
           </div>
           <div class="text-center">
             <Button class="w-full">View Game Details</Button>
@@ -171,4 +156,4 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
       </Card>
     </>
   );
-}
+};
