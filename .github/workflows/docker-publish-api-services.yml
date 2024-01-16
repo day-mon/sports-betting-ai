@@ -1,0 +1,53 @@
+name: Docker Build
+
+on:
+  push:
+    paths:
+      - 'api/services/**'
+      - '**.toml'
+      - 'api/Dockerfile'
+      - '.github/workflows/docker-publish-api.yml'
+    branches: [ main, ci-test , feature/revamp ]
+
+env:
+  IMAGE_NAME: api-microservices
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build . --build-arg VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,') --file Dockerfile-services --tag $IMAGE_NAME
+        working-directory: ./api
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+        working-directory: ./api
+
+      - name: Push image
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:latest
+          docker push --all-tags $IMAGE_ID
+        working-directory: ./api
+
+  deploy:
+    needs:
+      - build-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://watchtower.montague.im/v1/update'
+          method: 'POST'
+          timeout: 60000
+          customHeaders: '{"Authorization": "Bearer ${{ secrets.TOKEN }}"}'
