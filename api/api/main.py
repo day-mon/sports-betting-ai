@@ -181,4 +181,4 @@ for router in routers:
     app.include_router(router, prefix=BASE_PATH, dependencies=[Depends(log_body)])
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False, reload=os.getenv("DEBUG", 'True') == 'True')
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False, reload=True)
