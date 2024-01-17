@@ -1,8 +1,12 @@
+import { Navbar } from "./components/navbar";
+
 const App = (props: any) => {
   return (
     <>
-      {/* todo: navigation and general app wrapper */}
-      <div class="dark">{props.children}</div>
+      <div class="flex flex-col min-h-screen">
+        <Navbar/>
+        <div class="dark">{props.children}</div>
+      </div>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import {Component, For, Show} from 'solid-js';
+import { Component, For, Show } from 'solid-js';
 import { Game } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
@@ -6,7 +6,6 @@ import { IoLocationOutline, IoWarning } from 'solid-icons/io';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import homeLogo from "*.svg";
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -30,20 +29,20 @@ const formattedTimeForUser = (time: number): string => {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
-    timeZoneName: 'short'
+    timeZoneName: 'short',
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
-}
+};
 
 const isLive = (game: Game): boolean => {
-  console.log(game.status.includes('ET'))
-  return game.status.includes('ET')
-}
+  console.log(game.status.includes('ET'));
+  return game.status.includes('ET');
+};
 
 const isProjectedWinner = (game: Game): string => {
   // just going to a return a random team name
-  return Math.random() < 0.5 ? game.home_team.name : game.away_team.name
-}
+  return Math.random() < 0.5 ? game.home_team.name : game.away_team.name;
+};
 
 const formattedDateForUser = (time: number): string => {
   /**
@@ -57,7 +56,7 @@ const formattedDateForUser = (time: number): string => {
     day: 'numeric',
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
-}
+};
 
 interface IDisplayCard {
   game: Game;
@@ -65,35 +64,26 @@ interface IDisplayCard {
 
 export const DisplayCardHeader: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
-      <CardHeader class="flex items-center justify-between p-6">
-        <For each={[props.game.home_team, props.game.away_team]}>{(team, num) =>
-            <div class="flex items-center">
-              <img
-                  alt={`Team ${num} Logo`}
-                  class="mr-2 rounded-full"
-                  height={50}
-                  src={getLogo(team.abbreviation.toLowerCase())}
-                  style={{"aspect-ratio": "50/50", "object-fit": "cover"}}
-                  width={50}
-              />
-              <div>
-                <CardTitle class="text-lg font-bold text-white">
-                  {`${team.name}`}
-                </CardTitle>
-                <p class="text-sm text-gray-400">{team.wins} - {team.losses}</p>
-              </div>
-              <Show when={isProjectedWinner(props.game)}>
-                <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                    Projected Winner
-                </span>
-              </Show>
+    <CardHeader class="flex items-center justify-between p-6">
+      <For each={[props.game.home_team, props.game.away_team]}>
+        {(team, num) => (
+          <div class="flex items-center">
+            <img alt={`Team ${num} Logo`} class="mr-2 rounded-full" height={50} src={getLogo(team.abbreviation.toLowerCase())} style={{ 'aspect-ratio': '50/50', 'object-fit': 'cover' }} width={50} />
+            <div>
+              <CardTitle class="text-lg font-bold text-white">{`${team.name}`}</CardTitle>
+              <p class="text-sm text-gray-400">
+                {team.wins} - {team.losses}
+              </p>
             </div>
-
-        }</For>
-      </CardHeader>
-  )
-}
-
+            <Show when={isProjectedWinner(props.game)}>
+              <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">Projected Winner</span>
+            </Show>
+          </div>
+        )}
+      </For>
+    </CardHeader>
+  );
+};
 
 export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
@@ -135,10 +125,10 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <span class="text-sm text-gray-400">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
             </div>
           </Show>
-          <Show
-              when={props.game.home_team.leader !== undefined && props.game.away_team.leader !== undefined && !isLive(props.game)}>
+          <Show when={props.game.home_team.leader !== undefined && props.game.away_team.leader !== undefined && !isLive(props.game)}>
             <div class="grid grid-cols-2 gap-4 mb-4">
-              <For each={[props.game.home_team, props.game.away_team]}>{(team, _) =>
+              <For each={[props.game.home_team, props.game.away_team]}>
+                {(team, _) => (
                   <div class="border rounded-lg p-2">
                     <h3 class="text-sm font-bold mb-1 text-white">Key Player - {`${team.name}`}</h3>
                     <p class="text-xs text-gray-400">{`${team.leader.name}`}</p>
@@ -146,7 +136,8 @@ export const DisplayCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                     <p class="text-xs text-gray-400">Rebounds: {`${team.leader.rebounds}`}</p>
                     <p class="text-xs text-gray-400">Assists: {`${team.leader.assists}`}</p>
                   </div>
-              }</For>
+                )}
+              </For>
             </div>
           </Show>
           <div class="mb-4">
