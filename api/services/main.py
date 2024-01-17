@@ -33,5 +33,5 @@ class ServiceManager:
         await self.start()
 
 if __name__ == "__main__":
-    service_manager = ServiceManager.from_services([MissedGames(), HistoryService()])
+    service_manager = ServiceManager.from_services([HistoryService()])
     asyncio.run(service_manager.start())

@@ -2,9 +2,10 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 import httpx
+
+from api import constants
 from api.business.factory import AbstractFactory, FactoryItem
 from api.model.games.daily_game import NBALiveData, DailyGame, TeamData, PlayerLeader
-
 
 class DailyGamesSource(ABC):
     source_url: str
@@ -12,7 +13,6 @@ class DailyGamesSource(ABC):
 
     def __init__(self, source_url: str):
         self.source_url = source_url
-        self.client = httpx.AsyncClient()
 
     @abstractmethod
     async def fetch(self) -> list[DailyGame]:
@@ -26,9 +26,10 @@ class NBAGAmesSource(DailyGamesSource):
         )
 
     async def fetch(self) -> list[DailyGame]:
-        nba_daily_stats_response = await self.client.get(self.source_url)
-        nba_daily_stats_response.raise_for_status()
+        async with httpx.AsyncClient(timeout=60) as client:
+            nba_daily_stats_response = await client.get(self.source_url)
 
+        nba_daily_stats_response.raise_for_status()
         game_data: NBALiveData = NBALiveData.model_validate(
             nba_daily_stats_response.json()
         )

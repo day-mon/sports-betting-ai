@@ -5,7 +5,7 @@ from typing import Literal, Optional
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from api.config.application import AppBaseSettings
+from resources.config.application import AppBaseSettings
 
 
 class CacheSettings(AppBaseSettings):
@@ -23,6 +23,10 @@ class CacheSettings(AppBaseSettings):
             f"./api/resources/env/{os.getenv('ENVIRONMENT', 'development')}.env",
         ),
     )
+
+    @property
+    def cache_enabled(self) -> bool:
+        return self.CACHE_TYPE != "none"
 
     @model_validator(mode="after")
     def check_type(self) -> "CacheSettings":

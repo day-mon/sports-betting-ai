@@ -10,7 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from api.config.database import get_database_settings
 
 from api.business.database import DatabaseFactory
 from api.routes import games, model, ping
@@ -19,10 +18,12 @@ import httpx
 import tomli
 import uvicorn
 
-with open("pyproject.toml", "rb") as f:
-    _META = tomli.load(f)
+from resources.config.database import get_database_settings
 
 BASE_PATH = "/api/v1"
+
+with open("pyproject.toml", "rb") as f:
+    _META = tomli.load(f)
 
 app = FastAPI(
     title="Accuribet API",
@@ -38,7 +39,7 @@ app = FastAPI(
                 "application/json": {
                     "example": {
                         "message": "Yeah theres seems to be something wrong with your request, check the errors field "
-                        "for more info",
+                                   "for more info",
                         "detail": "Validation Error",
                         "errors": ["List of errors"],
                     }
@@ -165,14 +166,19 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
 @app.middleware("http")
 async def log(request: Request, call_next):
     request_start_time = time.time()
-    request.state.id = uuid.uuid4().hex
+    request.state.id = uuid.uuid4().hex[:5]
     response = await call_next(request)
     request_processing_time = time.time() - request_start_time
     response.headers["X-Process-Time"] = str(request_processing_time)
     response.headers["X-Request-ID"] = request.state.id
+    user_agent = request.headers.get("user-agent")
+    cf_real_ip = request.headers.get("x-real-ip", "")
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+
     logger.info(
-        f"{request.method} {request.url.path} {response.status_code} {request_processing_time:.3f}"
+        f"[{request.state.id}] {request.method} {request.url.path} {response.status_code}  {user_agent} {cf_real_ip} {forwarded_for} {request_processing_time:.3f}"
     )
+
     return response
 
 

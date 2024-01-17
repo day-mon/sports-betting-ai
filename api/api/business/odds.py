@@ -4,6 +4,7 @@ from typing import Any, Optional
 import httpx
 from pydantic import BaseModel
 
+from api import constants
 from api.business.factory import AbstractFactory, FactoryItem
 from api.model.games.daily_game import Odds, DailyGame
 from loguru import logger
@@ -11,7 +12,7 @@ from loguru import logger
 
 class OddsSource(ABC):
     source_url: str
-    client: httpx.AsyncClient = httpx.AsyncClient()
+    client: httpx.AsyncClient
 
     def __init__(self, source_url: str):
         self.source_url = source_url
@@ -44,12 +45,13 @@ class ActionNetworkOddsSource(OddsSource):
     async def fetch(self, games: list[DailyGame]) -> Optional[dict[str, list[Odds]]]:
         date = games[0].game_date.replace("-", "")
         url = f"{self.source_url}{date}"
-        response = await self.client.get(
-            url,
-            headers={
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
-            },
-        )
+        async with httpx.AsyncClient(timeout=60) as client:
+            response = await client.get(
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
+                },
+            )
         response.raise_for_status()
         odds_response = response.json()
         games = odds_response.get("games", None)

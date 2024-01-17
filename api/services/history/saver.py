@@ -20,7 +20,7 @@ class SavedGame(BaseModel):
 
 class GameSaver(ABC):
     @abstractmethod
-    def save(self, games: list[SavedGame]) -> int:
+    async def save(self, games: list[SavedGame]) -> int:
         """
         Saves a game to a datastore
 
@@ -29,7 +29,7 @@ class GameSaver(ABC):
         """
 
     @abstractmethod
-    def is_saved(self, games: list[DailyGameResponse]) -> list[DailyGameResponse]:
+    async def is_saved(self, games: list[DailyGameResponse]) -> list[DailyGameResponse]:
         """
         Checks if a game is already saved
         :param list[DailyGameResponse] game: DailyGame object
@@ -38,7 +38,7 @@ class GameSaver(ABC):
 
 
 class DiskBasedGameSaver(GameSaver):
-    def save(self, games: list[SavedGame]) -> int:
+    async def save(self, games: list[SavedGame]) -> int:
         """
         Saves a game to a datastore
 
@@ -57,7 +57,7 @@ class DiskBasedGameSaver(GameSaver):
         return len(games)
 
 
-    def is_saved(self, games: list[DailyGameResponse]) -> list[DailyGameResponse]:
+    async def is_saved(self, games: list[DailyGameResponse]) -> list[DailyGameResponse]:
         """
         Checks if a game is already saved
 
@@ -65,7 +65,6 @@ class DiskBasedGameSaver(GameSaver):
         :return: bool representing if the game is saved
         """
         directory = '/tmp/nba-predictions'
-        print(games)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -84,7 +83,9 @@ class DiskBasedGameSaver(GameSaver):
         return saved_games
 
 class PostgresBasedGameSaver(GameSaver):
-    def save(self, game: list[SavedGame]) -> int:
+    # def __init__(self):
+    #     db =
+    async def save(self, game: list[SavedGame]) -> int:
         """
         Saves a game to a datastore
 
@@ -93,7 +94,7 @@ class PostgresBasedGameSaver(GameSaver):
         """
         pass
 
-    def is_saved(self, games: list[DailyGame]) -> list[DailyGame]:
+    async def is_saved(self, games: list[DailyGame]) -> list[DailyGame]:
         """
         Checks if a game is already saved
 
@@ -105,6 +106,6 @@ class PostgresBasedGameSaver(GameSaver):
 
 class GameSaverFactory(AbstractFactory):
     _values: dict[str, FactoryItem] = {
-        "postgres": FactoryItem(name="redis", factory_item=PostgresBasedGameSaver),
+        "postgres": FactoryItem(name="postgres", factory_item=PostgresBasedGameSaver),
         "disk": FactoryItem(name="disk", factory_item=DiskBasedGameSaver),
     }

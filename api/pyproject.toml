@@ -33,6 +33,10 @@ black = "^23.12.1"
 help = 'Runs the API server locally'
 cmd = 'python api/main.py'
 
+[tool.poe.tasks.services]
+help = 'Runs the API services locally'
+cmd = 'python services/main.py'
+
 [tool.poe.tasks.lint]
 help = 'Runs the linter'
 cmd = 'black api'

@@ -1,27 +1,21 @@
 import json
-import os
-import uuid
 from typing import Any, Optional
 
-from asyncpg import Record
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends
 from loguru import logger
 from pandas import DataFrame
-from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
 from api.business.cache import CacheFactory
 from api.business.daily_games import DailyGameFactory, DailyGame
 from api.business.database import DatabaseFactory, Database
 from api.business.model import PredictionModelFactory, PredictionModel, Prediction
-from api.config.application import AppSettings
-from api.config.application import get_settings
-from api.config.cache import CacheSettings, get_cache_settings
-from api.config.database import DatabaseSettings, get_database_settings
 from api.model.model.accuracy import AccuracyModel
 from api.model.model.date_model import DateModel
-
 from api.utils.daily_game import get_cache_key
+from resources.config.application import AppSettings, get_settings
+from resources.config.cache import CacheSettings, get_cache_settings
+from resources.config.database import DatabaseSettings, get_database_settings
 
 router = APIRouter(prefix="/model", tags=["Model"])
 
@@ -65,7 +59,7 @@ async def predict(
 
     logger.debug(f"Caching is set to {cache_setting.CACHE_TYPE}")
 
-    if cache_setting.CACHE_TYPE != "none":
+    if cache_setting.cache_enabled:
         cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Using cache key {cache_key}")
         cache = CacheFactory.compute_or_get(
@@ -87,9 +81,9 @@ async def predict(
         model_dir=app_settings.MODEL_DIR,
     )
 
-    stats: DataFrame = prediction_model.fetch_stats(daily_games=daily_games)
+    stats: DataFrame = await prediction_model.fetch_stats(daily_games=daily_games)
     predictions: list[Prediction] = await prediction_model.predict(data=stats)
-    if cache_setting.CACHE_TYPE != "none":
+    if cache_setting.cache_enabled:
         cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Setting with key {cache_key}")
         cache = CacheFactory.compute_or_get(

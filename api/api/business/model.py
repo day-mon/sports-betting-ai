@@ -14,10 +14,11 @@ from loguru import logger
 from pandas import DataFrame
 from pydantic import BaseModel
 
+from api import constants
 from api.business.daily_games import DailyGame
 from api.business.factory import AbstractFactory, FactoryItem
-from api.config.application import get_settings
 from api.model.model.model import TeamStats
+from resources.config.application import get_settings
 
 
 class Prediction(BaseModel):
@@ -47,7 +48,7 @@ class PredictionModel(ABC):
         pass
 
     @abstractmethod
-    def fetch_stats(self, **kwargs) -> DataFrame:
+    async def fetch_stats(self, **kwargs) -> DataFrame:
         pass
 
     @abstractmethod
@@ -59,7 +60,6 @@ class TFPredictionModel(PredictionModel):
     _data_dir: str
     prediction_type: Literal["win-loss", "total-score"] = "win-loss"
     columns_to_drop: list[str]
-    client: httpx.Client
     model: tf.keras.models.Model
 
     def __init__(
@@ -79,7 +79,6 @@ class TFPredictionModel(PredictionModel):
         self._data_dir = settings.DATA_DIR
         self.prediction_type = prediction_type
         self.model = tf.keras.models.load_model(f"{self.model_dir}/{self.model_name}")
-        self.client = httpx.Client()
 
     async def predict(self, data: DataFrame) -> list[Prediction]:
         logger.debug(f"Predicting with data: {data.shape}")
@@ -109,7 +108,7 @@ class TFPredictionModel(PredictionModel):
             )
         return predicts
 
-    def fetch_stats(self, **kwargs) -> DataFrame:
+    async def fetch_stats(self, **kwargs) -> DataFrame:
         daily_games: list[DailyGame] = kwargs["daily_games"]
         date = daily_games[0].game_date
 
@@ -118,7 +117,10 @@ class TFPredictionModel(PredictionModel):
             return pd.read_csv(f"{self._data_dir}/{date}.csv")
 
         logger.debug(f"Fetching data for {date}")
-        daily_stats = self.client.get(self.stats_source)
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            daily_stats = await client.get(self.stats_source)
+
         daily_stats.raise_for_status()
 
         logger.debug(f"Writing data for {date} with {daily_stats.json()}")

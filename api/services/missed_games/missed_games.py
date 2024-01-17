@@ -7,9 +7,9 @@ class MissedGames(Service):
 
     async def start(self):
         while True:
-            dates = await self.client.get('/history/dates')
+            dates = await self.client.get('model/history/dates')
             dates.raise_for_status()
             dates_json = dates.json()
 
             logger.info(f"Found {len(dates_json)} dates with {dates_json} games")
-            await asyncio.sleep(50)
+            await asyncio.sleep(9999)

@@ -5,12 +5,11 @@ import asyncpg
 from asyncpg import Record
 
 from api.business.factory import AbstractFactory, FactoryItem
-from api.config.database import DatabaseSettings, get_database_settings
+
 
 from loguru import logger
 
-# from psycopg2 import pool
-# from configs.settings import settings
+from resources.config.database import DatabaseSettings, get_database_settings
 
 
 class Database(ABC):

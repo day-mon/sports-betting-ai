@@ -44,7 +44,6 @@ class HistoryService(Service):
             models = model_response.json()
             saver: GameSaver = GameSaverFactory.compute_or_get(name='disk')
             games: list[DailyGameResponse] = saver.is_saved(games)
-            print(games)
             saved_games: list[SavedGame] = []
             for model in models:
                 logger.info(f"Predicting with {model}")

@@ -3,9 +3,9 @@ from functools import lru_cache
 from typing import Literal, Optional
 
 from pydantic import model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
 
-from api.config.application import AppBaseSettings
+from resources.config.application import AppBaseSettings
 
 
 class DatabaseSettings(AppBaseSettings):
@@ -15,13 +15,6 @@ class DatabaseSettings(AppBaseSettings):
     DATABASE_NAME: Optional[str] = None
     DATABASE_USER: Optional[str] = None
     DATABASE_PASSWORD: Optional[str] = None
-
-    model_config = SettingsConfigDict(
-        env_file=os.getenv(
-            "ENV_FILE_OVERRIDE",
-            f"./api/resources/env/{os.getenv('ENVIRONMENT', 'development')}.env",
-        ),
-    )
 
     @model_validator(mode="after")
     def check_type(self) -> "DatabaseSettings":

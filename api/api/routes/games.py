@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends
 from api.business.daily_games import DailyGameFactory, DailyGame
 from api.business.injury import PlayerInjuryFactory
 from api.business.odds import OddsFactory
-from api.config.application import AppSettings, get_settings
 from api.model.games.daily_game import Odds, DailyGameResponse
 from api.model.games.injury import InjuryItem
+from resources.config.application import get_settings, AppSettings
 
 router = APIRouter(prefix="/games", tags=["Games"])
 

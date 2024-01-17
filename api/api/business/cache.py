@@ -4,7 +4,7 @@ from typing import Union, Dict
 from redis import Redis
 from loguru import logger
 from api.business.factory import AbstractFactory, FactoryItem
-from api.config.cache import CacheSettings, get_cache_settings
+from resources.config.cache import get_cache_settings, CacheSettings
 
 
 class Cache(ABC):
