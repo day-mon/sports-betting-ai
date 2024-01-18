@@ -3,8 +3,12 @@ import { Game } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
 import { IoLocationOutline, IoWarning } from 'solid-icons/io';
+import { OcDotfill3 } from 'solid-icons/oc';
+import { Avatar, AvatarImage } from '~/components/ui/avatar';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
@@ -15,7 +19,7 @@ const getLogo = (team: string) => {
 
 const shortName = (name: string) => {
   const split = name.split(' ');
-  return split[split.length - 1];
+  return split.slice(1).join(' ');
 };
 
 const formattedTimeForUser = (time: number): string => {
@@ -58,6 +62,13 @@ const formattedDateForUser = (time: number): string => {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
+const winningTeam = (game: Game): number => {
+  if (game.status === 'Final') {
+    return game.home_team.score > game.away_team.score ? game.home_team.id : game.away_team.id;
+  }
+  return 0;
+};
+
 interface IDisplayCard {
   game: Game;
 }
@@ -82,6 +93,210 @@ export const DisplayCardHeader: Component<IDisplayCard> = (props: IDisplayCard) 
         )}
       </For>
     </CardHeader>
+  );
+};
+
+export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
+  return (
+    <>
+      <Card class="w-full max-w-4xl mx-auto bg-gray-900 rounded-lg shadow-md overflow-hidden p-6 text-white">
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <Avatar>
+                <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.game.home_team.abbreviation.toLowerCase())} />
+              </Avatar>
+              <div>
+                <CardTitle class="text-lg font-bold">{props.game.home_team.name}</CardTitle>
+                <CardDescription class="text-sm">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
+              </div>
+            </div>
+            <Show when={winningTeam(props.game) === props.game.home_team.id}>
+              <Badge class="bg-yellow-500 text-black" variant="secondary">
+                Winner
+              </Badge>
+            </Show>
+          </div>
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex items-center space-x-4">
+              <Avatar>
+                <AvatarImage alt="Minnesota Timberwolves Logo" src={getLogo(props.game.away_team.abbreviation.toLowerCase())} />
+              </Avatar>
+              <div>
+                <CardTitle class="text-lg font-bold">{props.game.away_team.name}</CardTitle>
+                <CardDescription class="text-sm">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
+              </div>
+            </div>
+            <Show when={winningTeam(props.game) === props.game.away_team.id}>
+              <Badge class="bg-yellow-500 text-black" variant="secondary">
+                Winner
+              </Badge>
+            </Show>
+          </div>
+        </CardHeader>
+        {/* <CardHeader class="flex items-center justify-between p-6">
+          <div class="flex items-center">
+            <img alt={`${props.game.home_team.name}'s Logo`} class="mr-2 rounded-full" height={50} src={getLogo(props.game.home_team.abbreviation.toLowerCase())} style={{ 'aspect-ratio': '50/50', 'object-fit': 'cover' }} width={50} />
+            <div>
+              <CardTitle class="text-lg font-bold text-white">{`${props.game.home_team.name}`}</CardTitle>
+              <p class="text-sm text-gray-400">30-15</p>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div>
+              <CardTitle class="text-lg font-bold text-white">{`${props.game.away_team.name}`}</CardTitle>
+              <p class="text-sm text-gray-400">35-10</p>
+            </div>
+            <img alt={`${props.game.away_team.name}'s Logo`} class="ml-2 rounded-full" height={50} src={getLogo(props.game.away_team.abbreviation.toLowerCase())} style={{ 'aspect-ratio': '50/50', 'object-fit': 'cover' }} width={50} />
+            <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">Projected Winner</span>
+          </div>
+        </CardHeader> */}
+        <CardContent class="">
+          <div class="flex justify-between mt-4 items-center">
+            <div class="flex items-center text-sm">
+              <FiCalendar class="mr-1 h-4 w-4 inline-block" />
+              <span class="ml-2">{formattedDateForUser(props.game.start_time_unix)}</span>
+            </div>
+            <Show when={props.game.location}>
+              <div class="flex items-center text-sm">
+                <IoLocationOutline class="mr-1 h-4 w-4 inline-block" />
+                <span class="ml-2">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
+              </div>
+            </Show>
+            <div class="flex items-center justify-center text-sm">
+              <span class="text-red-500 animate-pulse mr-2">
+                <OcDotfill3 />
+              </span>
+              <span class="text-white font-bold">Live</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <Show when={props.game.home_team.leader !== null && props.game.away_team.leader !== null && !isLive(props.game)}>
+              <div class="bg-gray-700 p-4 rounded mt-4">
+                <h4 class="font-semibold">Key Player - {props.game.home_team.name}</h4>
+                <p>{props.game.home_team.leader.name}</p>
+                <p class="text-sm text-gray-200">Points: {props.game.home_team.leader.points}</p>
+                <p class="text-sm text-gray-200">Rebounds: {props.game.home_team.leader.rebounds}</p>
+                <p class="text-sm text-gray-200">Assists: {props.game.home_team.leader.assists}</p>
+              </div>
+            </Show>
+            <Show when={props.game.home_team.leader !== null && props.game.away_team.leader !== null && !isLive(props.game)}>
+              <div class="bg-gray-700 p-4 rounded mt-4">
+                <h4 class="font-semibold">Key Player - {props.game.away_team.name}</h4>
+                <p>{props.game.away_team.leader.name}</p>
+                <p class="text-sm text-gray-200">Points: {props.game.away_team.leader.points}</p>
+                <p class="text-sm text-gray-200">Rebounds: {props.game.away_team.leader.rebounds}</p>
+                <p class="text-sm text-gray-200">Assists: {props.game.away_team.leader.assists}</p>
+              </div>
+            </Show>
+            <div class="col-span-2">
+              <div class="text-center bg-gray-700 p-4 rounded-lg">
+                <div class="flex items-center justify-center mb-2">
+                  <span class="text-red-500 animate-pulse mr-2">•</span>
+                  <span class="text-white font-bold">Live</span>
+                </div>
+                <p class="text-2xl text-white font-bold mb-2">
+                  {`${shortName(props.game.home_team.name)} : ${props.game.home_team.score}`} - {`${shortName(props.game.away_team.name)}: ${props.game.away_team.score}`}
+                </p>
+                <p class="text-sm text-gray-400">{props.game.status}</p>
+              </div>
+            </div>
+            <div>
+              <div class="">
+                <h3 class="text-lg font-bold">Current Score</h3>
+                <div class="flex items-center justify-between bg-gray-600 p-3 rounded mt-2">
+                  <span class="font-semibold">
+                    {shortName(props.game.home_team.name)}: {props.game.home_team.score}
+                  </span>
+                  <span class="ml-4 text-sm text-gray-400">Final</span>
+                </div>
+              </div>
+              <div class="mt-4">
+                <h3 class="text-lg font-bold">Score Breakdown - {shortName(props.game.home_team.name)}</h3>
+                <Table class="mt-2">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="text-center">1st Quarter</TableHead>
+                      <TableHead class="text-center">2nd Quarter</TableHead>
+                      <TableHead class="text-center">3rd Quarter</TableHead>
+                      <TableHead class="text-center">4th Quarter</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell class="text-center">25</TableCell>
+                      <TableCell class="text-center">22</TableCell>
+                      <TableCell class="text-center">30</TableCell>
+                      <TableCell class="text-center">27</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell class="text-center">20</TableCell>
+                      <TableCell class="text-center">25</TableCell>
+                      <TableCell class="text-center">22</TableCell>
+                      <TableCell class="text-center">30</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              <div class="mt-4">
+                <h4>Timeouts Remaining</h4>
+                <p>{shortName(props.game.home_team.name)}: 2</p>
+              </div>
+            </div>
+            <div>
+              <div class="">
+                <h3 class="text-lg font-bold">Current Score</h3>
+                <div class="flex items-center justify-between bg-gray-600 p-3 rounded mt-2">
+                  <span class="font-semibold">
+                    {shortName(props.game.away_team.name)}: {props.game.away_team.score}
+                  </span>
+                  <span class="ml-4 text-sm text-gray-400">Final</span>
+                </div>
+              </div>
+              <div class="mt-4">
+                <h3 class="text-lg font-bold">Score Breakdown - {shortName(props.game.away_team.name)}</h3>
+                <Table class="mt-2">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="text-center">1st Quarter</TableHead>
+                      <TableHead class="text-center">2nd Quarter</TableHead>
+                      <TableHead class="text-center">3rd Quarter</TableHead>
+                      <TableHead class="text-center">4th Quarter</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell class="text-center">25</TableCell>
+                      <TableCell class="text-center">22</TableCell>
+                      <TableCell class="text-center">30</TableCell>
+                      <TableCell class="text-center">27</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell class="text-center">20</TableCell>
+                      <TableCell class="text-center">25</TableCell>
+                      <TableCell class="text-center">22</TableCell>
+                      <TableCell class="text-center">30</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              <div class="mt-4">
+                <h4>Timeouts Remaining</h4>
+                <p>{shortName(props.game.away_team.name)}: 1</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter class="flex justify-between mt-4">
+          <Button class="bg-yellow-300 text-yellow-800" variant="outline">
+            View Injury Report
+          </Button>
+          <Button class="text-gray-300" variant="ghost">
+            View Game Details
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 };
 

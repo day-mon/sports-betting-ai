@@ -34,4 +34,3 @@ const CardFooter: Component<ComponentProps<'div'>> = (props) => {
 };
 
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
-

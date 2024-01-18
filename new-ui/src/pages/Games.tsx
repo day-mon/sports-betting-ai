@@ -1,5 +1,6 @@
-import { Index, createSignal, onMount } from 'solid-js';
-import { DisplayCard as GameCard } from '~/components/display-card';
+import { Index, Show, createSignal, onMount } from 'solid-js';
+import { Loading } from '~/components/Loading';
+import { DemoCard as GameCard } from '~/components/display-card';
 import { Game } from '~/interface';
 
 export const Games = () => {
@@ -18,16 +19,18 @@ export const Games = () => {
 
   return (
     <>
-      <main class="pt-4 bg-gradient-to-r from-slate-900 to-slate-700">
-        <div class="grid grid-cols-2 gap-4">
-          <Index each={games()}>
-            {(game, i) => (
-              <div class="">
-                <GameCard game={game()} />
-              </div>
-            )}
-          </Index>
-        </div>
+      <main class="pt-4 min-h-screen bg-gradient-to-r from-slate-900 to-slate-700">
+        <Show when={games().length > 0} keyed fallback={<Loading />}>
+          <div class="mx-2">
+            <Index each={games()}>
+              {(game, _) => (
+                <div class="mt-4">
+                  <GameCard game={game()} />
+                </div>
+              )}
+            </Index>
+          </div>
+        </Show>
       </main>
     </>
   );
