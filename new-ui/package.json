@@ -1,9 +1,10 @@
 {
   "name": "@accuribet/ui",
-  "version": "0.0.1",
   "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Web UI for Accuribet",
   "dependencies": {
-    "@farmfe/js-plugin-postcss": "^1.3.0",
     "@kobalte/core": "^0.12.0",
     "@solidjs/router": "^0.10.9",
     "class-variance-authority": "^0.7.0",
@@ -14,21 +15,17 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@farmfe/cli": "^0.6.0",
-    "@farmfe/core": "^0.15.3",
     "@types/node": "^20.11.3",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.33",
     "prettier": "3.2.2",
-    "solid-refresh": "^0.5.3",
     "tailwindcss": "^3.4.1",
-    "vite-plugin-solid": "^2.7.0"
+    "vite": "^5.0.11",
+    "vite-plugin-solid": "^2.8.0"
   },
   "scripts": {
-    "dev": "farm start",
-    "start": "farm start",
-    "build": "farm build",
-    "preview": "farm preview",
-    "clean": "farm clean"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   }
 }

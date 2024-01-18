@@ -2,11 +2,7 @@ import { Index, createSignal, onMount } from 'solid-js';
 import { DisplayCard as GameCard } from '~/components/display-card';
 import { Game } from '~/interface';
 
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Button } from '~/components/ui/button';
-import { Link } from '~/components/link';
-
-function Games() {
+export const Games = () => {
   const [games, setGames] = createSignal<Game[]>([]);
 
   const fetchGames = async () => {
@@ -22,15 +18,17 @@ function Games() {
 
   return (
     <>
-      <Index each={games()}>
-        {(game, i) => (
-          <div class="mb-4">
-            <GameCard game={game()} />
-          </div>
-        )}
-      </Index>
+      <main class="pt-4 bg-gradient-to-r from-slate-900 to-slate-700">
+        <div class="grid grid-cols-2 gap-4">
+          <Index each={games()}>
+            {(game, i) => (
+              <div class="">
+                <GameCard game={game()} />
+              </div>
+            )}
+          </Index>
+        </div>
+      </main>
     </>
   );
-}
-
-export default Games;
+};
