@@ -13,7 +13,7 @@ on:
       - '.github/workflows/docker-publish-web.yml'
       - 'Website/Dockerfile'
       - '**.json'
-    branches: [ main, ci-test ]
+    branches: [ main, ci-test , feature/ui-revamp ]
 
 env:
   IMAGE_NAME: website
@@ -56,13 +56,13 @@ jobs:
           method: 'POST'
           timeout: 60000
           customHeaders: '{"Authorization": "Bearer ${{ secrets.TOKEN }}"}'
-      - name: Purge Cloudflare Cache
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE }}/purge_cache'
-          method: 'POST'
-          timeout: 60000
-          customHeaders: '{"Authorization": "Bearer ${{ secrets.CF_TOKEN }}"}'
-          data: '{"purge_everything":true}'
+#      - name: Purge Cloudflare Cache
+#        uses: fjogeleit/http-request-action@v1
+#        with:
+#          url: 'https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE }}/purge_cache'
+#          method: 'POST'
+#          timeout: 60000
+#          customHeaders: '{"Authorization": "Bearer ${{ secrets.CF_TOKEN }}"}'
+#          data: '{"purge_everything":true}'
 
 
