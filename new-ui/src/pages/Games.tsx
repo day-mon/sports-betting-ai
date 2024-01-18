@@ -1,6 +1,6 @@
 import { Index, Show, createSignal, onMount } from 'solid-js';
-import { Loading } from '~/components/Loading';
 import { DemoCard as GameCard } from '~/components/display-card';
+import { Loading } from '~/components/loading';
 import { Game } from '~/interface';
 
 export const Games = () => {
