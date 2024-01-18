@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-
+from loguru import logger
 import asyncpg
 from asyncpg import Record
 
@@ -80,7 +80,8 @@ class Postgres(Database):
             logger.debug(f"Result: {cursor}")
             return cursor
         except Exception as e:
-            print(e)
+            logger.error(f"Error has occurred during a query: {e}")
+            raise e
         finally:
             await self._connection_pool.release(self.con)
 

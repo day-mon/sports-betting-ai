@@ -82,7 +82,7 @@ async def predict(
     )
 
     stats: DataFrame = await prediction_model.fetch_stats(daily_games=daily_games)
-    predictions: list[Prediction] = await prediction_model.predict(data=stats)
+    predictions: list[Prediction] = await prediction_model.predict(data=stats, games=daily_games)
     if cache_setting.cache_enabled:
         cache_key = get_cache_key(daily_games, name)
         logger.debug(f"Setting with key {cache_key}")

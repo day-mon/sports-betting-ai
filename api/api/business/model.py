@@ -44,7 +44,7 @@ class PredictionModel(ABC):
         self.model_dir = model_dir
 
     @abstractmethod
-    async def predict(self, data: DataFrame) -> list[Prediction]:
+    async def predict(self, data: DataFrame, games: list[DailyGame]) -> list[Prediction]:
         pass
 
     @abstractmethod
@@ -80,7 +80,7 @@ class TFPredictionModel(PredictionModel):
         self.prediction_type = prediction_type
         self.model = tf.keras.models.load_model(f"{self.model_dir}/{self.model_name}")
 
-    async def predict(self, data: DataFrame) -> list[Prediction]:
+    async def predict(self, data: DataFrame, games: list[DailyGame]) -> list[Prediction]:
         logger.debug(f"Predicting with data: {data.shape}")
         di = {
             index: {"home_team": row["TEAM_NAME"], "away_team": row["TEAM_NAME.1"]}
@@ -96,13 +96,19 @@ class TFPredictionModel(PredictionModel):
 
         predicts: list[Prediction] = []
         for index, (prediction, confidence) in enumerate(zip(predictions, confidences)):
+            logger.debug(f"Prediction: {prediction}")
+            corresponding_game = next((game for game in games if game.home_team.name == di[index]["home_team"] or game.away_team.name == di[index]["away_team"]), None)
+            if corresponding_game is None:
+                logger.error(f"Unable to find game for {prediction.game_id}")
+                continue
+
             predicts.append(
                 Prediction(
                     prediction_type=self.prediction_type,
                     prediction=di[index]["home_team"]
                     if prediction == 0
                     else di[index]["away_team"],
-                    game_id=str(uuid.uuid4()),
+                    game_id=corresponding_game.game_id,
                     confidence=confidence,
                 )
             )
@@ -221,19 +227,34 @@ class OUPredictionModel(FortyEightDPModel):
         super().__init__(model_name, model_dir)
         self.prediction_type = "total-score"
 
-    async def predict(self, data: DataFrame) -> list[Prediction]:
+    async def predict(self, data: DataFrame, games: list[DailyGame]) -> list[Prediction]:
         logger.debug(f"Predicting with data: {data.shape}")
         filtered_data = data.drop(self.columns_to_drop, axis=1, errors="ignore")
         predictions_raw: numpy.ndarray = self.model.predict(filtered_data)
         logger.debug(f"Raw Predictions: {predictions_raw}")
         predictions = predictions_raw.flatten().tolist()
         predicts: list[Prediction] = []
-        for prediction in predictions:
+        for index, prediction in enumerate(predictions):
+            # get the team name from the data
+            team_name = data.iloc[index]["TEAM_NAME"]
+            corresponding_game = next(
+                (
+                    game
+                    for game in games
+                    if game.home_team.name == team_name
+                    or game.away_team.name == team_name
+                ),
+                None,
+            )
+            if corresponding_game is None:
+                logger.error(f"Unable to find game on {index} for the OU model")
+                continue
+
             predicts.append(
                 Prediction(
                     prediction_type=self.prediction_type,
                     prediction=prediction,
-                    game_id=str(uuid.uuid4()),
+                    game_id=corresponding_game.game_id,
                 )
             )
         return predicts
