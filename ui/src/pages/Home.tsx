@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Button } from '~/components/ui/button';
 import { Link } from '~/components/link';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 
-function Home() {
+export const Home = () => {
   return (
     <>
       <main class="flex-1">
@@ -99,14 +99,10 @@ function Home() {
           </div>
           <div>
             <h3 class="text-xl font-bold mb-2">Follow Us</h3>
-            <div class="flex space-x-4">
-              {/* social links? */}
-            </div>
+            <div class="flex space-x-4">{/* social links? */}</div>
           </div>
         </div>
       </footer>
     </>
   );
-}
-
-export default Home;
+};
