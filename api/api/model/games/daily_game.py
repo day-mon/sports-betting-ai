@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_snake
 
 from api import constants
 from api.model.games.injury import InjuryItem
@@ -51,6 +52,12 @@ class Period(BaseModel):
     periodType: str
     score: int
 
+    model_config = ConfigDict(
+        alias_generator=to_snake,
+        populate_by_name=True,
+    )
+
+
 
 class HomeTeam(BaseModel):
     teamId: int
@@ -66,11 +73,6 @@ class HomeTeam(BaseModel):
     periods: List[Period]
 
 
-class Period1(BaseModel):
-    period: int
-    periodType: str
-    score: int
-
 
 class AwayTeam(BaseModel):
     teamId: int
@@ -83,7 +85,7 @@ class AwayTeam(BaseModel):
     seed: Any
     inBonus: Any
     timeoutsRemaining: int
-    periods: List[Period1]
+    periods: List[Period]
 
 
 class GamePlayerLeader(BaseModel):
@@ -103,22 +105,17 @@ class GameLeaders(BaseModel):
     awayLeaders: GamePlayerLeader
 
     def home_is_empty(self) -> bool:
-        if self.homeLeaders is None:
+        if not self.homeLeaders:
             return True
 
-        if self.homeLeaders.name is None:
-            return True
-
-        return False
+        return not self.homeLeaders.name
 
     def away_is_empty(self) -> bool:
-        if self.awayLeaders is None:
+        if not self.awayLeaders:
             return True
 
-        if self.awayLeaders.name is None:
-            return True
+        return not self.awayLeaders.name
 
-        return False
 
 
 class PbOdds(BaseModel):
@@ -170,12 +167,18 @@ class PlayerLeader(BaseModel):
 
 class TeamData(BaseModel):
     id: int
+    city: str
     name: str
-    score: int
+    score: Score
     wins: int
     losses: int
     abbreviation: str
+    seed: Optional[int | str] = None
     leader: Optional[PlayerLeader] = None
+
+class Score(BaseModel):
+    points: int
+    periods: list[Period]
 
 
 class DailyGame(BaseModel):
@@ -235,6 +238,7 @@ class DailyGameResponse(BaseModel):
                 home_team=TeamDataExt(
                     id=game.home_team.id,
                     name=game.home_team.name,
+                    city=game.home_team.city,
                     score=game.home_team.score,
                     wins=game.home_team.wins,
                     losses=game.home_team.losses,
@@ -249,6 +253,7 @@ class DailyGameResponse(BaseModel):
                 away_team=TeamDataExt(
                     id=game.away_team.id,
                     name=game.away_team.name,
+                    city=game.away_team.city,
                     score=game.away_team.score,
                     wins=game.away_team.wins,
                     losses=game.away_team.losses,

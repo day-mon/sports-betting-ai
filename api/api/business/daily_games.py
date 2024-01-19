@@ -5,7 +5,8 @@ import httpx
 
 from api import constants
 from api.business.factory import AbstractFactory, FactoryItem
-from api.model.games.daily_game import NBALiveData, DailyGame, TeamData, PlayerLeader
+from api.model.games.daily_game import NBALiveData, DailyGame, TeamData, PlayerLeader, Score
+
 
 class DailyGamesSource(ABC):
     source_url: str
@@ -52,8 +53,13 @@ class NBAGAmesSource(DailyGamesSource):
                     game_start_unix=unix_timestamp,
                     home_team=TeamData(
                         id=game.homeTeam.teamId,
-                        name=f"{game.homeTeam.teamCity} {game.homeTeam.teamName}",
-                        score=game.homeTeam.score,
+                        score=Score(
+                            points=game.homeTeam.score,
+                            periods=game.homeTeam.periods
+                        ),
+                        city=game.homeTeam.teamCity,
+                        seed=game.homeTeam.seed,
+                        name=game.homeTeam.teamName,
                         wins=game.homeTeam.wins,
                         losses=game.homeTeam.losses,
                         abbreviation=game.homeTeam.teamTricode,
@@ -68,9 +74,14 @@ class NBAGAmesSource(DailyGamesSource):
                     ),
                     away_team=TeamData(
                         id=game.awayTeam.teamId,
-                        name=f"{game.awayTeam.teamCity} {game.awayTeam.teamName}",
-                        score=game.awayTeam.score,
+                        city=game.awayTeam.teamCity,
+                        name=game.awayTeam.teamName,
+                        score=Score(
+                            points=game.awayTeam.score,
+                            periods=game.awayTeam.periods
+                        ),
                         wins=game.awayTeam.wins,
+                        seed=game.awayTeam.seed,
                         losses=game.awayTeam.losses,
                         abbreviation=game.awayTeam.teamTricode,
                         leader=None
