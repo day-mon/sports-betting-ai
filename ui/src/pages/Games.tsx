@@ -19,7 +19,7 @@ export const Games = () => {
 
   return (
     <>
-      <main class="pt-4 min-h-screen bg-gradient-to-r from-slate-900 to-slate-700">
+      <main class="pt-4 min-h-screen bg-gray-900">
         <Show when={games().length > 0} keyed fallback={<Loading />}>
           <div class="mx-2">
             <Index each={games()}>
