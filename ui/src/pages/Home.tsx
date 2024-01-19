@@ -1,46 +1,112 @@
-import type { Component } from 'solid-js';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Button } from '~/components/ui/button';
+import { Link } from '~/components/link';
 
-const Home: Component = () => {
-  // just doing this for fun change if needed
+function Home() {
   return (
     <>
-      <section class="py-24 flex flex-col items-center justify-center">
-        <div class="mx-auto max-w-[43rem]">
-          <div class="text-center ">
-            <h1 class="mt-1 text-[3.0rem] font-bold leading-[4rem] tracking-tight text-white">Accuribet</h1>
-            <p class="text-xl font-medium leading-8 text-gray-400">Accuribet is a website that utilizes a neural network to predict the outcome of NBA games. We use 42-48 unique data points and 10 years of historic data to predict the outcome.</p>
-            <p class="mt-3 text-lg leading-relaxed text-slate-400">By: Alexander Diaz, Connor Smith &amp; Damon Montague</p>
+      <main class="flex-1">
+        <section class="bg-gray-200 py-20 px-6 text-center">
+          <h2 class="text-4xl font-bold mb-4">Welcome to NBA Predictor</h2>
+          <p class="text-xl text-gray-700 mb-8">Your go-to AI tool for NBA game predictions.</p>
+          <Button class="px-8 py-3" variant="default">
+            Get Started
+          </Button>
+        </section>
+        <section class="py-20 px-6">
+          <h2 class="text-4xl font-bold text-center mb-8">Latest Predictions</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Lakers vs Celtics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Winning Team: Lakers</p>
+                <p>Winning Probability: 65%</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Warriors vs Nets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Winning Team: Warriors</p>
+                <p>Winning Probability: 70%</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Bulls vs Heat</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Winning Team: Heat</p>
+                <p>Winning Probability: 60%</p>
+              </CardContent>
+            </Card>
           </div>
-
-          <div class="mt-6 flex items-center justify-center gap-4">
-            <a href="https://github.com/day-mon/sports-betting-ai" class="transform rounded-md bg-white px-5 py-3 font-medium text- transition-colors hover:bg-indigo-700">
-              View Code
-            </a>
+        </section>
+        <section class="bg-gray-200 py-20 px-6">
+          <h2 class="text-4xl font-bold text-center mb-8">Featured Games</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Lakers vs Celtics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Game Date: 20th January 2024</p>
+                <p>Game Time: 7:00 PM</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Warriors vs Nets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Game Date: 21st January 2024</p>
+                <p>Game Time: 8:00 PM</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Bulls vs Heat</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Game Date: 22nd January 2024</p>
+                <p>Game Time: 9:00 PM</p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </main>
+      <footer class="bg-gray-900 text-white py-12 px-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold mb-2">NBA Predictor</h3>
+            <nav class="space-x-4">
+              <Link class="hover:underline" href="#">
+                Home
+              </Link>
+              <Link class="hover:underline" href="#">
+                Predictions
+              </Link>
+              <Link class="hover:underline" href="#">
+                About
+              </Link>
+              <Link class="hover:underline" href="#">
+                Contact
+              </Link>
+            </nav>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold mb-2">Follow Us</h3>
+            <div class="flex space-x-4">
+              {/* social links? */}
+            </div>
           </div>
         </div>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 mt-4">
-          <div class="bg-white rounded-lg shadow-lg p-4">
-            <h2 class="text-2xl font-bold text-gray-900">Website</h2>
-            <p class="text-gray-600">This website was built using SolidJS, which is a lightweight alternative to the React framework.</p>
-          </div>
-          <div class="bg-white rounded-lg shadow-lg p-4">
-            <h2 class="text-2xl font-bold text-gray-900">API</h2>
-            <p class="text-gray-600">
-              The API for this application was built using{' '}
-              <a href="https://actix.rs/" target="_blank" class="text-blue-600">
-                Actix Web
-              </a>
-              , which is a web framework for the Rust language.
-            </p>
-          </div>
-          <div class="bg-white rounded-lg shadow-lg p-4">
-            <h2 class="text-2xl font-bold text-gray-900">Model</h2>
-            <p class="text-gray-600">Our model was built using TensorFlow and Keras. With the use of past game data and 42-48 unique data points we can predict a games outcome with around ~60% accuracy.</p>
-          </div>
-        </div>
-      </section>
+      </footer>
     </>
   );
-};
+}
 
 export default Home;

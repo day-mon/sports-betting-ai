@@ -17,13 +17,26 @@ export interface Location {
 
 export interface Team {
   id: number;
+  city: string;
   name: string;
-  score: number;
+  score: Score;
   wins: number;
   losses: number;
   abbreviation: string;
+  seed: number;
   leader: Leader;
   injuries: Injury[];
+}
+
+export interface Score {
+  points: number;
+  periods: Period[];
+}
+
+export interface Period {
+  period: number;
+  period_type: string;
+  score: number;
 }
 
 export interface Leader {

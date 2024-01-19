@@ -107,7 +107,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.game.home_team.abbreviation.toLowerCase())} />
               </Avatar>
               <div>
-                <CardTitle class="text-lg font-bold">{props.game.home_team.name}</CardTitle>
+                <CardTitle class="text-lg font-bold">{`${props.game.home_team.city} ${props.game.home_team.name}`}</CardTitle>
                 <CardDescription class="text-sm">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
               </div>
             </div>
@@ -123,7 +123,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <AvatarImage alt="Minnesota Timberwolves Logo" src={getLogo(props.game.away_team.abbreviation.toLowerCase())} />
               </Avatar>
               <div>
-                <CardTitle class="text-lg font-bold">{props.game.away_team.name}</CardTitle>
+                <CardTitle class="text-lg font-bold">{`${props.game.away_team.city} ${props.game.away_team.name}`}</CardTitle>
                 <CardDescription class="text-sm">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
               </div>
             </div>
@@ -152,7 +152,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           </div>
         </CardHeader> */}
         <CardContent class="">
-          <div class="flex justify-between mt-4 items-center">
+          <div class="flex justify-between mt-4 items-center pb-4">
             <div class="flex items-center text-sm">
               <FiCalendar class="mr-1 h-4 w-4 inline-block" />
               <span class="ml-2">{formattedDateForUser(props.game.start_time_unix)}</span>
@@ -164,10 +164,8 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               </div>
             </Show>
             <div class="flex items-center justify-center text-sm">
-              <span class="text-red-500 animate-pulse mr-2">
-                <OcDotfill3 />
-              </span>
-              <span class="text-white font-bold">Live</span>
+              <FiClock class="mr-1 h-4 w-4 inline-block" />
+              <span class="ml-2">{formattedTimeForUser(props.game.start_time_unix)}</span>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
@@ -189,30 +187,23 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <p class="text-sm text-gray-200">Assists: {props.game.away_team.leader.assists}</p>
               </div>
             </Show>
-            <div class="col-span-2">
+            <div class="col-span-2" id={`${props.game.id}-live-score`}>
               <div class="text-center bg-gray-700 p-4 rounded-lg">
                 <div class="flex items-center justify-center mb-2">
-                  <span class="text-red-500 animate-pulse mr-2">•</span>
+                  <span class="text-red-500 animate-pulse mr-2">
+                    <OcDotfill3 />
+                  </span>
                   <span class="text-white font-bold">Live</span>
                 </div>
                 <p class="text-2xl text-white font-bold mb-2">
-                  {`${shortName(props.game.home_team.name)} : ${props.game.home_team.score}`} - {`${shortName(props.game.away_team.name)}: ${props.game.away_team.score}`}
+                  {`${props.game.home_team.name}: ${props.game.home_team.score.points}`} - {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}
                 </p>
                 <p class="text-sm text-gray-400">{props.game.status}</p>
               </div>
             </div>
             <div>
-              <div class="">
-                <h3 class="text-lg font-bold">Current Score</h3>
-                <div class="flex items-center justify-between bg-gray-600 p-3 rounded mt-2">
-                  <span class="font-semibold">
-                    {shortName(props.game.home_team.name)}: {props.game.home_team.score}
-                  </span>
-                  <span class="ml-4 text-sm text-gray-400">Final</span>
-                </div>
-              </div>
               <div class="mt-4">
-                <h3 class="text-lg font-bold">Score Breakdown - {shortName(props.game.home_team.name)}</h3>
+                <h3 class="text-lg font-bold">Score Breakdown - {props.game.home_team.name}</h3>
                 <Table class="mt-2">
                   <TableHeader>
                     <TableRow>
@@ -224,37 +215,22 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell class="text-center">25</TableCell>
-                      <TableCell class="text-center">22</TableCell>
-                      <TableCell class="text-center">30</TableCell>
-                      <TableCell class="text-center">27</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell class="text-center">20</TableCell>
-                      <TableCell class="text-center">25</TableCell>
-                      <TableCell class="text-center">22</TableCell>
-                      <TableCell class="text-center">30</TableCell>
+                      <TableCell class="text-center">{props.game.home_team.score.periods[0].score}</TableCell>
+                      <TableCell class="text-center">{props.game.home_team.score.periods[1].score}</TableCell>
+                      <TableCell class="text-center">{props.game.home_team.score.periods[2].score}</TableCell>
+                      <TableCell class="text-center">{props.game.home_team.score.periods[3].score}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </div>
               <div class="mt-4">
                 <h4>Timeouts Remaining</h4>
-                <p>{shortName(props.game.home_team.name)}: 2</p>
+                <p>{props.game.home_team.name}: 2</p>
               </div>
             </div>
             <div>
-              <div class="">
-                <h3 class="text-lg font-bold">Current Score</h3>
-                <div class="flex items-center justify-between bg-gray-600 p-3 rounded mt-2">
-                  <span class="font-semibold">
-                    {shortName(props.game.away_team.name)}: {props.game.away_team.score}
-                  </span>
-                  <span class="ml-4 text-sm text-gray-400">Final</span>
-                </div>
-              </div>
               <div class="mt-4">
-                <h3 class="text-lg font-bold">Score Breakdown - {shortName(props.game.away_team.name)}</h3>
+                <h3 class="text-lg font-bold">Score Breakdown - {props.game.away_team.name}</h3>
                 <Table class="mt-2">
                   <TableHeader>
                     <TableRow>
@@ -266,29 +242,23 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell class="text-center">25</TableCell>
-                      <TableCell class="text-center">22</TableCell>
-                      <TableCell class="text-center">30</TableCell>
-                      <TableCell class="text-center">27</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell class="text-center">20</TableCell>
-                      <TableCell class="text-center">25</TableCell>
-                      <TableCell class="text-center">22</TableCell>
-                      <TableCell class="text-center">30</TableCell>
+                      <TableCell class="text-center">{props.game.away_team.score.periods[0].score}</TableCell>
+                      <TableCell class="text-center">{props.game.away_team.score.periods[1].score}</TableCell>
+                      <TableCell class="text-center">{props.game.away_team.score.periods[2].score}</TableCell>
+                      <TableCell class="text-center">{props.game.away_team.score.periods[3].score}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </div>
               <div class="mt-4">
                 <h4>Timeouts Remaining</h4>
-                <p>{shortName(props.game.away_team.name)}: 1</p>
+                <p>{props.game.away_team.name}: 1</p>
               </div>
             </div>
           </div>
         </CardContent>
         <CardFooter class="flex justify-between mt-4">
-          <Button class="bg-yellow-300 text-yellow-800" variant="outline">
+          <Button class="bg-yellow-300 text-yellow-800" variant="default">
             View Injury Report
           </Button>
           <Button class="text-gray-300" variant="ghost">

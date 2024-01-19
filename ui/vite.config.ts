@@ -1,17 +1,21 @@
 import { defineConfig } from 'vite';
-import solidPlugin from 'vite-plugin-solid';
+import solid from 'vite-plugin-solid';
 
 export default defineConfig({
-  plugins: [solidPlugin()],
+  plugins: [solid()],
   server: {
     port: 3000,
+    hmr: {
+      port: 443,
+    },
+    cors: false,
   },
   build: {
-    target: 'esnext',
+    target: 'es2020',
   },
   resolve: {
     alias: {
-      '@': '/src',
+      '~': '/src',
     },
   },
 });

@@ -1,30 +1,31 @@
 {
-  "name": "sports-betting-ai-client",
+  "name": "@accuribet/ui",
+  "private": true,
   "version": "0.0.1",
-  "description": "The frontend for the sports betting AI",
-  "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "startprod": "vite --host",
-    "build": "vite build",
-    "serve": "vite preview"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "autoprefixer": "^10.4.13",
-    "postcss": "^8.4.19",
-    "tailwindcss": "^3.2.4",
-    "typescript": "^4.8.2",
-    "vite": "^3.0.9",
-    "vite-plugin-solid": "^2.3.0"
-  },
+  "type": "module",
+  "description": "Web UI for Accuribet",
   "dependencies": {
-    "@solidjs/router": "^0.5.0",
-    "solid-headless": "^0.13.0",
-    "solid-js": "^1.5.1",
-    "solid-tippy": "^0.2.0",
-    "solid-tooltip": "^0.1.14",
-    "solid-transition-group": "^0.0.12",
-    "tippy.js": "^6.3.7"
+    "@kobalte/core": "^0.12.0",
+    "@solidjs/router": "^0.10.9",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "solid-icons": "^1.1.0",
+    "solid-js": "^1.7.6",
+    "tailwind-merge": "^2.2.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.3",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.33",
+    "prettier": "3.2.2",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.0.11",
+    "vite-plugin-solid": "^2.8.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   }
 }
