@@ -1,3 +1,5 @@
+import { Prediction } from '~/model/prediction.ts';
+
 export interface Game {
   id: string;
   date: string;
@@ -7,6 +9,10 @@ export interface Game {
   home_team: Team;
   away_team: Team;
   odds: Odds[];
+}
+
+export interface GameWithPrediction extends Game {
+  prediction?: Prediction;
 }
 
 export interface Location {

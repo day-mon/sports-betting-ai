@@ -1,5 +1,5 @@
 import { Component, For, Show } from 'solid-js';
-import { Game, Period, Team } from '~/interface';
+import { Game, GameWithPrediction, Period, Team } from '~/interface';
 
 import { FiClock } from 'solid-icons/fi';
 import { IoLocationOutline } from 'solid-icons/io';
@@ -9,11 +9,13 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
+import { Prediction } from '~/model/prediction.ts';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
 const getLogo = (team: string) => {
   let strIndex = `../assets/teams/${team}.svg`
+  // @ts-ignore
   return logos[strIndex].default;
 };
 
@@ -42,11 +44,23 @@ const isLive = (game: Game): boolean => {
   }
   let status = game.status.toLowerCase();
   return status !== 'ppd';
-
-
 };
 
-const timeUntilGame = (game: Game): string => {
+const getColorFromStatusAndOutcome = (
+  status: string,
+  winner: boolean,
+): string => {
+  if (status === 'Final') {
+    if (winner) {
+      return 'bg-emerald-600';
+    } else {
+      return 'bg-red-600';
+    }
+  } else {
+    return 'bg-yellow-600';
+  }
+}
+const timeUntilGame = (game: GameWithPrediction): string => {
   /**
    * Takes in a unix seconds timestamp and returns a formatted time string
    * for the user.
@@ -60,7 +74,7 @@ const timeUntilGame = (game: Game): string => {
   return `${hours} hours, ${minutes} minutes`;
 };
 
-const winningTeam = (game: Game): number => {
+const winningTeam = (game: GameWithPrediction): number => {
   if (game.status === 'Final') {
     return game.home_team.score.points > game.away_team.score.points ? game.home_team.id : game.away_team.id;
   }
@@ -68,7 +82,7 @@ const winningTeam = (game: Game): number => {
 };
 
 interface IDisplayCard {
-  game: Game;
+  game: GameWithPrediction;
 }
 
 interface ITeamProps {
@@ -78,6 +92,8 @@ interface ITeamProps {
 interface ITeamInfoProps {
   team: Team;
   winner: number;
+  prediction?: Prediction
+  game: GameWithPrediction;
 }
 
 export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
@@ -130,8 +146,11 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
           <Show when={props.winner === props.team.id}>
             <Badge class="bg-yellow-600 text-black">Winner</Badge>
           </Show>
-          <Show when={props.winner !== props.team.id}>
-            <Badge class="ml-2 bg-emerald-900 text-gray-200">Projected Winner</Badge>
+          <Show when={props.prediction && props.prediction.prediction_type === "win-loss" && props.prediction.prediction === `${props.team.city} ${props.team.name}`}>
+            <Badge class={`ml-2 ${getColorFromStatusAndOutcome(
+              props.game.status,
+              props.winner === props.team.id
+            )} text-white`}>Projected Winner</Badge>
           </Show>
         </span>
       </CardDescription>
@@ -146,10 +165,6 @@ export const AdvancedGameCard: Component<ITeamProps> = (props: ITeamProps) => {
         <h3 class='text-lg font-bold'>Score Breakdown - {props.team.name}</h3>
         <ScoreTable team={props.team} />
       </div>
-      <div class='mt-4'>
-        <h4>Timeouts Remaining</h4>
-        <p>{props.team.name}: 2</p>
-      </div>
     </div>
   )
 }
@@ -161,9 +176,9 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         class='w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-white'>
         <CardHeader>
           <div class='flex flex-row items-center justify-between'>
-            <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} />
+            <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} prediction={props.game.prediction} game={props.game} />
             <span class="uppercase leading-3 font-boldtext-sm text-shark-400">vs</span>
-            <TeamInfo team={props.game.away_team} winner={winningTeam(props.game)} />
+            <TeamInfo team={props.game.away_team} winner={winningTeam(props.game)} prediction={props.game.prediction} game={props.game} />
           </div>
         </CardHeader>
         <CardContent class="">
@@ -182,9 +197,14 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                     <p class="text-xs text-gray-400">Postponed</p>
                   </Show>
 
-                  {formattedTimeForUser(props.game.start_time_unix)}
+                  <span class={`${props.game.status === 'PPD' ? 'line-through': ''} `}>
+                    {formattedTimeForUser(props.game.start_time_unix)}
+                  </span>
+
                   <Show when={!isLive(props.game) && props.game.status !== 'PPD'}>
-                    <p class={`text-xs text-gray-400 font-bold  ${props.game.status === 'PPD' ? 'line-through': ''} `}>{timeUntilGame(props.game)}</p>
+                    <p class={`text-xs text-gray-400 font-bold`}>
+                      {timeUntilGame(props.game)}
+                    </p>
                   </Show>
                 </span>
               </div>
