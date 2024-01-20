@@ -7,6 +7,7 @@ import { Game, GameWithPrediction } from '~/interface';
 import { formattedDateForUser, isGameActuallyLive, isPredictionCorrect } from '~/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select.tsx';
 import { Prediction } from '~/model/prediction.ts';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip.tsx';
 
 export const Games = () => {
   const [games, setGames] = createSignal<Game[]>([]);
@@ -69,6 +70,8 @@ export const Games = () => {
 
 
 
+
+
   const getGamesWithPredictions = (games: Game[], prediction: Prediction[]): GameWithPrediction[] => {
     return games.map((game) => {
       const gamePrediction = prediction.find((pred) => pred.game_id === game.id);
@@ -115,29 +118,39 @@ export const Games = () => {
     <main class="pt-4 min-h-screen bg-shark-950">
       <Show when={games().length > 0} keyed fallback={<Loading />}>
         <div class="mx-2">
-          <div class="flex flex-row items-center justify-center">
-            <Select
-              options={models()}
-              placeholder="Select a model"
-              onChange={async (e) => {
-                await fetchPredictions(e);
-              }}
-              value={selectedModel()}
-              itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue}</SelectItem>} >
-              <SelectTrigger aria-label="models" class="w-[180px]">
-                <SelectValue<string>>{(state) => state.selectedOption()}</SelectValue>
-              </SelectTrigger>
-              <SelectContent />
-            </Select>
+          <div class="flex flex-row items-center justify-center mb-10">
+         <Select
+          options={models()}
+          placeholder="Select a model"
+          onChange={async (e) => {
+            await fetchPredictions(e);
+          }}
+          value={selectedModel()}
+          itemComponent={(props) => <SelectItem class={'text-white bg-transparent hover:bg-shark-900'} item={props.item}>{props.item.rawValue}</SelectItem>} >
+          <SelectTrigger aria-label="models" class="w-[180px] bg-shark-950 text-white">
+            <SelectValue<string>>{(state) => state.selectedOption()}</SelectValue>
+          </SelectTrigger>
+          <SelectContent class="bg-shark-950" />
+        </Select>
           </div>
           <div id="options" class="text-white w-full max-w-4xl mx-auto mb-3 flex flex-row items-center justify-between">
             <div class="flex items-center text-sm">
               <FiCalendar class="mr-1 h-4 w-4 inline-block" />
               <span class="ml-2">{formattedDateForUser(games()[0].start_time_unix)}</span>
             </div>
+
             <div class="flex flex-row items-center">
               <span class="text-sm mr-2">Live Updates</span>
-              <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} disabled={!gamesPlaying(games())} />
+              <Tooltip>
+                <TooltipTrigger>
+                  <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} disabled={!gamesPlaying(games())} />
+                </TooltipTrigger>
+                <Show when={!gamesPlaying(games())}>
+                  <TooltipContent>
+                    Live updates are disabled until games start
+                  </TooltipContent>
+                </Show>
+              </Tooltip>
             </div>
           </div>
 

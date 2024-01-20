@@ -1,5 +1,5 @@
 import { Component, createSignal, For, Show } from 'solid-js';
-import { Game, GameWithPrediction, Period, Team } from '~/interface';
+import { GameWithPrediction, Period, Team } from '~/interface';
 
 import { FiClock } from 'solid-icons/fi';
 import { IoLocationOutline } from 'solid-icons/io';
@@ -16,6 +16,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog.tsx';
+import { isLive, timeUntilGame } from '~/lib/utils.ts';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -41,16 +42,7 @@ const formattedTimeForUser = (time: number): string => {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
-const isLive = (game: Game): boolean => {
-  let time = game.start_time_unix;
-  let date = new Date(time * 1000);
-  let currentDate = new Date();
-  if (date > currentDate) {
-    return false;
-  }
-  let status = game.status.toLowerCase();
-  return status !== 'ppd';
-};
+
 
 const getColorFromStatusAndOutcome = (
   status: string,
@@ -66,19 +58,7 @@ const getColorFromStatusAndOutcome = (
     return 'bg-yellow-600';
   }
 }
-const timeUntilGame = (game: GameWithPrediction): string => {
-  /**
-   * Takes in a unix seconds timestamp and returns a formatted time string
-   * for the user.
-   * Like so: 12:00 PM EST
-   */
-  const date = new Date(game.start_time_unix * 1000); // Convert seconds to milliseconds
-  const currentDate = new Date();
-  const diff = date.getTime() - currentDate.getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  return `${hours} hours, ${minutes} minutes`;
-};
+
 
 const winningTeam = (game: GameWithPrediction): number => {
   if (game.status === 'Final') {
@@ -143,7 +123,10 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
   return (
     <div class="flex flex-col items-center">
       <Avatar class="h-14 w-14">
-        <AvatarImage alt={`${props.team.name}'s logo`} src={getLogo(props.team.abbreviation.toLowerCase())} />
+        <AvatarImage
+          alt={`${props.team.name}'s logo`}
+          src={getLogo(props.team.abbreviation.toLowerCase())}
+        />
       </Avatar>
       <CardTitle class="text-lg font-bold text-center">{`${props.team.city} ${props.team.name}`}</CardTitle>
       <CardDescription class="text-sm text-center flex flex-col items-center">
@@ -209,7 +192,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   </span>
 
                   <Show when={!isLive(props.game) && props.game.status !== 'PPD'}>
-                    <p class={`text-xs text-gray-400 font-bold`}>
+                    <p class={`text-xs text-gray-400 text-center font-bold`}>
                       {timeUntilGame(props.game)}
                     </p>
                   </Show>
@@ -255,6 +238,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         <CardFooter class="flex justify-center mt-4">
           <Show when={[props.game.home_team, props.game.away_team].every((team) => team.injuries.length > 0)}>
             <Button class="bg-yellow-300 text-yellow-800" variant="default" onClick={() => (setInjuryReportOpen(true))}>
+              View Injury Report
               <AlertDialog
                 open={injuryReportOpen()}
                 onOpenChange={setInjuryReportOpen}
