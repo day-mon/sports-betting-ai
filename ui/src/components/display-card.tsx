@@ -40,11 +40,10 @@ const isLive = (game: Game): boolean => {
   if (date > currentDate) {
     return false;
   }
-  if (game.status === 'PPD') {
-    return false;
-  }
+  let status = game.status.toLowerCase();
+  return status !== 'ppd';
 
-  return true;
+
 };
 
 const timeUntilGame = (game: Game): string => {
@@ -140,12 +139,28 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
   );
 };
 
+export const AdvancedGameCard: Component<ITeamProps> = (props: ITeamProps) => {
+  return (
+    <div>
+      <div class='mt-4'>
+        <h3 class='text-lg font-bold'>Score Breakdown - {props.team.name}</h3>
+        <ScoreTable team={props.team} />
+      </div>
+      <div class='mt-4'>
+        <h4>Timeouts Remaining</h4>
+        <p>{props.team.name}: 2</p>
+      </div>
+    </div>
+  )
+}
+
 export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
     <>
-      <Card class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-shark-700">
+      <Card
+        class='w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-white'>
         <CardHeader>
-          <div class="flex flex-row items-center justify-between">
+          <div class='flex flex-row items-center justify-between'>
             <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} />
             <span class="uppercase leading-3 font-boldtext-sm text-shark-400">vs</span>
             <TeamInfo team={props.game.away_team} winner={winningTeam(props.game)} />
@@ -163,9 +178,13 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <div class="flex items-center justify-center text-sm">
                 <FiClock class="mr-1 h-4 w-4 inline-block" />
                 <span class="ml-2">
+                  <Show when={props.game.status === 'PPD'}>
+                    <p class="text-xs text-gray-400">Postponed</p>
+                  </Show>
+
                   {formattedTimeForUser(props.game.start_time_unix)}
-                  <Show when={!isLive(props.game)}>
-                    <p class="text-xs text-gray-400">{timeUntilGame(props.game)}</p>
+                  <Show when={!isLive(props.game) && props.game.status !== 'PPD'}>
+                    <p class={`text-xs text-gray-400 font-bold  ${props.game.status === 'PPD' ? 'line-through': ''} `}>{timeUntilGame(props.game)}</p>
                   </Show>
                 </span>
               </div>
@@ -198,33 +217,20 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   <p class="text-sm text-gray-400">{props.game.status.includes('ET') ? 'Starting soon!' : props.game.status}</p>
                 </div>
               </div>
-              <div>
-                <div class="mt-4">
-                  <h3 class="text-lg font-bold">Score Breakdown - {props.game.home_team.name}</h3>
-                  <ScoreTable team={props.game.home_team} />
-                </div>
-                <div class="mt-4">
-                  <h4>Timeouts Remaining</h4>
-                  <p>{props.game.home_team.name}: 2</p>
-                </div>
-              </div>
-              <div>
-                <div class="mt-4">
-                  <h3 class="text-lg font-bold">Score Breakdown - {props.game.away_team.name}</h3>
-                  <ScoreTable team={props.game.away_team} />
-                </div>
-                <div class="mt-4 ">
-                  <h4>Timeouts Remaining</h4>
-                  <p>{props.game.away_team.name}: 1</p>
-                </div>
-              </div>
+              <For each={[props.game.home_team, props.game.away_team]}>
+                {(team, _) => (
+                  <AdvancedGameCard team={team} />
+                )}
+              </For>
             </Show>
           </div>
         </CardContent>
         <CardFooter class="flex justify-center mt-4">
-          <Button class="bg-yellow-300 text-yellow-800" variant="default">
-            View Injury Report
-          </Button>
+          <Show when={[props.game.home_team, props.game.away_team].every((team) => team.injuries.length > 0)}>
+            <Button class="bg-yellow-300 text-yellow-800" variant="default">
+              View Injury Report
+            </Button>
+          </Show>
         </CardFooter>
       </Card>
     </>

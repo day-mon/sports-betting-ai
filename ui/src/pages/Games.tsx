@@ -35,6 +35,12 @@ export const Games = () => {
     }
   };
 
+  const gamesPlaying = (games: Game[]): boolean => {
+    return games
+      .filter((game) => game.status.toLowerCase() !== 'ppd')
+      .some((game) => game.status.toLowerCase().includes('q') || game.status.toLowerCase().includes('h'));
+  }
+
   onMount(async () => {
     await fetchGames();
     await getModels();
@@ -57,7 +63,7 @@ export const Games = () => {
             </div>
             <div class="flex flex-row items-center">
               <span class="text-sm mr-2">Live Updates</span>
-              <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} />
+              <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} disabled={!gamesPlaying(games())} />
             </div>
           </div>
           <For each={games()}>
