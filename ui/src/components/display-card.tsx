@@ -54,7 +54,7 @@ const getColorFromStatusAndOutcome = (
       return 'bg-red-600';
     }
   } else {
-    return 'bg-yellow-600';
+    return 'bg-shark-700';
   }
 };
 

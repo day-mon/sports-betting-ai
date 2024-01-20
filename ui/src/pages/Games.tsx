@@ -154,20 +154,6 @@ export const Games = () => {
             </div>
           </div>
 
-          {/*<div class={'left-0 h-full absolute opacity-50'}>*/}
-          {/*  <For each={getGamesWithPredictions(games(), predictions())}>*/}
-          {/*    {(game) => (*/}
-          {/*      <div class="flex flex-col items-center justify-center h-24" onclick={() => document.getElementById(game.id)?.scrollIntoView({ behavior: 'smooth' })}>*/}
-          {/*        <div class="text-center">*/}
-          {/*          <p class="text-sm text-white transition-transform hover:scale-110 cursor-pointer">*/}
-          {/*            {game.home_team.name} vs {game.away_team.name}*/}
-          {/*          </p>*/}
-          {/*          </div>*/}
-          {/*      </div>*/}
-          {/*    )}*/}
-          {/*  </For>*/}
-          {/*</div>*/}
-
           <For each={getGamesWithPredictions(games(), predictions())}>
             {(game) => (
               <div id={game.id} class="mt-4">
