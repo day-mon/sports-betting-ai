@@ -180,7 +180,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
     <>
       <Card
-        class='w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-white'>
+        class='w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-shark-700'>
         <CardHeader>
           <div class='flex flex-row items-center justify-between'>
             <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} prediction={props.game.prediction} game={props.game} />
