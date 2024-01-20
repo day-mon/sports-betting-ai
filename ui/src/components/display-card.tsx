@@ -2,21 +2,20 @@ import { Component, For, Show } from 'solid-js';
 import { Game, Period, Team } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
-import { IoLocationOutline  } from 'solid-icons/io';
+import { IoLocationOutline } from 'solid-icons/io';
 import { OcDotfill3 } from 'solid-icons/oc';
 import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
+import { formattedDateForUser } from '~/lib/utils';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
 const getLogo = (team: string) => {
   return logos[`../assets/teams/${team}.svg`].default;
 };
-
-
 
 const formattedTimeForUser = (time: number): string => {
   /**
@@ -35,12 +34,11 @@ const formattedTimeForUser = (time: number): string => {
 };
 
 const isLive = (game: Game): boolean => {
-  let time = game.start_time_unix
+  let time = game.start_time_unix;
   let date = new Date(time * 1000);
   let currentDate = new Date();
-  return date < currentDate
+  return date < currentDate;
 };
-
 
 const timeUntilGame = (game: Game): string => {
   /**
@@ -54,20 +52,6 @@ const timeUntilGame = (game: Game): string => {
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
   return `${hours} hours, ${minutes} minutes`;
-}
-
-const formattedDateForUser = (time: number): string => {
-  /**
-   * Takes in a unix seconds timestamp and returns a formatted date string
-   * Like so: January 15, 2024
-   */
-  const date = new Date(time * 1000); // Convert seconds to milliseconds
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  };
-  return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
 const winningTeam = (game: Game): number => {
@@ -82,7 +66,7 @@ interface IDisplayCard {
 }
 
 interface ITeamProps {
-  team: Team
+  team: Team;
 }
 
 export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
@@ -96,26 +80,14 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
 
   return (
     <Table class="mt-2">
-      <TableHeader>
+      <TableHeader class="bg-shark-700 text-shark-300">
         <TableRow>
-          <For each={props.team.score.periods}>
-            {(period, _) => (
-              <TableHead class="text-center">
-                {formatPeriodType(period)}
-              </TableHead>
-            )}
-          </For>
+          <For each={props.team.score.periods}>{(period, _) => <TableHead class="text-center text-shark-300">{formatPeriodType(period)}</TableHead>}</For>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody class="bg-shark-600">
         <TableRow>
-          <For each={props.team.score.periods}>
-            {(period, _) => (
-              <TableCell class="text-center">
-                {period.score}
-              </TableCell>
-            )}
-          </For>
+          <For each={props.team.score.periods}>{(period, _) => <TableCell class="text-center">{period.score}</TableCell>}</For>
         </TableRow>
       </TableBody>
     </Table>
@@ -137,39 +109,42 @@ export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
 export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
     <>
-    <Card class="w-full max-w-4xl mx-auto bg-gray-900 rounded-lg shadow-md overflow-hidden p-6 text-white border-4 border-gray-500">
+      <Card class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-6 text-white border-4 border-shark-600">
         <CardHeader>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <Avatar>
-                <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.game.home_team.abbreviation.toLowerCase())} />
-              </Avatar>
-              <div>
-                <CardTitle class="text-lg font-bold">{`${props.game.home_team.city} ${props.game.home_team.name}`}</CardTitle>
-                <CardDescription class="text-sm">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
+          <div class="flex flex-row items-center justify-between">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <Avatar>
+                  <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.game.home_team.abbreviation.toLowerCase())} />
+                </Avatar>
+                <div>
+                  <CardTitle class="text-lg font-bold">{`${props.game.home_team.city} ${props.game.home_team.name}`}</CardTitle>
+                  <CardDescription class="text-sm">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
+                </div>
               </div>
+              <Show when={winningTeam(props.game) === props.game.home_team.id}>
+                <Badge class="bg-yellow-500 text-black" variant="secondary">
+                  Winner
+                </Badge>
+              </Show>
             </div>
-            <Show when={winningTeam(props.game) === props.game.home_team.id}>
-              <Badge class="bg-yellow-500 text-black" variant="secondary">
-                Winner
-              </Badge>
-            </Show>
-          </div>
-          <div class="flex items-center justify-between mt-4">
-            <div class="flex items-center space-x-4">
-              <Avatar>
-                <AvatarImage alt="Minnesota Timberwolves Logo" src={getLogo(props.game.away_team.abbreviation.toLowerCase())} />
-              </Avatar>
-              <div>
-                <CardTitle class="text-lg font-bold">{`${props.game.away_team.city} ${props.game.away_team.name}`}</CardTitle>
-                <CardDescription class="text-sm">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
+            <span class="uppercase leading-3 font-bold text-sm text-gray-400">vs</span>
+            <div class="flex items-center justify-between mt-4">
+              <div class="flex items-center space-x-4">
+                <Avatar>
+                  <AvatarImage alt="Minnesota Timberwolves Logo" src={getLogo(props.game.away_team.abbreviation.toLowerCase())} />
+                </Avatar>
+                <div>
+                  <CardTitle class="text-lg font-bold">{`${props.game.away_team.city} ${props.game.away_team.name}`}</CardTitle>
+                  <CardDescription class="text-sm">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
+                </div>
               </div>
+              <Show when={winningTeam(props.game) === props.game.away_team.id}>
+                <Badge class="bg-yellow-500 text-black" variant="secondary">
+                  Winner
+                </Badge>
+              </Show>
             </div>
-            <Show when={winningTeam(props.game) === props.game.away_team.id}>
-              <Badge class="bg-yellow-500 text-black" variant="secondary">
-                Winner
-              </Badge>
-            </Show>
           </div>
         </CardHeader>
         <CardContent class="">
@@ -185,15 +160,15 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               </div>
             </Show>
             <Show when={!isLive(props.game)}>
-            <div class="flex items-center justify-center text-sm">
-              <FiClock class="mr-1 h-4 w-4 inline-block" />
-              <span class="ml-2">
-                {formattedTimeForUser(props.game.start_time_unix)}
-                <Show when={!isLive(props.game)}>
-                  <p class="text-xs text-gray-400">{timeUntilGame(props.game)}</p>
-                </Show>
-              </span>
-            </div>
+              <div class="flex items-center justify-center text-sm">
+                <FiClock class="mr-1 h-4 w-4 inline-block" />
+                <span class="ml-2">
+                  {formattedTimeForUser(props.game.start_time_unix)}
+                  <Show when={!isLive(props.game)}>
+                    <p class="text-xs text-gray-400">{timeUntilGame(props.game)}</p>
+                  </Show>
+                </span>
+              </div>
             </Show>
           </div>
           <div class="grid grid-cols-2 gap-4">
@@ -205,42 +180,42 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               )}
             </For>
             <Show when={isLive(props.game)}>
-            <div class="col-span-2" id={`${props.game.id}-live-score`}>
-              <div class="text-center bg-gray-700 p-4 rounded-lg">
-                <div class="flex items-center justify-center mb-2">
-                  <span class="text-red-500 animate-pulse mr-2">
-                    <OcDotfill3 />
-                  </span>
-                  <span class="text-white font-bold">Live</span>
+              <div class="col-span-2" id={`${props.game.id}-live-score`}>
+                <div class="text-center bg-shark-800 p-4 rounded-lg">
+                  <div class="flex items-center justify-center mb-2">
+                    <span class="text-red-500 animate-pulse mr-2">
+                      <OcDotfill3 />
+                    </span>
+                    <span class="text-white font-bold">Live</span>
+                  </div>
+                  <p class="text-2xl text-white font-bold mb-2">
+                    {`${props.game.home_team.name}: ${props.game.home_team.score.points}`}
+                    <span class={'text-sm text-gray-400 mx-3'}> - </span>
+                    {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}
+                  </p>
+                  <p class="text-sm text-gray-400">{props.game.status.includes('ET') ? 'Starting soon!' : props.game.status}</p>
                 </div>
-                <p class="text-2xl text-white font-bold mb-2">
-                  {`${props.game.home_team.name}: ${props.game.home_team.score.points}`}
-                  <span class={"text-sm text-gray-400 mx-3"}> - </span>
-                  {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}
-                </p>
-                <p class="text-sm text-gray-400">{props.game.status.includes('ET') ? 'Starting soon!' : props.game.status}</p>
               </div>
-            </div>
-            <div>
-              <div class="mt-4">
-                <h3 class="text-lg font-bold">Score Breakdown - {props.game.home_team.name}</h3>
-                <ScoreTable team={props.game.home_team} />
+              <div>
+                <div class="mt-4">
+                  <h3 class="text-lg font-bold">Score Breakdown - {props.game.home_team.name}</h3>
+                  <ScoreTable team={props.game.home_team} />
+                </div>
+                <div class="mt-4">
+                  <h4>Timeouts Remaining</h4>
+                  <p>{props.game.home_team.name}: 2</p>
+                </div>
               </div>
-              <div class="mt-4">
-                <h4>Timeouts Remaining</h4>
-                <p>{props.game.home_team.name}: 2</p>
+              <div>
+                <div class="mt-4">
+                  <h3 class="text-lg font-bold">Score Breakdown - {props.game.away_team.name}</h3>
+                  <ScoreTable team={props.game.away_team} />
+                </div>
+                <div class="mt-4">
+                  <h4>Timeouts Remaining</h4>
+                  <p>{props.game.away_team.name}: 1</p>
+                </div>
               </div>
-            </div>
-            <div>
-              <div class="mt-4">
-                <h3 class="text-lg font-bold">Score Breakdown - {props.game.away_team.name}</h3>
-                <ScoreTable team={props.game.away_team} />
-              </div>
-              <div class="mt-4">
-                <h4>Timeouts Remaining</h4>
-                <p>{props.game.away_team.name}: 1</p>
-              </div>
-            </div>
             </Show>
           </div>
         </CardContent>
@@ -253,4 +228,3 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
     </>
   );
 };
-

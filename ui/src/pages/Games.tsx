@@ -1,7 +1,10 @@
+import { FiCalendar } from 'solid-icons/fi';
 import { Index, Show, createSignal, onMount, For, onCleanup } from 'solid-js';
 import { DemoCard as GameCard } from '~/components/display-card';
 import { Loading } from '~/components/loading';
+import { Switch } from '~/components/ui/switch';
 import { Game } from '~/interface';
+import { formattedDateForUser } from '~/lib/utils';
 
 export const Games = () => {
   const [games, setGames] = createSignal<Game[]>([]);
@@ -44,18 +47,28 @@ export const Games = () => {
   });
 
   return (
-      <main class="pt-4 min-h-screen bg-gray-900">
-        <Show when={games().length > 0} keyed fallback={<Loading />}>
-          <div class="mx-2">
-            <For each={games()}>
-              {(game) => (
-                <div class="mt-4">
-                  <GameCard game={game} />
-                </div>
-              )}
-            </For>
+    <main class="pt-4 min-h-screen bg-shark-950">
+      <Show when={games().length > 0} keyed fallback={<Loading />}>
+        <div class="mx-2">
+          <div id="options" class="text-white w-full max-w-4xl mx-auto mb-3 flex flex-row items-center justify-between">
+            <div class="flex items-center text-sm">
+              <FiCalendar class="mr-1 h-4 w-4 inline-block" />
+              <span class="ml-2">{formattedDateForUser(games()[0].start_time_unix)}</span>
+            </div>
+            <div class="flex flex-row items-center">
+              <span class="text-sm mr-2">Live Updates</span>
+              <Switch />
+            </div>
           </div>
-        </Show>
-      </main>
+          <For each={games()}>
+            {(game) => (
+              <div class="mt-4">
+                <GameCard game={game} />
+              </div>
+            )}
+          </For>
+        </div>
+      </Show>
+    </main>
   );
 };
