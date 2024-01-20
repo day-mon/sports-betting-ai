@@ -1,7 +1,7 @@
 import { Component, For, Show } from 'solid-js';
 import { Game, Period, Team } from '~/interface';
 
-import { FiCalendar, FiClock } from 'solid-icons/fi';
+import { FiClock } from 'solid-icons/fi';
 import { IoLocationOutline } from 'solid-icons/io';
 import { OcDotfill3 } from 'solid-icons/oc';
 import { Avatar, AvatarImage } from '~/components/ui/avatar';
@@ -9,7 +9,6 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
-import { formattedDateForUser } from '~/lib/utils';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -40,11 +39,11 @@ const isLive = (game: Game): boolean => {
   if (date > currentDate) {
     return false;
   }
-  if (game.status === "PPD") {
+  if (game.status === 'PPD') {
     return false;
   }
 
-  return true
+  return true;
 };
 
 const timeUntilGame = (game: Game): string => {
@@ -63,7 +62,7 @@ const timeUntilGame = (game: Game): string => {
 
 const winningTeam = (game: Game): number => {
   if (game.status === 'Final') {
-    return game.home_team.score > game.away_team.score ? game.home_team.id : game.away_team.id;
+    return game.home_team.score.points > game.away_team.score.points ? game.home_team.id : game.away_team.id;
   }
   return 0;
 };
@@ -74,6 +73,11 @@ interface IDisplayCard {
 
 interface ITeamProps {
   team: Team;
+}
+
+interface ITeamInfoProps {
+  team: Team;
+  winner: number;
 }
 
 export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
@@ -103,7 +107,7 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
 
 export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
   return (
-    <div class="bg-gray-700 p-4 rounded mt-4">
+    <div class="bg-shark-700 p-4 rounded mt-4">
       <h4 class="font-semibold">Key Player - {props.team.name}</h4>
       <p>{props.team.leader.name}</p>
       <p class="text-sm text-gray-200">Points: {props.team.leader.points}</p>
@@ -113,45 +117,41 @@ export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
   );
 };
 
+export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
+  return (
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <Avatar class="h-14 w-14">
+          <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.team.abbreviation.toLowerCase())} />
+        </Avatar>
+        <div>
+          <CardTitle class="text-lg font-bold text-center">{`${props.team.city} ${props.team.name}`}</CardTitle>
+          <CardDescription class="text-sm text-center flex flex-col items-center">
+            <span>{`${props.team.wins} - ${props.team.losses}`}</span>
+            <span class="flex flex-row items-center mt-1">
+              <Show when={props.winner === props.team.id}>
+                <Badge class="bg-yellow-600 text-black">Winner</Badge>
+              </Show>
+              <Show when={props.winner !== props.team.id}>
+                <Badge class="ml-2 bg-emerald-900 text-gray-200">Projected Winner</Badge>
+              </Show>
+            </span>
+          </CardDescription>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
     <>
-      <Card class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-6 text-white border-4 border-shark-600">
+      <Card class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-shark-700">
         <CardHeader>
           <div class="flex flex-row items-center justify-between">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.game.home_team.abbreviation.toLowerCase())} />
-                </Avatar>
-                <div>
-                  <CardTitle class="text-lg font-bold">{`${props.game.home_team.city} ${props.game.home_team.name}`}</CardTitle>
-                  <CardDescription class="text-sm text-center">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
-                </div>
-              </div>
-              <Show when={winningTeam(props.game) === props.game.home_team.id}>
-                <Badge class="bg-yellow-500 text-black" variant="secondary">
-                  Winner
-                </Badge>
-              </Show>
-            </div>
-            <span class="uppercase leading-3 font-bold text-sm text-gray-400">vs</span>
-            <div class="flex items-center justify-between mt-4">
-              <div class="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage alt="Minnesota Timberwolves Logo" src={getLogo(props.game.away_team.abbreviation.toLowerCase())} />
-                </Avatar>
-                <div>
-                  <CardTitle class="text-lg font-bold">{`${props.game.away_team.city} ${props.game.away_team.name}`}</CardTitle>
-                  <CardDescription class="text-sm text-center">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
-                </div>
-              </div>
-              <Show when={winningTeam(props.game) === props.game.away_team.id}>
-                <Badge class="bg-yellow-500 text-black" variant="secondary">
-                  Winner
-                </Badge>
-              </Show>
-            </div>
+            <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} />
+            <span class=" uppercase leading-3 font-boldtext-sm text-shark-400">vs</span>
+            <TeamInfo team={props.game.away_team} winner={winningTeam(props.game)} />
           </div>
         </CardHeader>
         <CardContent class="">
@@ -186,15 +186,14 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <div class="col-span-2" id={`${props.game.id}-live-score`}>
                 <div class="text-center bg-shark-800 p-4 rounded-lg">
                   <div class="flex items-center justify-center mb-2">
-
                     <Show when={!props.game.status.toLowerCase().includes('final')}>
-                       <span class='text-red-500 animate-pulse mr-2'>
-                      <OcDotfill3 />
+                      <span class="text-red-500 animate-pulse mr-2">
+                        <OcDotfill3 />
                       </span>
-                      <span class='text-white font-bold'>Live</span>
+                      <span class="text-white font-bold">Live</span>
                     </Show>
                   </div>
-                  <p class='text-2xl text-white font-bold mb-2'>
+                  <p class="text-2xl text-white font-bold mb-2">
                     {`${props.game.home_team.name}: ${props.game.home_team.score.points}`}
                     <span class={'text-sm text-gray-400 mx-3'}> - </span>
                     {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}

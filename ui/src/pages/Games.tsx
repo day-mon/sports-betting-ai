@@ -1,5 +1,5 @@
 import { FiCalendar } from 'solid-icons/fi';
-import { Index, Show, createSignal, onMount, For, onCleanup } from 'solid-js';
+import { For, Show, createSignal, onCleanup, onMount } from 'solid-js';
 import { DemoCard as GameCard } from '~/components/display-card';
 import { Loading } from '~/components/loading';
 import { Switch } from '~/components/ui/switch';
