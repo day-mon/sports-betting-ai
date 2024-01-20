@@ -1,4 +1,4 @@
-import { Component, For, Show } from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import { Game, GameWithPrediction, Period, Team } from '~/interface';
 
 import { FiClock } from 'solid-icons/fi';
@@ -10,6 +10,12 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
 import { Prediction } from '~/model/prediction.ts';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog.tsx';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -170,6 +176,7 @@ export const AdvancedGameCard: Component<ITeamProps> = (props: ITeamProps) => {
 }
 
 export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
+  const [injuryReportOpen, setInjuryReportOpen] = createSignal(false);
   return (
     <>
       <Card
@@ -247,8 +254,44 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         </CardContent>
         <CardFooter class="flex justify-center mt-4">
           <Show when={[props.game.home_team, props.game.away_team].every((team) => team.injuries.length > 0)}>
-            <Button class="bg-yellow-300 text-yellow-800" variant="default">
-              View Injury Report
+            <Button class="bg-yellow-300 text-yellow-800" variant="default" onClick={() => (setInjuryReportOpen(true))}>
+              <AlertDialog
+                open={injuryReportOpen()}
+                onOpenChange={setInjuryReportOpen}
+                preventScroll={true}
+
+              >
+                <AlertDialogContent>
+                  <AlertDialogTitle>Injury Report</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    <Table class="mt-2">
+                      <TableHeader class="text-white">
+                        <TableRow>
+                          <TableHead class="text-center text-white ">Team</TableHead>
+                          <TableHead class="text-center text-white">Player</TableHead>
+                          <TableHead class="text-center text-white">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody class="">
+                        <For each={[props.game.home_team, props.game.away_team]}>
+                          {(team, _) => (
+                            <For each={team.injuries}>
+                              {(injury, _) => (
+                                <TableRow>
+                                  <TableCell class="text-center">{team.name}</TableCell>
+                                  <TableCell class="text-center">{injury.player}</TableCell>
+                                  <TableCell class="text-center">{injury.status}</TableCell>
+                                </TableRow>
+                              )}
+                            </For>
+                          )}
+                        </For>
+                      </TableBody>
+                    </Table>
+                  </AlertDialogDescription>
+                </AlertDialogContent>
+              </AlertDialog>
+              View Injury Report (dont click lol it wont stop popping up)
             </Button>
           </Show>
         </CardFooter>
