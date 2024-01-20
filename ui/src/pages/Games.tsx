@@ -28,9 +28,8 @@ export const Games = () => {
 
   const toggleLiveUpdates = () => {
     setLiveUpdates(!liveUpdates());
-    console.log('toggling live updates, liveUpdates() is', liveUpdates());
     if (liveUpdates()) {
-      intervalId = setInterval(fetchGames, 1_000);
+      intervalId = setInterval(fetchGames, 30_000);
     } else {
       clearInterval(intervalId);
     }

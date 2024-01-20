@@ -14,7 +14,7 @@ COPY ./ /app
 
 # server build needs to run after client build because the client build using Vite
 # removes the dist/ folder before compiling its code
-RUN npm run build
+RUN npm run build:prod
 
 FROM nginx:alpine
 

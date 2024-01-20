@@ -8,7 +8,7 @@
     "paths": {
       "~/*": ["./src/*"]
     },
-
+    "types": ["vite/client", "node"],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

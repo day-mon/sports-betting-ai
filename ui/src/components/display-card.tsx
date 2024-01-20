@@ -13,7 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
 const getLogo = (team: string) => {
-  return logos[`../assets/teams/${team}.svg`].default;
+  let strIndex = `../assets/teams/${team}.svg`
+  return logos[strIndex].default;
 };
 
 const formattedTimeForUser = (time: number): string => {
