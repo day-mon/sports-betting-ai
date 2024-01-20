@@ -37,7 +37,14 @@ const isLive = (game: Game): boolean => {
   let time = game.start_time_unix;
   let date = new Date(time * 1000);
   let currentDate = new Date();
-  return date < currentDate;
+  if (date > currentDate) {
+    return false;
+  }
+  if (game.status === "PPD") {
+    return false;
+  }
+
+  return true
 };
 
 const timeUntilGame = (game: Game): string => {
@@ -119,7 +126,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 </Avatar>
                 <div>
                   <CardTitle class="text-lg font-bold">{`${props.game.home_team.city} ${props.game.home_team.name}`}</CardTitle>
-                  <CardDescription class="text-sm">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
+                  <CardDescription class="text-sm text-center">{`${props.game.home_team.wins} - ${props.game.home_team.losses}`}</CardDescription>
                 </div>
               </div>
               <Show when={winningTeam(props.game) === props.game.home_team.id}>
@@ -136,7 +143,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 </Avatar>
                 <div>
                   <CardTitle class="text-lg font-bold">{`${props.game.away_team.city} ${props.game.away_team.name}`}</CardTitle>
-                  <CardDescription class="text-sm">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
+                  <CardDescription class="text-sm text-center">{`${props.game.away_team.wins} - ${props.game.away_team.losses}`}</CardDescription>
                 </div>
               </div>
               <Show when={winningTeam(props.game) === props.game.away_team.id}>
@@ -149,10 +156,6 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         </CardHeader>
         <CardContent class="">
           <div class="flex justify-evenly mt-4 items-center pb-4">
-            <div class="flex items-center text-sm">
-              <FiCalendar class="mr-1 h-4 w-4 inline-block" />
-              <span class="ml-2">{formattedDateForUser(props.game.start_time_unix)}</span>
-            </div>
             <Show when={props.game.location}>
               <div class="flex items-center text-sm">
                 <IoLocationOutline class="mr-1 h-4 w-4 inline-block" />
@@ -174,7 +177,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           <div class="grid grid-cols-2 gap-4">
             <For each={[props.game.home_team, props.game.away_team]}>
               {(team, _) => (
-                <Show when={team.leader !== null && !isLive(props.game)}>
+                <Show when={team.leader !== null && isLive(props.game)}>
                   <KeyPlayer team={team} />
                 </Show>
               )}
@@ -183,12 +186,15 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <div class="col-span-2" id={`${props.game.id}-live-score`}>
                 <div class="text-center bg-shark-800 p-4 rounded-lg">
                   <div class="flex items-center justify-center mb-2">
-                    <span class="text-red-500 animate-pulse mr-2">
+
+                    <Show when={!props.game.status.toLowerCase().includes('final')}>
+                       <span class='text-red-500 animate-pulse mr-2'>
                       <OcDotfill3 />
-                    </span>
-                    <span class="text-white font-bold">Live</span>
+                      </span>
+                      <span class='text-white font-bold'>Live</span>
+                    </Show>
                   </div>
-                  <p class="text-2xl text-white font-bold mb-2">
+                  <p class='text-2xl text-white font-bold mb-2'>
                     {`${props.game.home_team.name}: ${props.game.home_team.score.points}`}
                     <span class={'text-sm text-gray-400 mx-3'}> - </span>
                     {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}
@@ -211,7 +217,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   <h3 class="text-lg font-bold">Score Breakdown - {props.game.away_team.name}</h3>
                   <ScoreTable team={props.game.away_team} />
                 </div>
-                <div class="mt-4">
+                <div class="mt-4 ">
                   <h4>Timeouts Remaining</h4>
                   <p>{props.game.away_team.name}: 1</p>
                 </div>
@@ -219,7 +225,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             </Show>
           </div>
         </CardContent>
-        <CardFooter class="flex justify-between mt-4">
+        <CardFooter class="flex justify-center mt-4">
           <Button class="bg-yellow-300 text-yellow-800" variant="default">
             View Injury Report
           </Button>

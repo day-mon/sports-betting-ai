@@ -28,8 +28,9 @@ export const Games = () => {
 
   const toggleLiveUpdates = () => {
     setLiveUpdates(!liveUpdates());
+    console.log('toggling live updates, liveUpdates() is', liveUpdates());
     if (liveUpdates()) {
-      intervalId = setInterval(fetchGames, 30000);
+      intervalId = setInterval(fetchGames, 1_000);
     } else {
       clearInterval(intervalId);
     }
@@ -57,7 +58,7 @@ export const Games = () => {
             </div>
             <div class="flex flex-row items-center">
               <span class="text-sm mr-2">Live Updates</span>
-              <Switch />
+              <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} />
             </div>
           </div>
           <For each={games()}>
