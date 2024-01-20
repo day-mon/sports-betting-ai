@@ -10,7 +10,7 @@ const Card: Component<ComponentProps<'div'>> = (props) => {
 
 const CardHeader: Component<ComponentProps<'div'>> = (props) => {
   const [, rest] = splitProps(props, ['class']);
-  return <div class={cn('flex flex-col space-y-1.5 p-6', props.class)} {...rest} />;
+  return <div class={cn('flex flex-col space-y-1.5 md:p-4', props.class)} {...rest} />;
 };
 
 const CardTitle: Component<ComponentProps<'h3'>> = (props) => {
@@ -25,12 +25,12 @@ const CardDescription: Component<ComponentProps<'p'>> = (props) => {
 
 const CardContent: Component<ComponentProps<'div'>> = (props) => {
   const [, rest] = splitProps(props, ['class']);
-  return <div class={cn('p-6 pt-0', props.class)} {...rest} />;
+  return <div class={cn('md:p-4 pt-0', props.class)} {...rest} />;
 };
 
 const CardFooter: Component<ComponentProps<'div'>> = (props) => {
   const [, rest] = splitProps(props, ['class']);
-  return <div class={cn('flex items-center p-6 pt-0', props.class)} {...rest} />;
+  return <div class={cn('flex items-center md:p-4 pt-0', props.class)} {...rest} />;
 };
 
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };

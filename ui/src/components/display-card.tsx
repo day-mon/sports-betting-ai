@@ -119,26 +119,22 @@ export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
 
 export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
   return (
-    <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <Avatar class="h-14 w-14">
-          <AvatarImage alt="Detroit Pistons Logo" src={getLogo(props.team.abbreviation.toLowerCase())} />
-        </Avatar>
-        <div>
-          <CardTitle class="text-lg font-bold text-center">{`${props.team.city} ${props.team.name}`}</CardTitle>
-          <CardDescription class="text-sm text-center flex flex-col items-center">
-            <span>{`${props.team.wins} - ${props.team.losses}`}</span>
-            <span class="flex flex-row items-center mt-1">
-              <Show when={props.winner === props.team.id}>
-                <Badge class="bg-yellow-600 text-black">Winner</Badge>
-              </Show>
-              <Show when={props.winner !== props.team.id}>
-                <Badge class="ml-2 bg-emerald-900 text-gray-200">Projected Winner</Badge>
-              </Show>
-            </span>
-          </CardDescription>
-        </div>
-      </div>
+    <div class="flex flex-col items-center">
+      <Avatar class="h-14 w-14">
+        <AvatarImage alt={`${props.team.name}'s logo`} src={getLogo(props.team.abbreviation.toLowerCase())} />
+      </Avatar>
+      <CardTitle class="text-lg font-bold text-center">{`${props.team.city} ${props.team.name}`}</CardTitle>
+      <CardDescription class="text-sm text-center flex flex-col items-center">
+        <span>{`${props.team.wins} - ${props.team.losses}`}</span>
+        <span class="flex flex-row items-center mt-1">
+          <Show when={props.winner === props.team.id}>
+            <Badge class="bg-yellow-600 text-black">Winner</Badge>
+          </Show>
+          <Show when={props.winner !== props.team.id}>
+            <Badge class="ml-2 bg-emerald-900 text-gray-200">Projected Winner</Badge>
+          </Show>
+        </span>
+      </CardDescription>
     </div>
   );
 };
@@ -150,7 +146,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         <CardHeader>
           <div class="flex flex-row items-center justify-between">
             <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} />
-            <span class=" uppercase leading-3 font-boldtext-sm text-shark-400">vs</span>
+            <span class="uppercase leading-3 font-boldtext-sm text-shark-400">vs</span>
             <TeamInfo team={props.game.away_team} winner={winningTeam(props.game)} />
           </div>
         </CardHeader>
