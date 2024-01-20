@@ -7,8 +7,22 @@ import { OcDotfill3 } from 'solid-icons/oc';
 import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table';
 import { Prediction } from '~/model/prediction.ts';
 import {
   AlertDialog,
@@ -17,7 +31,6 @@ import {
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog.tsx';
 import { isLive, timeUntilGame } from '~/lib/utils.ts';
-import { Motion } from 'solid-motionone';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -43,7 +56,6 @@ const formattedTimeForUser = (time: number): string => {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
-
 const getColorFromStatusAndOutcome = (
   status: string,
   winner: boolean,
@@ -59,10 +71,11 @@ const getColorFromStatusAndOutcome = (
   }
 };
 
-
 const winningTeam = (game: GameWithPrediction): number => {
   if (game.status === 'Final') {
-    return game.home_team.score.points > game.away_team.score.points ? game.home_team.id : game.away_team.id;
+    return game.home_team.score.points > game.away_team.score.points
+      ? game.home_team.id
+      : game.away_team.id;
   }
   return 0;
 };
@@ -95,15 +108,26 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
     <Table class="mt-2">
       <TableHeader class="bg-shark-700 text-shark-300">
         <TableRow>
-          <For each={props.team.score.periods}>{(period, _) => <TableHead
-            class="text-center text-shark-300">{formatPeriodType(period)}</TableHead>}</For>
+          <For each={props.team.score.periods}>
+            {(period, _) => (
+              <TableHead class="text-center text-shark-300">
+                {formatPeriodType(period)}
+              </TableHead>
+            )}
+          </For>
         </TableRow>
       </TableHeader>
       <TableBody class="bg-shark-600">
         <TableRow>
-          <For each={props.team.score.periods}>{(period, _) => <TableCell
-            class="text-center">{period.score === null || period.score === 0 ? '-' : period.score
-          }</TableCell>}</For>
+          <For each={props.team.score.periods}>
+            {(period, _) => (
+              <TableCell class="text-center">
+                {period.score === null || period.score === 0
+                  ? '-'
+                  : period.score}
+              </TableCell>
+            )}
+          </For>
         </TableRow>
       </TableBody>
     </Table>
@@ -116,7 +140,9 @@ export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
       <h4 class="font-semibold">Key Player - {props.team.name}</h4>
       <p>{props.team.leader.name}</p>
       <p class="text-sm text-gray-200">Points: {props.team.leader.points}</p>
-      <p class="text-sm text-gray-200">Rebounds: {props.team.leader.rebounds}</p>
+      <p class="text-sm text-gray-200">
+        Rebounds: {props.team.leader.rebounds}
+      </p>
       <p class="text-sm text-gray-200">Assists: {props.team.leader.assists}</p>
     </div>
   );
@@ -139,11 +165,21 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
             <Badge class="bg-yellow-600 text-black">Winner</Badge>
           </Show>
           <Show
-            when={props.prediction && props.prediction.prediction_type === 'win-loss' && props.prediction.prediction === `${props.team.city} ${props.team.name}`}>
-            <Badge class={`ml-2 ${getColorFromStatusAndOutcome(
-              props.game.status,
-              props.winner === props.team.id,
-            )} text-white`}>Projected Winner</Badge>
+            when={
+              props.prediction &&
+              props.prediction.prediction_type === 'win-loss' &&
+              props.prediction.prediction ===
+                `${props.team.city} ${props.team.name}`
+            }
+          >
+            <Badge
+              class={`ml-2 ${getColorFromStatusAndOutcome(
+                props.game.status,
+                props.winner === props.team.id,
+              )} text-white`}
+            >
+              Projected Winner
+            </Badge>
           </Show>
         </span>
       </CardDescription>
@@ -166,134 +202,173 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   const [injuryReportOpen, setInjuryReportOpen] = createSignal(false);
   return (
     <>
-      <Motion.div animate={{ opacity: [0, 1] }} transition={{ duration: 1, easing: 'ease-in-out' }}>
-        <Card
-          class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-shark-700">
-          <CardHeader>
-            <div class="flex flex-row items-center justify-between">
-              <TeamInfo team={props.game.home_team} winner={winningTeam(props.game)} prediction={props.game.prediction}
-                        game={props.game} />
-              <span class="uppercase leading-3 font-boldtext-sm text-shark-400">vs</span>
-              <TeamInfo team={props.game.away_team} winner={winningTeam(props.game)} prediction={props.game.prediction}
-                        game={props.game} />
-            </div>
-          </CardHeader>
-          <CardContent class="">
-            <div class="flex justify-evenly mt-4 items-center pb-4">
-              <Show when={props.game.location}>
-                <div class="flex items-center text-sm">
-                  <IoLocationOutline class="mr-1 h-4 w-4 inline-block" />
-                  <span
-                    class="ml-2">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
-                </div>
-              </Show>
-              <Show when={!isLive(props.game)}>
-                <div class="flex items-center justify-center text-sm">
-                  <FiClock class="mr-1 h-4 w-4 inline-block" />
-                  <span class="ml-2">
+      <Card class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-shark-700">
+        <CardHeader>
+          <div class="flex flex-row items-center justify-between">
+            <TeamInfo
+              team={props.game.home_team}
+              winner={winningTeam(props.game)}
+              prediction={props.game.prediction}
+              game={props.game}
+            />
+            <span class="uppercase leading-3 font-boldtext-sm text-shark-400">
+              vs
+            </span>
+            <TeamInfo
+              team={props.game.away_team}
+              winner={winningTeam(props.game)}
+              prediction={props.game.prediction}
+              game={props.game}
+            />
+          </div>
+        </CardHeader>
+        <CardContent class="">
+          <div class="flex justify-evenly mt-4 items-center pb-4">
+            <Show when={props.game.location}>
+              <div class="flex items-center text-sm">
+                <IoLocationOutline class="mr-1 h-4 w-4 inline-block" />
+                <span class="ml-2">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
+              </div>
+            </Show>
+            <Show when={!isLive(props.game)}>
+              <div class="flex items-center justify-center text-sm">
+                <FiClock class="mr-1 h-4 w-4 inline-block" />
+                <span class="ml-2">
                   <Show when={props.game.status === 'PPD'}>
                     <p class="text-xs text-gray-400">Postponed</p>
                   </Show>
 
-                  <span class={`${props.game.status === 'PPD' ? 'line-through' : ''} `}>
+                  <span
+                    class={`${props.game.status === 'PPD' ? 'line-through' : ''} `}
+                  >
                     {formattedTimeForUser(props.game.start_time_unix)}
                   </span>
 
-                  <Show when={!isLive(props.game) && props.game.status !== 'PPD'}>
+                  <Show
+                    when={!isLive(props.game) && props.game.status !== 'PPD'}
+                  >
                     <p class={`text-xs text-gray-400 text-center font-bold`}>
                       {timeUntilGame(props.game)}
                     </p>
                   </Show>
                 </span>
-                </div>
-              </Show>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <For each={[props.game.home_team, props.game.away_team]}>
-                {(team, _) => (
-                  <Show when={team.leader !== null && isLive(props.game)}>
-                    <KeyPlayer team={team} />
-                  </Show>
-                )}
-              </For>
-              <Show when={isLive(props.game)}>
-                <div class="col-span-2" id={`${props.game.id}-live-score`}>
-                  <div class="text-center bg-shark-800 p-4 rounded-lg">
-                    <div class="flex items-center justify-center mb-2">
-                      <Show when={!props.game.status.toLowerCase().includes('final')}>
+              </div>
+            </Show>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <For each={[props.game.home_team, props.game.away_team]}>
+              {(team, _) => (
+                <Show when={team.leader !== null && isLive(props.game)}>
+                  <KeyPlayer team={team} />
+                </Show>
+              )}
+            </For>
+            <Show when={isLive(props.game)}>
+              <div class="col-span-2" id={`${props.game.id}-live-score`}>
+                <div class="text-center bg-shark-800 p-4 rounded-lg">
+                  <div class="flex items-center justify-center mb-2">
+                    <Show
+                      when={!props.game.status.toLowerCase().includes('final')}
+                    >
                       <span class="text-red-500 animate-pulse mr-2">
                         <OcDotfill3 />
                       </span>
-                        <span class="text-white font-bold">Live</span>
-                      </Show>
-                    </div>
-                    <div class="flex justify-center items-center text-2xl font-bold mb-2">
-                      <div class="text-center">
-                        <p class="text-white">{props.game.home_team.name}</p>
-                        <p class="text-white bg-shark-700 py-2 px-4 rounded">{props.game.home_team.score.points}</p>
-                      </div>
-                      <span class="text-sm text-gray-400 mt-6 mx-3"> - </span>
-                      <div class="text-center">
-                        <p class="text-white">{props.game.away_team.name}</p>
-                        <p class="text-white bg-shark-700 py-2 px-4 rounded">{props.game.away_team.score.points}</p>
-                      </div>
-                    </div>
-                    <p
-                      class="text-sm text-gray-400">{props.game.status.includes('ET') ? 'Starting soon!' : props.game.status}</p>
+                      <span class="text-white font-bold">Live</span>
+                    </Show>
                   </div>
+                  <div class="flex justify-center items-center text-2xl font-bold mb-2">
+                    <div class="text-center">
+                      <p class="text-white">{props.game.home_team.name}</p>
+                      <p class="text-white bg-shark-700 py-2 px-4 rounded">
+                        {props.game.home_team.score.points}
+                      </p>
+                    </div>
+                    <span class="text-sm text-gray-400 mt-6 mx-3"> - </span>
+                    <div class="text-center">
+                      <p class="text-white">{props.game.away_team.name}</p>
+                      <p class="text-white bg-shark-700 py-2 px-4 rounded">
+                        {props.game.away_team.score.points}
+                      </p>
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-400">
+                    {props.game.status.includes('ET')
+                      ? 'Starting soon!'
+                      : props.game.status}
+                  </p>
                 </div>
-                <For each={[props.game.home_team, props.game.away_team]}>
-                  {(team, _) => (
-                    <AdvancedGameCard team={team} />
-                  )}
-                </For>
-              </Show>
-            </div>
-          </CardContent>
-          <CardFooter class="flex justify-center mt-4">
-            <Show when={[props.game.home_team, props.game.away_team].every((team) => team.injuries.length > 0)}>
-              <Button class="bg-shark-700 text-white" variant="default" onClick={() => (setInjuryReportOpen(true))}>
-                View Injury Report
-                <AlertDialog
-                  open={injuryReportOpen()}
-                  onOpenChange={setInjuryReportOpen}
-                  preventScroll={true}
-                >
-                  <AlertDialogContent>
-                    <AlertDialogTitle>Injury Report</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      <Table class="mt-2">
-                        <TableHeader class="text-white">
-                          <TableRow>
-                            <TableHead class="text-center text-white ">Team</TableHead>
-                            <TableHead class="text-center text-white">Player</TableHead>
-                            <TableHead class="text-center text-white">Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody class="">
-                          <For each={[props.game.home_team, props.game.away_team]}>
-                            {(team, _) => (
-                              <For each={team.injuries}>
-                                {(injury, _) => (
-                                  <TableRow>
-                                    <TableCell class="text-center">{team.name}</TableCell>
-                                    <TableCell class="text-center">{injury.player}</TableCell>
-                                    <TableCell class="text-center">{injury.status}</TableCell>
-                                  </TableRow>
-                                )}
-                              </For>
-                            )}
-                          </For>
-                        </TableBody>
-                      </Table>
-                    </AlertDialogDescription>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </Button>
+              </div>
+              <For each={[props.game.home_team, props.game.away_team]}>
+                {(team, _) => <AdvancedGameCard team={team} />}
+              </For>
             </Show>
-          </CardFooter>
-        </Card>
-      </Motion.div>
+          </div>
+        </CardContent>
+        <CardFooter class="flex justify-center mt-4">
+          <Show
+            when={[props.game.home_team, props.game.away_team].every(
+              (team) => team.injuries.length > 0,
+            )}
+          >
+            <Button
+              class="bg-shark-700 text-white"
+              variant="default"
+              onClick={() => setInjuryReportOpen(true)}
+            >
+              View Injury Report
+              <AlertDialog
+                open={injuryReportOpen()}
+                onOpenChange={setInjuryReportOpen}
+                preventScroll={true}
+              >
+                <AlertDialogContent>
+                  <AlertDialogTitle>Injury Report</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    <Table class="mt-2">
+                      <TableHeader class="text-white">
+                        <TableRow>
+                          <TableHead class="text-center text-white ">
+                            Team
+                          </TableHead>
+                          <TableHead class="text-center text-white">
+                            Player
+                          </TableHead>
+                          <TableHead class="text-center text-white">
+                            Status
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody class="">
+                        <For
+                          each={[props.game.home_team, props.game.away_team]}
+                        >
+                          {(team, _) => (
+                            <For each={team.injuries}>
+                              {(injury, _) => (
+                                <TableRow>
+                                  <TableCell class="text-center">
+                                    {team.name}
+                                  </TableCell>
+                                  <TableCell class="text-center">
+                                    {injury.player}
+                                  </TableCell>
+                                  <TableCell class="text-center">
+                                    {injury.status}
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </For>
+                          )}
+                        </For>
+                      </TableBody>
+                    </Table>
+                  </AlertDialogDescription>
+                </AlertDialogContent>
+              </AlertDialog>
+            </Button>
+          </Show>
+        </CardFooter>
+      </Card>
     </>
   );
 };

@@ -4,10 +4,25 @@ import { DemoCard as GameCard } from '~/components/display-card';
 import { Loading } from '~/components/loading';
 import { Switch } from '~/components/ui/switch';
 import { Game, GameWithPrediction } from '~/interface';
-import { formattedDateForUser, isGameActuallyLive, isPredictionCorrect } from '~/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select.tsx';
+import {
+  formattedDateForUser,
+  isGameActuallyLive,
+  isPredictionCorrect,
+} from '~/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select.tsx';
 import { Prediction } from '~/model/prediction.ts';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip.tsx';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '~/components/ui/tooltip.tsx';
+import { Motion } from 'solid-motionone';
 
 export const Games = () => {
   const [games, setGames] = createSignal<Game[]>([]);
@@ -19,7 +34,9 @@ export const Games = () => {
   let intervalId: NodeJS.Timeout;
 
   const fetchGames = async () => {
-    const res = await fetch('https://apidev.accuribet.win/api/v1/games/daily?with_odds=true');
+    const res = await fetch(
+      'https://apidev.accuribet.win/api/v1/games/daily?with_odds=true',
+    );
     const data = await res.json();
 
     setGames(data as Game[]);
@@ -33,8 +50,10 @@ export const Games = () => {
   };
 
   const fetchPredictions = async (model: string) => {
-    if (!model) return
-    const cacheKey = `${games().map((game) => game.id).join('-')}--${model}`;
+    if (!model) return;
+    const cacheKey = `${games()
+      .map((game) => game.id)
+      .join('-')}--${model}`;
     const cachedPredictions = localStorage.getItem(cacheKey);
     if (cachedPredictions) {
       console.log('Using cached predictions');
@@ -43,19 +62,20 @@ export const Games = () => {
       return;
     }
 
-
-    const res = await fetch(`https://apidev.accuribet.win/api/v1/model/predict/${model}`);
-    const data = await res.json() as Prediction[];
+    const res = await fetch(
+      `https://apidev.accuribet.win/api/v1/model/predict/${model}`,
+    );
+    const data = (await res.json()) as Prediction[];
 
     localStorage.setItem(cacheKey, JSON.stringify(data));
     setPredictions(data);
     setSelectedModel(model);
-  }
+  };
 
   const toggleLiveUpdates = () => {
     setLiveUpdates(!liveUpdates());
     if (liveUpdates()) {
-      intervalId = setInterval(fetchGames, 30_000);
+      intervalId = setInterval(fetchGames, 3_000);
     } else {
       clearInterval(intervalId);
     }
@@ -64,45 +84,50 @@ export const Games = () => {
   const gamesPlaying = (games: Game[]): boolean => {
     return games
       .filter((game) => game.status.toLowerCase() !== 'ppd')
-      .some((game) => game.status.toLowerCase().includes('q') || game.status.toLowerCase().includes('h'));
-  }
+      .some(
+        (game) =>
+          game.status.toLowerCase().includes('q') ||
+          game.status.toLowerCase().includes('h'),
+      );
+  };
 
+  const getGamesWithPredictions = (
+    games: Game[],
+    prediction: Prediction[],
+  ): GameWithPrediction[] => {
+    return games
+      .map((game) => {
+        const gamePrediction = prediction.find(
+          (pred) => pred.game_id === game.id,
+        );
+        return {
+          ...game,
+          prediction: gamePrediction,
+        };
+      })
+      .sort((a, b) => {
+        // Live games come first
+        if (isGameActuallyLive(a) && !isGameActuallyLive(b)) return -1;
+        if (!isGameActuallyLive(a) && isGameActuallyLive(b)) return 1;
 
+        // Then games with status 'Final'
+        if (a.status === 'Final' && b.status !== 'Final') return -1;
+        if (a.status !== 'Final' && b.status === 'Final') return 1;
 
+        // Among 'Final' games, correctly predicted games come first
+        if (a.status === 'Final' && b.status === 'Final') {
+          if (isPredictionCorrect(a) && !isPredictionCorrect(b)) return -1;
+          if (!isPredictionCorrect(a) && isPredictionCorrect(b)) return 1;
+        }
 
+        // Postponed games come last
+        if (a.status === 'ppd' && b.status !== 'ppd') return 1;
+        if (a.status !== 'ppd' && b.status === 'ppd') return -1;
 
-
-  const getGamesWithPredictions = (games: Game[], prediction: Prediction[]): GameWithPrediction[] => {
-    return games.map((game) => {
-      const gamePrediction = prediction.find((pred) => pred.game_id === game.id);
-      return {
-        ...game,
-        prediction: gamePrediction,
-      };
-    }).sort((a, b) => {
-      // Live games come first
-      if (isGameActuallyLive(a) && !isGameActuallyLive(b)) return -1;
-      if (!isGameActuallyLive(a) && isGameActuallyLive(b)) return 1;
-
-      // Then games with status 'Final'
-      if (a.status === 'Final' && b.status !== 'Final') return -1;
-      if (a.status !== 'Final' && b.status === 'Final') return 1;
-
-      // Among 'Final' games, correctly predicted games come first
-      if (a.status === 'Final' && b.status === 'Final') {
-        if (isPredictionCorrect(a) && !isPredictionCorrect(b)) return -1;
-        if (!isPredictionCorrect(a) && isPredictionCorrect(b)) return 1;
-      }
-
-      // Postponed games come last
-      if (a.status === 'ppd' && b.status !== 'ppd') return 1;
-      if (a.status !== 'ppd' && b.status === 'ppd') return -1;
-
-      // If none of the above conditions are met, don't change order
-      return 0;
-    });
-  }
-
+        // If none of the above conditions are met, don't change order
+        return 0;
+      });
+  };
 
   onMount(async () => {
     await fetchGames();
@@ -117,54 +142,80 @@ export const Games = () => {
   return (
     <main class="pt-4 min-h-screen bg-shark-950">
       <Show when={games().length > 0} keyed fallback={<Loading />}>
-        <div class="mx-2">
-          <div class="flex flex-row items-center justify-center mb-10">
-         <Select
-          options={models()}
-          placeholder="Select a model"
-          onChange={async (e) => {
-            await fetchPredictions(e);
-          }}
-          value={selectedModel()}
-          itemComponent={(props) => <SelectItem class={'text-white bg-transparent text-center border-shark-700 hover:bg-shark-900'} item={props.item}>{props.item.rawValue}</SelectItem>} >
-           <SelectTrigger aria-label="models" class="w-[180px] bg-shark-950 text-white border-2 border-shark-700">
-             <SelectValue<string>>{(state) => state.selectedOption()}</SelectValue>
-           </SelectTrigger>
-          <SelectContent class="bg-shark-950" />
-        </Select>
-          </div>
-          <div id="options" class="text-white w-full max-w-4xl mx-auto mb-3 flex flex-row items-center justify-between">
-            <div class="flex items-center text-sm">
-              <FiCalendar class="mr-1 h-4 w-4 inline-block" />
-              <span class="ml-2">{formattedDateForUser(games()[0].start_time_unix)}</span>
-            </div>
-
-            <div class="flex flex-row items-center">
-              <span class="text-sm mr-2">Live Updates</span>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} disabled={!gamesPlaying(games())} />
-                </TooltipTrigger>
-                  <TooltipContent>
-
-                    {
-                      gamesPlaying(games()) ?
-                      `Live updates will be gathered every 30 seconds` :
-                      `Live updates are disabled until games start`
+        <Motion.div
+          animate={{ opacity: [0, 1] }}
+          transition={{ duration: 1, easing: 'ease-in-out' }}
+        >
+          <div class="mx-2">
+            <div class="flex flex-row items-center justify-center mb-10">
+              <Select
+                options={models()}
+                placeholder="Select a model"
+                onChange={async (e) => {
+                  await fetchPredictions(e);
+                }}
+                value={selectedModel()}
+                itemComponent={(props) => (
+                  <SelectItem
+                    class={
+                      'text-white bg-transparent text-center border-shark-700 hover:bg-shark-900'
                     }
-                  </TooltipContent>
-              </Tooltip>
+                    item={props.item}
+                  >
+                    {props.item.rawValue}
+                  </SelectItem>
+                )}
+              >
+                <SelectTrigger
+                  aria-label="models"
+                  class="w-[180px] bg-shark-950 text-white border-2 border-shark-700"
+                >
+                  <SelectValue<string>>
+                    {(state) => state.selectedOption()}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent class="bg-shark-950" />
+              </Select>
             </div>
-          </div>
-
-          <For each={getGamesWithPredictions(games(), predictions())}>
-            {(game) => (
-              <div id={game.id} class="mt-4">
-                <GameCard game={game} />
+            <div
+              id="options"
+              class="text-white w-full max-w-4xl mx-auto mb-3 flex flex-row items-center justify-between"
+            >
+              <div class="flex items-center text-sm">
+                <FiCalendar class="mr-1 h-4 w-4 inline-block" />
+                <span class="ml-2">
+                  {formattedDateForUser(games()[0].start_time_unix)}
+                </span>
               </div>
-            )}
-          </For>
-        </div>
+
+              <div class="flex flex-row items-center">
+                <span class="text-sm mr-2">Live Updates</span>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Switch
+                      checked={liveUpdates()}
+                      onChange={toggleLiveUpdates}
+                      disabled={!gamesPlaying(games())}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {gamesPlaying(games())
+                      ? `Live updates will be gathered every 30 seconds`
+                      : `Live updates are disabled until games start`}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+
+            <For each={getGamesWithPredictions(games(), predictions())}>
+              {(game) => (
+                <div id={game.id} class="mt-4">
+                  <GameCard game={game} />
+                </div>
+              )}
+            </For>
+          </div>
+        </Motion.div>
       </Show>
     </main>
   );
