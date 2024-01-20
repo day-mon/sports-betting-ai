@@ -2,14 +2,13 @@ import { Component, For, Show } from 'solid-js';
 import { Game, Period, Team } from '~/interface';
 
 import { FiCalendar, FiClock } from 'solid-icons/fi';
-import { IoLocationOutline, IoWarning } from 'solid-icons/io';
+import { IoLocationOutline  } from 'solid-icons/io';
 import { OcDotfill3 } from 'solid-icons/oc';
 import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -174,7 +173,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           </div>
         </CardHeader>
         <CardContent class="">
-          <div class="flex justify-between mt-4 items-center pb-4">
+          <div class="flex justify-evenly mt-4 items-center pb-4">
             <div class="flex items-center text-sm">
               <FiCalendar class="mr-1 h-4 w-4 inline-block" />
               <span class="ml-2">{formattedDateForUser(props.game.start_time_unix)}</span>
@@ -185,16 +184,17 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <span class="ml-2">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
               </div>
             </Show>
+            <Show when={!isLive(props.game)}>
             <div class="flex items-center justify-center text-sm">
               <FiClock class="mr-1 h-4 w-4 inline-block" />
               <span class="ml-2">
                 {formattedTimeForUser(props.game.start_time_unix)}
-                {/*  show time until game if it hasnt started in small gray text below the time  in italics */}
                 <Show when={!isLive(props.game)}>
                   <p class="text-xs text-gray-400">{timeUntilGame(props.game)}</p>
                 </Show>
               </span>
             </div>
+            </Show>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <For each={[props.game.home_team, props.game.away_team]}>
@@ -214,9 +214,11 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   <span class="text-white font-bold">Live</span>
                 </div>
                 <p class="text-2xl text-white font-bold mb-2">
-                  {`${props.game.home_team.name}: ${props.game.home_team.score.points}`} - {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}
+                  {`${props.game.home_team.name}: ${props.game.home_team.score.points}`}
+                  <span class={"text-sm text-gray-400 mx-3"}> - </span>
+                  {`${props.game.away_team.name}: ${props.game.away_team.score.points}`}
                 </p>
-                <p class="text-sm text-gray-400">{props.game.status}</p>
+                <p class="text-sm text-gray-400">{props.game.status.includes('ET') ? 'Starting soon!' : props.game.status}</p>
               </div>
             </div>
             <div>

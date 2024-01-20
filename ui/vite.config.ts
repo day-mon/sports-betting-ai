@@ -5,9 +5,6 @@ export default defineConfig({
   plugins: [solid()],
   server: {
     port: 3000,
-    hmr: {
-      port: 443,
-    },
     cors: false,
   },
   build: {
