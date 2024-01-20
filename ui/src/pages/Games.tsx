@@ -126,7 +126,7 @@ export const Games = () => {
             await fetchPredictions(e);
           }}
           value={selectedModel()}
-          itemComponent={(props) => <SelectItem class={'text-white bg-transparent border-shark-700 hover:bg-shark-900'} item={props.item}>{props.item.rawValue}</SelectItem>} >
+          itemComponent={(props) => <SelectItem class={'text-white bg-transparent text-center border-shark-700 hover:bg-shark-900'} item={props.item}>{props.item.rawValue}</SelectItem>} >
            <SelectTrigger aria-label="models" class="w-[180px] bg-shark-950 text-white border-2 border-shark-700">
              <SelectValue<string>>{(state) => state.selectedOption()}</SelectValue>
            </SelectTrigger>
@@ -145,11 +145,14 @@ export const Games = () => {
                 <TooltipTrigger>
                   <Switch checked={liveUpdates()} onChange={toggleLiveUpdates} disabled={!gamesPlaying(games())} />
                 </TooltipTrigger>
-                <Show when={!gamesPlaying(games())}>
                   <TooltipContent>
-                    Live updates are disabled until games start
+
+                    {
+                      gamesPlaying(games()) ?
+                      `Live updates will be gathered every 30 seconds` :
+                      `Live updates are disabled until games start`
+                    }
                   </TooltipContent>
-                </Show>
               </Tooltip>
             </div>
           </div>
