@@ -126,10 +126,10 @@ export const Games = () => {
             await fetchPredictions(e);
           }}
           value={selectedModel()}
-          itemComponent={(props) => <SelectItem class={'text-white bg-transparent hover:bg-shark-900'} item={props.item}>{props.item.rawValue}</SelectItem>} >
-          <SelectTrigger aria-label="models" class="w-[180px] bg-shark-950 text-white">
-            <SelectValue<string>>{(state) => state.selectedOption()}</SelectValue>
-          </SelectTrigger>
+          itemComponent={(props) => <SelectItem class={'text-white bg-transparent border-shark-700 hover:bg-shark-900'} item={props.item}>{props.item.rawValue}</SelectItem>} >
+           <SelectTrigger aria-label="models" class="w-[180px] bg-shark-950 text-white border-2 border-shark-700">
+             <SelectValue<string>>{(state) => state.selectedOption()}</SelectValue>
+           </SelectTrigger>
           <SelectContent class="bg-shark-950" />
         </Select>
           </div>
