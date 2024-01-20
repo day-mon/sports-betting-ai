@@ -176,6 +176,11 @@ class TeamData(BaseModel):
     seed: Optional[int | str] = None
     leader: Optional[PlayerLeader] = None
 
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.city} {self.name}"
+
 class Score(BaseModel):
     points: int
     periods: list[Period]

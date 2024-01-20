@@ -97,9 +97,10 @@ class TFPredictionModel(PredictionModel):
         predicts: list[Prediction] = []
         for index, (prediction, confidence) in enumerate(zip(predictions, confidences)):
             logger.debug(f"Prediction: {prediction}")
-            corresponding_game = next((game for game in games if game.home_team.name == di[index]["home_team"] or game.away_team.name == di[index]["away_team"]), None)
+            corresponding_game = next((game for game in games if game.home_team.full_name == di[index]["home_team"] or game.away_team.full_name == di[index]["away_team"]), None)
             if corresponding_game is None:
-                logger.error(f"Unable to find game for {prediction.game_id}")
+                logger.debug(f"GAMES: {games}")
+                logger.error(f"Unable to find game for {di[index]['home_team']} vs {di[index]['away_team']}")
                 continue
 
             predicts.append(
@@ -241,8 +242,8 @@ class OUPredictionModel(FortyEightDPModel):
                 (
                     game
                     for game in games
-                    if game.home_team.name == team_name
-                    or game.away_team.name == team_name
+                    if game.home_team.full_name == team_name
+                    or game.away_team.full_name == team_name
                 ),
                 None,
             )
