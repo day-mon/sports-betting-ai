@@ -30,6 +30,7 @@ export const Games = () => {
   const [selectedModel, setSelectedModel] = createSignal<string>('');
   const [liveUpdates, setLiveUpdates] = createSignal<boolean>(false);
   const [predictions, setPredictions] = createSignal<Prediction[]>([]);
+  const [predictionLoading, setPredictionLoading] = createSignal<boolean>(false);
 
   let intervalId: NodeJS.Timeout;
 
@@ -62,10 +63,22 @@ export const Games = () => {
       return;
     }
 
-    const res = await fetch(
-      `https://apidev.accuribet.win/api/v1/model/predict/${model}`,
-    );
+    setPredictionLoading(true);
+
+    let res;
+    try {
+      res = await fetch(
+        `https://apidev.accuribet.win/api/v1/model/predict/${model}`,
+      );
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setPredictionLoading(false);
+    }
+    if (!res) return;
+
     const data = (await res.json()) as Prediction[];
+
 
     localStorage.setItem(cacheKey, JSON.stringify(data));
     setPredictions(data);
@@ -148,6 +161,10 @@ export const Games = () => {
         >
           <div class="mx-2">
             <div class="flex flex-row items-center justify-center mb-10">
+              <Show when={predictionLoading()}>
+                {/* little loading spinner  next to the model select */}
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              </Show>
               <Select
                 options={models()}
                 placeholder="Select a model"

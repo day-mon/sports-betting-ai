@@ -312,7 +312,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <p class="text-sm">
                   The prediction model has a confidence of{' '}
                   {((props.game.prediction?.confidence ?? 0) * 100).toFixed(1)}%
-                  for the winning team.
+                  for the <span class="font-bold">{props.game.prediction?.prediction}</span> to win.
                 </p>
               </div>
             </Show>

@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const Navbar: Component<Props> = (props: Props) => {
-  let storedPreference = localStorage.getItem('theme');
+  // let storedPreference = localStorage.getItem('theme');
   const [theme, setTheme] = createSignal(props.theme);
 
   const changeTheme = (theme: string) => {
