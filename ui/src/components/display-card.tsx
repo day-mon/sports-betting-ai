@@ -60,7 +60,7 @@ const getColorFromStatusAndOutcome = (
   status: string,
   winner: boolean,
 ): string => {
-  if (status === 'Final') {
+  if (status === 'Final' || status === 'Final/OT') {
     if (winner) {
       return 'bg-emerald-600';
     } else {
