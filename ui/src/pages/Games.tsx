@@ -1,14 +1,8 @@
 import { FiCalendar } from 'solid-icons/fi';
 import { For, Show, createSignal, onCleanup, onMount } from 'solid-js';
+import { Motion } from 'solid-motionone';
 import { DemoCard as GameCard } from '~/components/display-card';
 import { Loading } from '~/components/loading';
-import { Switch } from '~/components/ui/switch';
-import { Game, GameWithPrediction } from '~/interface';
-import {
-  formattedDateForUser,
-  isGameActuallyLive,
-  isPredictionCorrect,
-} from '~/lib/utils';
 import {
   Select,
   SelectContent,
@@ -16,13 +10,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select.tsx';
-import { Prediction } from '~/model/prediction.ts';
+import { Switch } from '~/components/ui/switch';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '~/components/ui/tooltip.tsx';
-import { Motion } from 'solid-motionone';
+import { Game, GameWithPrediction } from '~/interface';
+import {
+  formattedDateForUser,
+  isGameActuallyLive,
+  isPredictionCorrect,
+} from '~/lib/utils';
+import { Prediction } from '~/model/prediction.ts';
 
 export const Games = () => {
   const [games, setGames] = createSignal<Game[]>([]);
@@ -140,7 +140,7 @@ export const Games = () => {
   });
 
   return (
-    <main class="pt-4 min-h-screen bg-shark-950">
+    <main class="pt-4 min-h-screen bg-primary">
       <Show when={games().length > 0} keyed fallback={<Loading />}>
         <Motion.div
           animate={{ opacity: [0, 1] }}
@@ -158,7 +158,7 @@ export const Games = () => {
                 itemComponent={(props) => (
                   <SelectItem
                     class={
-                      'text-white bg-transparent text-center border-shark-700 hover:bg-shark-900'
+                      'text-white bg-transparent text-center border-700 hover:bg-secondary'
                     }
                     item={props.item}
                   >
@@ -168,13 +168,13 @@ export const Games = () => {
               >
                 <SelectTrigger
                   aria-label="models"
-                  class="w-[180px] bg-shark-950 text-white border-2 border-shark-700"
+                  class="w-[180px] bg-primary text-white border-2 border-700"
                 >
                   <SelectValue<string>>
                     {(state) => state.selectedOption()}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent class="bg-shark-950" />
+                <SelectContent class="bg-primary" />
               </Select>
             </div>
             <div

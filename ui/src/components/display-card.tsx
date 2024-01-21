@@ -4,6 +4,12 @@ import { GameWithPrediction, Period, Team } from '~/interface';
 import { FiClock } from 'solid-icons/fi';
 import { IoLocationOutline } from 'solid-icons/io';
 import { OcDotfill3 } from 'solid-icons/oc';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog.tsx';
 import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -23,14 +29,8 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table';
-import { Prediction } from '~/model/prediction.ts';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogTitle,
-} from '~/components/ui/alert-dialog.tsx';
 import { isLive, timeUntilGame } from '~/lib/utils.ts';
+import { Prediction } from '~/model/prediction.ts';
 
 const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
 
@@ -67,7 +67,7 @@ const getColorFromStatusAndOutcome = (
       return 'bg-red-600';
     }
   } else {
-    return 'bg-shark-700';
+    return 'bg-700';
   }
 };
 
@@ -106,18 +106,18 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
 
   return (
     <Table class="mt-2">
-      <TableHeader class="bg-shark-700 text-shark-300">
+      <TableHeader class="bg-700 text-300">
         <TableRow>
           <For each={props.team.score.periods}>
             {(period, _) => (
-              <TableHead class="text-center text-shark-300">
+              <TableHead class="text-center text-300">
                 {formatPeriodType(period)}
               </TableHead>
             )}
           </For>
         </TableRow>
       </TableHeader>
-      <TableBody class="bg-shark-600">
+      <TableBody class="bg-600">
         <TableRow>
           <For each={props.team.score.periods}>
             {(period, _) => (
@@ -136,7 +136,7 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
 
 export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
   return (
-    <div class="bg-shark-700 p-4 rounded mt-4">
+    <div class="bg-700 p-4 rounded mt-4">
       <h4 class="font-semibold">Key Player - {props.team.name}</h4>
       <p>{props.team.leader.name}</p>
       <p class="text-sm text-gray-200">Points: {props.team.leader.points}</p>
@@ -202,7 +202,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   const [injuryReportOpen, setInjuryReportOpen] = createSignal(false);
   return (
     <>
-      <Card class="w-full max-w-4xl mx-auto bg-shark-900 rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-shark-700">
+      <Card class="w-full max-w-4xl mx-auto bg-secondary rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-700">
         <CardHeader>
           <div class="flex flex-row items-center justify-between">
             <TeamInfo
@@ -211,7 +211,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               prediction={props.game.prediction}
               game={props.game}
             />
-            <span class="uppercase leading-3 font-boldtext-sm text-shark-400">
+            <span class="uppercase leading-3 font-boldtext-sm text-400">
               vs
             </span>
             <TeamInfo
@@ -265,7 +265,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             </For>
             <Show when={isLive(props.game)}>
               <div class="col-span-2" id={`${props.game.id}-live-score`}>
-                <div class="text-center bg-shark-800 p-4 rounded-lg">
+                <div class="text-center bg-800 p-4 rounded-lg">
                   <div class="flex items-center justify-center mb-2">
                     <Show
                       when={!props.game.status.toLowerCase().includes('final')}
@@ -279,14 +279,14 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   <div class="flex justify-center items-center text-2xl font-bold mb-2">
                     <div class="text-center">
                       <p class="text-white">{props.game.home_team.name}</p>
-                      <p class="text-white bg-shark-700 py-2 px-4 rounded">
+                      <p class="text-white bg-700 py-2 px-4 rounded">
                         {props.game.home_team.score.points}
                       </p>
                     </div>
                     <span class="text-sm text-gray-400 mt-6 mx-3"> - </span>
                     <div class="text-center">
                       <p class="text-white">{props.game.away_team.name}</p>
-                      <p class="text-white bg-shark-700 py-2 px-4 rounded">
+                      <p class="text-white bg-700 py-2 px-4 rounded">
                         {props.game.away_team.score.points}
                       </p>
                     </div>
@@ -311,7 +311,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             )}
           >
             <Button
-              class="bg-shark-700 text-white"
+              class="bg-700 text-white"
               variant="default"
               onClick={() => setInjuryReportOpen(true)}
             >
