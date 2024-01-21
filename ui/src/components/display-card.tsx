@@ -72,7 +72,7 @@ const getColorFromStatusAndOutcome = (
 };
 
 const winningTeam = (game: GameWithPrediction): number => {
-  if (game.status === 'Final') {
+  if (game.status === 'Final' || game.status === 'Final/OT') {
     return game.home_team.score.points > game.away_team.score.points
       ? game.home_team.id
       : game.away_team.id;
@@ -304,69 +304,83 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             </Show>
           </div>
         </CardContent>
-        <CardFooter class="flex justify-center mt-4">
-          <Show
-            when={[props.game.home_team, props.game.away_team].every(
-              (team) => team.injuries.length > 0,
-            )}
-          >
-            <Button
-              class="bg-700 text-white"
-              variant="default"
-              onClick={() => setInjuryReportOpen(true)}
+        <CardFooter class="mt-4 block">
+          <div>
+            <Show when={props.game.prediction && props.game.prediction.prediction_type == 'win-loss'}>
+              <h3 class="font-bold">Prediction Confidence</h3>
+              <div class="bg-600 p-4 rounded mt-4">
+                <p class="text-sm">
+                  The prediction model has a confidence of{' '}
+                  {((props.game.prediction?.confidence ?? 0) * 100).toFixed(1)}%
+                  for the winning team.
+                </p>
+              </div>
+            </Show>
+          </div>
+          <div class="flex flex-row items-center justify-center mt-4">
+            <Show
+              when={[props.game.home_team, props.game.away_team].every(
+                (team) => team.injuries.length > 0,
+              )}
             >
-              View Injury Report
-              <AlertDialog
-                open={injuryReportOpen()}
-                onOpenChange={setInjuryReportOpen}
-                preventScroll={true}
+              <Button
+                class="bg-700 text-white"
+                variant="default"
+                onClick={() => setInjuryReportOpen(true)}
               >
-                <AlertDialogContent>
-                  <AlertDialogTitle>Injury Report</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    <Table class="mt-2">
-                      <TableHeader class="text-white">
-                        <TableRow>
-                          <TableHead class="text-center text-white ">
-                            Team
-                          </TableHead>
-                          <TableHead class="text-center text-white">
-                            Player
-                          </TableHead>
-                          <TableHead class="text-center text-white">
-                            Status
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody class="">
-                        <For
-                          each={[props.game.home_team, props.game.away_team]}
-                        >
-                          {(team, _) => (
-                            <For each={team.injuries}>
-                              {(injury, _) => (
-                                <TableRow>
-                                  <TableCell class="text-center">
-                                    {team.name}
-                                  </TableCell>
-                                  <TableCell class="text-center">
-                                    {injury.player}
-                                  </TableCell>
-                                  <TableCell class="text-center">
-                                    {injury.status}
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </For>
-                          )}
-                        </For>
-                      </TableBody>
-                    </Table>
-                  </AlertDialogDescription>
-                </AlertDialogContent>
-              </AlertDialog>
-            </Button>
-          </Show>
+                View Injury Report
+                <AlertDialog
+                  open={injuryReportOpen()}
+                  onOpenChange={setInjuryReportOpen}
+                  preventScroll={true}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogTitle>Injury Report</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <Table class="mt-2">
+                        <TableHeader class="text-white">
+                          <TableRow>
+                            <TableHead class="text-center text-white ">
+                              Team
+                            </TableHead>
+                            <TableHead class="text-center text-white">
+                              Player
+                            </TableHead>
+                            <TableHead class="text-center text-white">
+                              Status
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody class="">
+                          <For
+                            each={[props.game.home_team, props.game.away_team]}
+                          >
+                            {(team, _) => (
+                              <For each={team.injuries}>
+                                {(injury, _) => (
+                                  <TableRow>
+                                    <TableCell class="text-center">
+                                      {team.name}
+                                    </TableCell>
+                                    <TableCell class="text-center">
+                                      {injury.player}
+                                    </TableCell>
+                                    <TableCell class="text-center">
+                                      {injury.status}
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </For>
+                            )}
+                          </For>
+                        </TableBody>
+                      </Table>
+                    </AlertDialogDescription>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </Button>
+            </Show>
+          </div>
         </CardFooter>
       </Card>
     </>
