@@ -1,4 +1,4 @@
-import { Prediction } from '~/model/prediction.ts';
+import { Prediction } from "~/model/prediction.ts";
 
 export interface Game {
   id: string;

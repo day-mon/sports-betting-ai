@@ -1,15 +1,13 @@
-import { Component, createSignal } from 'solid-js';
-import { Navbar } from '~/components/navbar';
+import { Component, createSignal } from "solid-js";
+import { Navbar } from "~/components/navbar";
 
 const App: Component = (props: any) => {
-  let preferredTheme = localStorage.getItem('theme');
-  const [theme, setTheme] = createSignal(
-    preferredTheme ? preferredTheme : 'blackout',
-  );
+  let preferredTheme = localStorage.getItem("theme");
+  const [theme, setTheme] = createSignal(preferredTheme ? preferredTheme : "blackout");
 
   const changeThemeCallback = (theme: string) => {
     setTheme(theme);
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   };
 
   return (

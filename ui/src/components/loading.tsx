@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import { Component } from "solid-js";
 
 export const Loading: Component = () => {
   return (

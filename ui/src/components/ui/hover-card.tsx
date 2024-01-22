@@ -1,18 +1,18 @@
-import type { Component } from "solid-js"
-import { splitProps } from "solid-js"
+import type { Component } from "solid-js";
+import { splitProps } from "solid-js";
 
-import { HoverCard as HoverCardPrimitive } from "@kobalte/core"
+import { HoverCard as HoverCardPrimitive } from "@kobalte/core";
 
-import { cn } from "~/lib/utils"
+import { cn } from "~/lib/utils";
 
-const HoverCard: Component<HoverCardPrimitive.HoverCardRootProps> = (props) => {
-  return <HoverCardPrimitive.Root gutter={4} {...props} />
-}
+const HoverCard: Component<HoverCardPrimitive.HoverCardRootProps> = props => {
+  return <HoverCardPrimitive.Root gutter={4} {...props} />;
+};
 
-const HoverCardTrigger = HoverCardPrimitive.Trigger
+const HoverCardTrigger = HoverCardPrimitive.Trigger;
 
-const HoverCardContent: Component<HoverCardPrimitive.HoverCardContentProps> = (props) => {
-  const [, rest] = splitProps(props, ["class"])
+const HoverCardContent: Component<HoverCardPrimitive.HoverCardContentProps> = props => {
+  const [, rest] = splitProps(props, ["class"]);
   return (
     <HoverCardPrimitive.Portal>
       <HoverCardPrimitive.Content
@@ -23,7 +23,7 @@ const HoverCardContent: Component<HoverCardPrimitive.HoverCardContentProps> = (p
         {...rest}
       />
     </HoverCardPrimitive.Portal>
-  )
-}
+  );
+};
 
-export { HoverCard, HoverCardTrigger, HoverCardContent }
+export { HoverCard, HoverCardTrigger, HoverCardContent };

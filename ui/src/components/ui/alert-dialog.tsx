@@ -1,17 +1,17 @@
-import type { Component } from "solid-js"
-import { splitProps } from "solid-js"
+import type { Component } from "solid-js";
+import { splitProps } from "solid-js";
 
-import { AlertDialog as AlertDialogPrimitive } from "@kobalte/core"
-import { TbX } from "solid-icons/tb"
+import { AlertDialog as AlertDialogPrimitive } from "@kobalte/core";
+import { TbX } from "solid-icons/tb";
 
-import { cn } from "~/lib/utils"
+import { cn } from "~/lib/utils";
 
-const AlertDialog = AlertDialogPrimitive.Root
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger
-const AlertDialogPortal = AlertDialogPrimitive.Portal
+const AlertDialog = AlertDialogPrimitive.Root;
+const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
+const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-const AlertDialogOverlay: Component<AlertDialogPrimitive.AlertDialogOverlayProps> = (props) => {
-  const [, rest] = splitProps(props, ["class"])
+const AlertDialogOverlay: Component<AlertDialogPrimitive.AlertDialogOverlayProps> = props => {
+  const [, rest] = splitProps(props, ["class"]);
   return (
     <AlertDialogPrimitive.Overlay
       class={cn(
@@ -20,11 +20,11 @@ const AlertDialogOverlay: Component<AlertDialogPrimitive.AlertDialogOverlayProps
       )}
       {...rest}
     />
-  )
-}
+  );
+};
 
-const AlertDialogContent: Component<AlertDialogPrimitive.AlertDialogContentProps> = (props) => {
-  const [, rest] = splitProps(props, ["class", "children"])
+const AlertDialogContent: Component<AlertDialogPrimitive.AlertDialogContentProps> = props => {
+  const [, rest] = splitProps(props, ["class", "children"]);
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -42,25 +42,25 @@ const AlertDialogContent: Component<AlertDialogPrimitive.AlertDialogContentProps
         </AlertDialogPrimitive.CloseButton>
       </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
-  )
-}
+  );
+};
 
-const AlertDialogTitle: Component<AlertDialogPrimitive.AlertDialogTitleProps> = (props) => {
-  const [, rest] = splitProps(props, ["class"])
-  return <AlertDialogPrimitive.Title class={cn("text-lg font-semibold", props.class)} {...rest} />
-}
+const AlertDialogTitle: Component<AlertDialogPrimitive.AlertDialogTitleProps> = props => {
+  const [, rest] = splitProps(props, ["class"]);
+  return <AlertDialogPrimitive.Title class={cn("text-lg font-semibold", props.class)} {...rest} />;
+};
 
-const AlertDialogDescription: Component<AlertDialogPrimitive.AlertDialogDescriptionProps> = (
-  props
-) => {
-  const [, rest] = splitProps(props, ["class"])
+const AlertDialogDescription: Component<
+  AlertDialogPrimitive.AlertDialogDescriptionProps
+> = props => {
+  const [, rest] = splitProps(props, ["class"]);
   return (
     <AlertDialogPrimitive.Description
       class={cn("text-muted-foreground text-sm", props.class)}
       {...rest}
     />
-  )
-}
+  );
+};
 
 export {
   AlertDialog,
@@ -70,4 +70,4 @@ export {
   AlertDialogContent,
   AlertDialogTitle,
   AlertDialogDescription
-}
+};

@@ -1,10 +1,8 @@
-
-
 export interface Prediction {
-  prediction_type: "win-loss" | "total-score"
-  prediction: string
-  game_id: string
-  confidence: number | undefined
+  prediction_type: "win-loss" | "total-score";
+  prediction: string;
+  game_id: string;
+  confidence: number | undefined;
 }
 
-export type Predictions = Prediction[]
+export type Predictions = Prediction[];

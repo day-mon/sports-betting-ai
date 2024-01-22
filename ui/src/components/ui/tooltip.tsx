@@ -1,17 +1,17 @@
-import { splitProps, type Component } from "solid-js"
+import { splitProps, type Component } from "solid-js";
 
-import { Tooltip as TooltipPrimitive } from "@kobalte/core"
+import { Tooltip as TooltipPrimitive } from "@kobalte/core";
 
-import { cn } from "~/lib/utils"
+import { cn } from "~/lib/utils";
 
-const Tooltip: Component<TooltipPrimitive.TooltipRootProps> = (props) => {
-  return <TooltipPrimitive.Root gutter={4} {...props} />
-}
+const Tooltip: Component<TooltipPrimitive.TooltipRootProps> = props => {
+  return <TooltipPrimitive.Root gutter={4} {...props} />;
+};
 
-const TooltipTrigger = TooltipPrimitive.Trigger
+const TooltipTrigger = TooltipPrimitive.Trigger;
 
-const TooltipContent: Component<TooltipPrimitive.TooltipContentProps> = (props) => {
-  const [, rest] = splitProps(props, ["class"])
+const TooltipContent: Component<TooltipPrimitive.TooltipContentProps> = props => {
+  const [, rest] = splitProps(props, ["class"]);
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
@@ -22,7 +22,7 @@ const TooltipContent: Component<TooltipPrimitive.TooltipContentProps> = (props) 
         {...rest}
       />
     </TooltipPrimitive.Portal>
-  )
-}
+  );
+};
 
-export { Tooltip, TooltipTrigger, TooltipContent }
+export { Tooltip, TooltipTrigger, TooltipContent };

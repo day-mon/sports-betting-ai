@@ -1,7 +1,7 @@
-import type { ClassValue } from 'clsx';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { Game, GameWithPrediction } from '~/interface.ts';
+import type { ClassValue } from "clsx";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { Game, GameWithPrediction } from "~/interface.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,11 +14,11 @@ export const formattedDateForUser = (time: number): string => {
    */
   const date = new Date(time * 1000); // Convert seconds to milliseconds
   const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+    year: "numeric",
+    month: "long",
+    day: "numeric"
   };
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 };
 
 export const getWinningTeam = (game: GameWithPrediction): string => {
@@ -29,8 +29,7 @@ export const getWinningTeam = (game: GameWithPrediction): string => {
     return `${game.home_team.city} ${game.home_team.name}`;
   }
   return `${game.away_team.city} ${game.away_team.name}`;
-
-}
+};
 
 export const isPredictionCorrect = (game: GameWithPrediction): boolean => {
   /**
@@ -39,11 +38,11 @@ export const isPredictionCorrect = (game: GameWithPrediction): boolean => {
   if (!game.prediction) {
     return false;
   }
-  if (game.prediction.prediction_type === 'win-loss') {
+  if (game.prediction.prediction_type === "win-loss") {
     return game.prediction.prediction === getWinningTeam(game);
   }
   return false;
-}
+};
 
 export const isLive = (game: Game): boolean => {
   let time = game.start_time_unix;
@@ -53,7 +52,7 @@ export const isLive = (game: Game): boolean => {
     return false;
   }
   let status = game.status.toLowerCase();
-  return status !== 'ppd';
+  return status !== "ppd";
 };
 
 export const timeUntilGame = (game: GameWithPrediction): string => {
@@ -69,24 +68,23 @@ export const timeUntilGame = (game: GameWithPrediction): string => {
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
 
   // check to see if there is one hour left and if so dont add an s to hour
-  const hourString = hours === 1 ? 'hour' : 'hours';
-  const minuteString = minutes === 1 ? 'minute' : 'minutes';
+  const hourString = hours === 1 ? "hour" : "hours";
+  const minuteString = minutes === 1 ? "minute" : "minutes";
   if (hours === 0) {
     return `${minutes} ${minuteString}`;
   }
   return `${hours} ${hourString} ${minutes} ${minuteString}`;
 };
 
-
 export const isGameActuallyLive = (game: GameWithPrediction): boolean => {
   let status = game.status.toLowerCase();
-  if (status.includes('q')) {
+  if (status.includes("q")) {
     return true;
   }
 
-  if (status.includes('h')) {
+  if (status.includes("h")) {
     return true;
   }
 
-  return status.includes('f');
-}
+  return status.includes("f");
+};

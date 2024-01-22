@@ -1,12 +1,12 @@
-import { Link } from './link';
-import { Component, createSignal } from 'solid-js';
+import { Link } from "./link";
+import { Component, createSignal } from "solid-js";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select.tsx';
+  SelectValue
+} from "~/components/ui/select.tsx";
 
 interface Props {
   theme: string;
@@ -29,16 +29,12 @@ export const Navbar: Component<Props> = (props: Props) => {
         <Select
           value={theme()}
           onChange={changeTheme}
-          options={['blackout', 'logan', 'lavender', 'light']}
+          options={["blackout", "logan", "lavender", "light"]}
           placeholder="Select a theme"
-          itemComponent={(props) => (
-            <SelectItem item={props.item}>{props.item.rawValue}</SelectItem>
-          )}
+          itemComponent={props => <SelectItem item={props.item}>{props.item.rawValue}</SelectItem>}
         >
           <SelectTrigger aria-label="Theme" class="w-[180px]">
-            <SelectValue<string>>
-              {(state) => state.selectedOption()}
-            </SelectValue>
+            <SelectValue<string>>{state => state.selectedOption()}</SelectValue>
           </SelectTrigger>
           <SelectContent />
         </Select>

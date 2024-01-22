@@ -1,14 +1,14 @@
 /* @refresh reload */
-import { Route, Router } from '@solidjs/router';
-import { render } from 'solid-js/web';
+import { Route, Router } from "@solidjs/router";
+import { render } from "solid-js/web";
 
-import App from '~/App';
-import { Games } from '~/pages/Games';
-import { Home } from '~/pages/Home';
+import App from "~/App";
+import { Games } from "~/pages/Games";
+import { Home } from "~/pages/Home";
 
-import './index.css';
+import "./index.css";
 
-const root = document.getElementById('root') as HTMLElement;
+const root = document.getElementById("root") as HTMLElement;
 
 render(
   () => (
@@ -17,5 +17,5 @@ render(
       <Route path="/games" component={Games} />
     </Router>
   ),
-  root!,
+  root!
 );
