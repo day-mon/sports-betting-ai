@@ -1,38 +1,39 @@
-import { Component, createSignal, For, Show } from 'solid-js';
-import { GameWithPrediction, Period, Team } from '~/interface';
+import { Component, createSignal, For, Show } from "solid-js";
+import { Game, GameWithPrediction, Period, Team } from "~/interface";
 
-import { FiClock } from 'solid-icons/fi';
-import { IoLocationOutline } from 'solid-icons/io';
-import { OcDotfill3 } from 'solid-icons/oc';
+import { FiClock } from "solid-icons/fi";
+import { IoLocationOutline } from "solid-icons/io";
+import { OcDotfill3 } from "solid-icons/oc";
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogTitle,
-} from '~/components/ui/alert-dialog.tsx';
-import { Avatar, AvatarImage } from '~/components/ui/avatar';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+  AlertDialogTitle
+} from "~/components/ui/alert-dialog.tsx";
+import { Avatar, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
-} from '~/components/ui/card';
+  CardTitle
+} from "~/components/ui/card";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from '~/components/ui/table';
-import { isLive, timeUntilGame } from '~/lib/utils.ts';
-import { Prediction } from '~/model/prediction.ts';
+  TableRow
+} from "~/components/ui/table";
+import { isLive, timeUntilGame } from "~/lib/utils.ts";
+import { Prediction } from "~/model/prediction.ts";
+import { Motion } from "solid-motionone";
 
-const logos = import.meta.glob('../assets/teams/*.svg', { eager: true });
+const logos = import.meta.glob("../assets/teams/*.svg", { eager: true });
 
 const getLogo = (team: string) => {
   let strIndex = `../assets/teams/${team}.svg`;
@@ -48,31 +49,28 @@ const formattedTimeForUser = (time: number): string => {
    */
   const date = new Date(time * 1000); // Convert seconds to milliseconds
   const options: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: true,
-    timeZoneName: 'short',
+    timeZoneName: "short"
   };
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 };
 
-const getColorFromStatusAndOutcome = (
-  status: string,
-  winner: boolean,
-): string => {
-  if (status === 'Final' || status === 'Final/OT') {
+const getColorFromStatusAndOutcome = (status: string, winner: boolean): string => {
+  if (status === "Final" || status === "Final/OT") {
     if (winner) {
-      return 'bg-emerald-600';
+      return "bg-emerald-600";
     } else {
-      return 'bg-red-600';
+      return "bg-red-600";
     }
   } else {
-    return 'bg-700';
+    return "bg-700";
   }
 };
 
 const winningTeam = (game: GameWithPrediction): number => {
-  if (game.status === 'Final' || game.status === 'Final/OT') {
+  if (game.status === "Final" || game.status === "Final/OT") {
     return game.home_team.score.points > game.away_team.score.points
       ? game.home_team.id
       : game.away_team.id;
@@ -95,9 +93,13 @@ interface ITeamInfoProps {
   game: GameWithPrediction;
 }
 
+interface IQuickDisplayProps {
+  game: Game;
+}
+
 export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
   const formatPeriodType = (period: Period) => {
-    if (period.period_type === 'REGULAR') {
+    if (period.period_type === "REGULAR") {
       return `Quarter ${period.period}`;
     } else {
       return period.period_type;
@@ -110,9 +112,7 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
         <TableRow>
           <For each={props.team.score.periods}>
             {(period, _) => (
-              <TableHead class="text-center text-300">
-                {formatPeriodType(period)}
-              </TableHead>
+              <TableHead class="text-center text-300">{formatPeriodType(period)}</TableHead>
             )}
           </For>
         </TableRow>
@@ -122,9 +122,7 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
           <For each={props.team.score.periods}>
             {(period, _) => (
               <TableCell class="text-center">
-                {period.score === null || period.score === 0
-                  ? '-'
-                  : period.score}
+                {period.score === null || period.score === 0 ? "-" : period.score}
               </TableCell>
             )}
           </For>
@@ -139,11 +137,9 @@ export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
     <div class="bg-700 p-4 rounded mt-4">
       <h4 class="font-semibold">Key Player - {props.team.name}</h4>
       <p>{props.team.leader.name}</p>
-      <p class="text-sm text-gray-200">Points: {props.team.leader.points}</p>
-      <p class="text-sm text-gray-200">
-        Rebounds: {props.team.leader.rebounds}
-      </p>
-      <p class="text-sm text-gray-200">Assists: {props.team.leader.assists}</p>
+      <p class="text-sm text-gray-200 light:text-100">Points: {props.team.leader.points}</p>
+      <p class="text-sm text-gray-200 light:text-100">Rebounds: {props.team.leader.rebounds}</p>
+      <p class="text-sm text-gray-200 light:text-100">Assists: {props.team.leader.assists}</p>
     </div>
   );
 };
@@ -167,15 +163,14 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
           <Show
             when={
               props.prediction &&
-              props.prediction.prediction_type === 'win-loss' &&
-              props.prediction.prediction ===
-                `${props.team.city} ${props.team.name}`
+              props.prediction.prediction_type === "win-loss" &&
+              props.prediction.prediction === `${props.team.city} ${props.team.name}`
             }
           >
             <Badge
               class={`ml-2 ${getColorFromStatusAndOutcome(
                 props.game.status,
-                props.winner === props.team.id,
+                props.winner === props.team.id
               )} text-white`}
             >
               Projected Winner
@@ -184,6 +179,51 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
         </span>
       </CardDescription>
     </div>
+  );
+};
+
+export const QuickDisplay: Component<IQuickDisplayProps> = (props: IQuickDisplayProps) => {
+  const handleClick = (event: MouseEvent) => {
+    event.preventDefault();
+    const targetId = `#game-card-${props.game.id}`;
+    const targetElement = document.querySelector(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest"
+      });
+    }
+  };
+
+  return (
+    <Motion.div
+      class="flex flex-row items-center justify-between w-full p-2 mb-2 bg-700 hover:bg-500 rounded-lg hover:shadow-lg cursor-pointer"
+      initial={false}
+      hover={{ y: [-3, -5, -3], scale: [1, 1.01, 1] }}
+      transition={{ duration: 1, easing: "ease-in-out", repeat: Infinity }}
+      onClick={handleClick}
+    >
+      <div class="flex items-center">
+        <Avatar class="h-14 w-14">
+          <AvatarImage
+            alt={`${props.game.home_team.name}'s logo`}
+            src={getLogo(props.game.home_team.abbreviation.toLowerCase())}
+          />
+        </Avatar>
+        <span class="ml-1">{props.game.home_team.name}</span>
+      </div>
+      <div>vs</div>
+      <div class="flex items-center">
+        <span class="mr-1">{props.game.away_team.name}</span>
+        <Avatar class="h-14 w-14">
+          <AvatarImage
+            alt={`${props.game.away_team.name}'s logo`}
+            src={getLogo(props.game.away_team.abbreviation.toLowerCase())}
+          />
+        </Avatar>
+      </div>
+    </Motion.div>
   );
 };
 
@@ -202,7 +242,10 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   const [injuryReportOpen, setInjuryReportOpen] = createSignal(false);
   return (
     <>
-      <Card class="w-full max-w-4xl mx-auto bg-secondary rounded-lg shadow-md overflow-hidden p-4 text-white border-4 border-700">
+      <Card
+        class="w-full max-w-4xl mx-auto bg-secondary rounded-lg shadow-md overflow-hidden p-4 text-white light:text-black border-4 border-700"
+        id={`game-card-${props.game.id}`}
+      >
         <CardHeader>
           <div class="flex flex-row items-center justify-between">
             <TeamInfo
@@ -211,9 +254,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               prediction={props.game.prediction}
               game={props.game}
             />
-            <span class="uppercase leading-3 font-boldtext-sm text-400">
-              vs
-            </span>
+            <span class="uppercase leading-3 font-boldtext-sm text-400">vs</span>
             <TeamInfo
               team={props.game.away_team}
               winner={winningTeam(props.game)}
@@ -234,19 +275,15 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <div class="flex items-center justify-center text-sm">
                 <FiClock class="mr-1 h-4 w-4 inline-block" />
                 <span class="ml-2">
-                  <Show when={props.game.status === 'PPD'}>
+                  <Show when={props.game.status === "PPD"}>
                     <p class="text-xs text-gray-400">Postponed</p>
                   </Show>
 
-                  <span
-                    class={`${props.game.status === 'PPD' ? 'line-through' : ''} `}
-                  >
+                  <span class={`${props.game.status === "PPD" ? "line-through" : ""} `}>
                     {formattedTimeForUser(props.game.start_time_unix)}
                   </span>
 
-                  <Show
-                    when={!isLive(props.game) && props.game.status !== 'PPD'}
-                  >
+                  <Show when={!isLive(props.game) && props.game.status !== "PPD"}>
                     <p class={`text-xs text-gray-400 text-center font-bold`}>
                       {timeUntilGame(props.game)}
                     </p>
@@ -267,34 +304,30 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               <div class="col-span-2" id={`${props.game.id}-live-score`}>
                 <div class="text-center bg-800 p-4 rounded-lg">
                   <div class="flex items-center justify-center mb-2">
-                    <Show
-                      when={!props.game.status.toLowerCase().includes('final')}
-                    >
+                    <Show when={!props.game.status.toLowerCase().includes("final")}>
                       <span class="text-red-500 animate-pulse mr-2">
                         <OcDotfill3 />
                       </span>
-                      <span class="text-white font-bold">Live</span>
+                      <span class="text-white light:text-black font-bold">Live</span>
                     </Show>
                   </div>
                   <div class="flex justify-center items-center text-2xl font-bold mb-2">
                     <div class="text-center">
-                      <p class="text-white">{props.game.home_team.name}</p>
-                      <p class="text-white bg-700 py-2 px-4 rounded">
+                      <p class="text-white light:text-black">{props.game.home_team.name}</p>
+                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded">
                         {props.game.home_team.score.points}
                       </p>
                     </div>
                     <span class="text-sm text-gray-400 mt-6 mx-3"> - </span>
                     <div class="text-center">
-                      <p class="text-white">{props.game.away_team.name}</p>
-                      <p class="text-white bg-700 py-2 px-4 rounded">
+                      <p class="text-white light:text-black">{props.game.away_team.name}</p>
+                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded">
                         {props.game.away_team.score.points}
                       </p>
                     </div>
                   </div>
-                  <p class="text-sm text-gray-400">
-                    {props.game.status.includes('ET')
-                      ? 'Starting soon!'
-                      : props.game.status}
+                  <p class="text-sm text-gray-400 light:text-100">
+                    {props.game.status.includes("ET") ? "Starting soon!" : props.game.status}
                   </p>
                 </div>
               </div>
@@ -306,13 +339,15 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         </CardContent>
         <CardFooter class="mt-4 block">
           <div>
-            <Show when={props.game.prediction && props.game.prediction.prediction_type == 'win-loss'}>
+            <Show
+              when={props.game.prediction && props.game.prediction.prediction_type == "win-loss"}
+            >
               <h3 class="font-bold">Prediction Confidence</h3>
               <div class="bg-600 p-4 rounded mt-4">
                 <p class="text-sm">
-                  The prediction model has a confidence of{' '}
-                  {((props.game.prediction?.confidence ?? 0) * 100).toFixed(1)}%
-                  for the <span class="font-bold">{props.game.prediction?.prediction}</span> to win.
+                  The prediction model has a confidence of{" "}
+                  {((props.game.prediction?.confidence ?? 0) * 100).toFixed(1)}% for the{" "}
+                  <span class="font-bold">{props.game.prediction?.prediction}</span> to win.
                 </p>
               </div>
             </Show>
@@ -320,11 +355,11 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           <div class="flex flex-row items-center justify-center mt-4">
             <Show
               when={[props.game.home_team, props.game.away_team].every(
-                (team) => team.injuries.length > 0,
+                team => team.injuries.length > 0
               )}
             >
               <Button
-                class="bg-700 text-white"
+                class="bg-700 text-white light:text-black"
                 variant="default"
                 onClick={() => setInjuryReportOpen(true)}
               >
@@ -340,34 +375,20 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                       <Table class="mt-2">
                         <TableHeader class="text-white">
                           <TableRow>
-                            <TableHead class="text-center text-white ">
-                              Team
-                            </TableHead>
-                            <TableHead class="text-center text-white">
-                              Player
-                            </TableHead>
-                            <TableHead class="text-center text-white">
-                              Status
-                            </TableHead>
+                            <TableHead class="text-center text-white ">Team</TableHead>
+                            <TableHead class="text-center text-white">Player</TableHead>
+                            <TableHead class="text-center text-white">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody class="">
-                          <For
-                            each={[props.game.home_team, props.game.away_team]}
-                          >
+                          <For each={[props.game.home_team, props.game.away_team]}>
                             {(team, _) => (
                               <For each={team.injuries}>
                                 {(injury, _) => (
                                   <TableRow>
-                                    <TableCell class="text-center">
-                                      {team.name}
-                                    </TableCell>
-                                    <TableCell class="text-center">
-                                      {injury.player}
-                                    </TableCell>
-                                    <TableCell class="text-center">
-                                      {injury.status}
-                                    </TableCell>
+                                    <TableCell class="text-center">{team.name}</TableCell>
+                                    <TableCell class="text-center">{injury.player}</TableCell>
+                                    <TableCell class="text-center">{injury.status}</TableCell>
                                   </TableRow>
                                 )}
                               </For>
