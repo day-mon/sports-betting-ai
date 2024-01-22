@@ -41,6 +41,15 @@ class Parameters(BaseModel):
     GameSubtype: Any
     ISTRound: Any
 
+class ModelFeature(BaseModel):
+    name: str
+    description: str
+    friendly_name: str
+class ModelInfo(BaseModel):
+    name: str
+    description: str
+    features: List[ModelFeature]
+
 
 class ResultSet(BaseModel):
     name: str

@@ -1,7 +1,4 @@
-import csv
-import json
 import os
-import uuid
 from abc import ABC, abstractmethod
 from typing import Literal, Optional, Union
 
@@ -14,7 +11,6 @@ from loguru import logger
 from pandas import DataFrame
 from pydantic import BaseModel
 
-from api import constants
 from api.business.daily_games import DailyGame
 from api.business.factory import AbstractFactory, FactoryItem
 from api.model.model.model import TeamStats
@@ -107,7 +103,7 @@ class TFPredictionModel(PredictionModel):
                 Prediction(
                     prediction_type=self.prediction_type,
                     prediction=di[index]["home_team"]
-                    if prediction == 0
+                    if prediction == 1
                     else di[index]["away_team"],
                     game_id=corresponding_game.game_id,
                     confidence=confidence,
