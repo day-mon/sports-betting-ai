@@ -314,14 +314,14 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   <div class="flex justify-center items-center text-2xl font-bold mb-2">
                     <div class="text-center">
                       <p class="text-white light:text-black">{props.game.home_team.name}</p>
-                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded">
+                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
                         {props.game.home_team.score.points}
                       </p>
                     </div>
                     <span class="text-sm text-gray-400 mt-6 mx-3"> - </span>
                     <div class="text-center">
                       <p class="text-white light:text-black">{props.game.away_team.name}</p>
-                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded">
+                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
                         {props.game.away_team.score.points}
                       </p>
                     </div>

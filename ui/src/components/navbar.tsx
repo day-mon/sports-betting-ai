@@ -29,7 +29,7 @@ export const Navbar: Component<Props> = (props: Props) => {
         <Select
           value={theme()}
           onChange={changeTheme}
-          options={["blackout", "logan", "lavender", "light"]}
+          options={["blackout", "logan", "lavender", "light", "blue"]}
           placeholder="Select a theme"
           itemComponent={props => <SelectItem item={props.item}>{props.item.rawValue}</SelectItem>}
         >
