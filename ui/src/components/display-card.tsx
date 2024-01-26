@@ -158,7 +158,7 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
         <span>{`${props.team.wins} - ${props.team.losses}`}</span>
         <span class="flex flex-row items-center mt-1">
           <Show when={props.winner === props.team.id}>
-            <Badge class="bg-yellow-600 text-black">Winner</Badge>
+            <Badge class="bg-yellow-600 hover:bg-yellow-600 text-black">Winner</Badge>
           </Show>
           <Show
             when={
@@ -364,42 +364,42 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 onClick={() => setInjuryReportOpen(true)}
               >
                 View Injury Report
-                <AlertDialog
-                  open={injuryReportOpen()}
-                  onOpenChange={setInjuryReportOpen}
-                  preventScroll={true}
-                >
-                  <AlertDialogContent>
-                    <AlertDialogTitle>Injury Report</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      <Table class="mt-2">
-                        <TableHeader class="text-white">
-                          <TableRow>
-                            <TableHead class="text-center text-white ">Team</TableHead>
-                            <TableHead class="text-center text-white">Player</TableHead>
-                            <TableHead class="text-center text-white">Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody class="">
-                          <For each={[props.game.home_team, props.game.away_team]}>
-                            {(team, _) => (
-                              <For each={team.injuries}>
-                                {(injury, _) => (
-                                  <TableRow>
-                                    <TableCell class="text-center">{team.name}</TableCell>
-                                    <TableCell class="text-center">{injury.player}</TableCell>
-                                    <TableCell class="text-center">{injury.status}</TableCell>
-                                  </TableRow>
-                                )}
-                              </For>
-                            )}
-                          </For>
-                        </TableBody>
-                      </Table>
-                    </AlertDialogDescription>
-                  </AlertDialogContent>
-                </AlertDialog>
               </Button>
+              <AlertDialog
+                open={injuryReportOpen()}
+                onOpenChange={setInjuryReportOpen}
+                preventScroll={true}
+              >
+                <AlertDialogContent class="bg-900 p-4 rounded-lg">
+                    <AlertDialogTitle class="flex flex-row justify-center items-center text-2xl font-bold mb-2">Injury Report</AlertDialogTitle>
+                    <AlertDialogDescription>
+                    <Table class="mt-2">
+                      <TableHeader>
+                        <TableRow class="bg-700 text-300">
+                          <TableHead class="text-center font-semibold">Team</TableHead>
+                          <TableHead class="text-center font-semibold">Player</TableHead>
+                          <TableHead class="text-center font-semibold">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <For each={[props.game.home_team, props.game.away_team]}>
+                          {(team, _) => (
+                            <For each={team.injuries}>
+                              {(injury, _) => (
+                                <TableRow>
+                                  <TableCell class="text-center text-100">{team.name}</TableCell>
+                                  <TableCell class="text-center text-100">{injury.player}</TableCell>
+                                  <TableCell class="text-center text-100">{injury.status}</TableCell>
+                                </TableRow>
+                              )}
+                            </For>
+                          )}
+                        </For>
+                      </TableBody>
+                    </Table>
+                  </AlertDialogDescription>
+                </AlertDialogContent>
+              </AlertDialog>
             </Show>
           </div>
         </CardFooter>

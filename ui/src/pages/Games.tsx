@@ -1,7 +1,7 @@
 import { FiCalendar } from "solid-icons/fi";
 import { For, Show, createSignal, onCleanup, onMount } from "solid-js";
 import { Motion } from "solid-motionone";
-import { DemoCard as GameCard, QuickDisplay } from "~/components/display-card";
+import { DemoCard as GameCard } from "~/components/display-card";
 import { Loading } from "~/components/loading";
 import {
   Select,
@@ -23,18 +23,19 @@ export const Games = () => {
   const [liveUpdates, setLiveUpdates] = createSignal<boolean>(false);
   const [predictions, setPredictions] = createSignal<Prediction[]>([]);
   const [predictionLoading, setPredictionLoading] = createSignal<boolean>(false);
+  const BASE_URL = import.meta.env.VITE_BASE_URL as string;
 
   let intervalId: NodeJS.Timeout;
 
   const fetchGames = async () => {
-    const res = await fetch("https://apidev.accuribet.win/api/v1/games/daily?with_odds=true");
+    const res = await fetch(`${BASE_URL}/games/daily?with_odds=true`);
     const data = await res.json();
 
     setGames(data as Game[]);
   };
 
   const getModels = async () => {
-    const res = await fetch("https://apidev.accuribet.win/api/v1/model/list");
+    const res = await fetch(`${BASE_URL}/model/list`);
     const data = await res.json();
 
     setModels(data as string[]);
@@ -42,12 +43,11 @@ export const Games = () => {
 
   const fetchPredictions = async (model: string) => {
     if (!model) return;
-    const cacheKey = `${games()
-      .map(game => game.id)
-      .join("-")}--${model}`;
+
+    const cacheKey = `${games().map((game) => game.id).join('-')}-${model}`;
     const cachedPredictions = localStorage.getItem(cacheKey);
+
     if (cachedPredictions) {
-      console.log("Using cached predictions");
       setSelectedModel(model);
       setPredictions(JSON.parse(cachedPredictions) as Prediction[]);
       return;
@@ -55,29 +55,17 @@ export const Games = () => {
 
     setPredictionLoading(true);
 
-    let res;
     try {
-      res = await fetch(`https://apidev.accuribet.win/api/v1/model/predict/${model}`);
+      const res = await fetch(`${BASE_URL}/model/predict/${model}`);
+      const data = (await res.json()) as Prediction[];
+
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      setPredictions(data);
+      setSelectedModel(model);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       setPredictionLoading(false);
-    }
-    if (!res) return;
-
-    const data = (await res.json()) as Prediction[];
-
-    localStorage.setItem(cacheKey, JSON.stringify(data));
-    setPredictions(data);
-    setSelectedModel(model);
-  };
-
-  const toggleLiveUpdates = () => {
-    setLiveUpdates(!liveUpdates());
-    if (liveUpdates()) {
-      intervalId = setInterval(fetchGames, 3_000);
-    } else {
-      clearInterval(intervalId);
     }
   };
 
@@ -105,6 +93,7 @@ export const Games = () => {
         // Live games come first
         if (isGameActuallyLive(a) && !isGameActuallyLive(b)) return -1;
         if (!isGameActuallyLive(a) && isGameActuallyLive(b)) return 1;
+        if (isGameActuallyLive(a) && isGameActuallyLive(b)) return 0;
 
         // Then games with status 'Final'
         if (a.status === "Final" && b.status !== "Final") return -1;
@@ -139,12 +128,6 @@ export const Games = () => {
     <main class="pt-4 min-h-screen bg-primary">
       <Show when={games().length > 0} keyed fallback={<Loading />}>
         <div class="grid lg:grid-cols-4 grid-cols-1 container text-white light:text-black">
-          <div class="col-span-1 mx-2">
-            <h3 class="text-lg font-bold underline underline-offset-2">Games</h3>
-            <div class="flex flex-col items-start justify-between">
-              <For each={games()}>{game => <QuickDisplay game={game} />}</For>
-            </div>
-          </div>
           <Motion.div
             animate={{ opacity: [0, 1] }}
             transition={{ duration: 1, easing: "ease-in-out" }}
@@ -180,6 +163,7 @@ export const Games = () => {
                   </SelectTrigger>
                   <SelectContent class="bg-primary" />
                 </Select>
+
               </div>
               <div
                 id="options"
@@ -196,7 +180,7 @@ export const Games = () => {
                     <TooltipTrigger>
                       <Switch
                         checked={liveUpdates()}
-                        onChange={toggleLiveUpdates}
+                        onChange={setLiveUpdates}
                         disabled={!gamesPlaying(games())}
                       />
                     </TooltipTrigger>
