@@ -311,7 +311,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                       <span class="text-white light:text-black font-bold">Live</span>
                     </Show>
                   </div>
-                  <div class="flex justify-center items-center text-2xl font-bold mb-2">
+                  <div class="grid grid-cols-3 text-2xl font-bold mb-2 px-2">
                     <div class="text-center">
                       <p class="text-white light:text-black">{props.game.home_team.name}</p>
                       <p class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
@@ -371,8 +371,10 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 preventScroll={true}
               >
                 <AlertDialogContent class="bg-900 p-4 rounded-lg">
-                    <AlertDialogTitle class="flex flex-row justify-center items-center text-2xl font-bold mb-2">Injury Report</AlertDialogTitle>
-                    <AlertDialogDescription>
+                  <AlertDialogTitle class="flex flex-row justify-center items-center text-2xl font-bold mb-2">
+                    Injury Report
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
                     <Table class="mt-2">
                       <TableHeader>
                         <TableRow class="bg-700 text-300">
@@ -388,8 +390,12 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                               {(injury, _) => (
                                 <TableRow>
                                   <TableCell class="text-center text-100">{team.name}</TableCell>
-                                  <TableCell class="text-center text-100">{injury.player}</TableCell>
-                                  <TableCell class="text-center text-100">{injury.status}</TableCell>
+                                  <TableCell class="text-center text-100">
+                                    {injury.player}
+                                  </TableCell>
+                                  <TableCell class="text-center text-100">
+                                    {injury.status}
+                                  </TableCell>
                                 </TableRow>
                               )}
                             </For>
