@@ -4,6 +4,7 @@ import { Game, GameWithPrediction, Period, Team } from "~/interface";
 import { FiClock } from "solid-icons/fi";
 import { IoLocationOutline } from "solid-icons/io";
 import { OcDotfill3 } from "solid-icons/oc";
+import { Motion } from "solid-motionone";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -31,7 +32,6 @@ import {
 } from "~/components/ui/table";
 import { isLive, timeUntilGame } from "~/lib/utils.ts";
 import { Prediction } from "~/model/prediction.ts";
-import { Motion } from "solid-motionone";
 
 const logos = import.meta.glob("../assets/teams/*.svg", { eager: true });
 
@@ -247,7 +247,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
         id={`game-card-${props.game.id}`}
       >
         <CardHeader>
-          <div class="flex flex-row items-center justify-between">
+          <div class="grid grid-cols-3 items-center justify-items-center">
             <TeamInfo
               team={props.game.home_team}
               winner={winningTeam(props.game)}
@@ -311,19 +311,19 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                       <span class="text-white light:text-black font-bold">Live</span>
                     </Show>
                   </div>
-                  <div class="grid grid-cols-3 text-2xl font-bold mb-2 px-2">
-                    <div class="text-center">
-                      <p class="text-white light:text-black">{props.game.home_team.name}</p>
-                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
+                  <div class="grid grid-cols-3 items-center justify-items-center text-2xl font-bold mb-2 px-2">
+                    <div class="flex flex-col items-center">
+                      <span class="text-white light:text-black">{props.game.home_team.name}</span>
+                      <span class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
                         {props.game.home_team.score.points}
-                      </p>
+                      </span>
                     </div>
-                    <span class="text-sm text-gray-400 mt-6 mx-3"> - </span>
-                    <div class="text-center">
-                      <p class="text-white light:text-black">{props.game.away_team.name}</p>
-                      <p class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
+                    <span class="text-sm text-gray-400"> - </span>
+                    <div class="flex flex-col items-center">
+                      <span class="text-white light:text-black">{props.game.away_team.name}</span>
+                      <span class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
                         {props.game.away_team.score.points}
-                      </p>
+                      </span>
                     </div>
                   </div>
                   <p class="text-sm text-gray-400 light:text-100">
