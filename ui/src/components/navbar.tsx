@@ -1,5 +1,5 @@
 import { Link } from "./link";
-import { Component, createSignal } from "solid-js";
+import { Component, createSignal, For } from 'solid-js';
 import {
   Select,
   SelectContent,
@@ -13,6 +13,10 @@ interface Props {
   callback: (theme: string) => void;
 }
 
+interface Route {
+  path: string;
+  display: string;
+}
 export const Navbar: Component<Props> = (props: Props) => {
   // let storedPreference = localStorage.getItem('theme');
   const [theme, setTheme] = createSignal(props.theme);
@@ -21,6 +25,22 @@ export const Navbar: Component<Props> = (props: Props) => {
     setTheme(theme);
     props.callback(theme);
   };
+
+  const routes = [
+    {
+      path: '/',
+      display: 'Home'
+    },
+    {
+      path: '/games',
+      display: 'Games'
+    },
+    {
+      path: '/history',
+      display: 'History'
+    }
+
+  ] as Route[]
 
   return (
     <header class="flex items-center justify-between px-6 py-4 bg-primary text-white light:text-black">
@@ -38,12 +58,8 @@ export const Navbar: Component<Props> = (props: Props) => {
           </SelectTrigger>
           <SelectContent />
         </Select>
-        <Link class="hover:underline" href="/">
-          Home
-        </Link>
-        <Link class="hover:underline" href="/games">
-          Games
-        </Link>
+        <For each={routes}>{route => <Link href={route.path}>{route.display}</Link>}</For>
+
       </nav>
     </header>
   );

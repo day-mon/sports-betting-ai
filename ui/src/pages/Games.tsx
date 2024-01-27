@@ -24,6 +24,7 @@ export const Games = () => {
   const [predictions, setPredictions] = createSignal<Prediction[]>([]);
   const [predictionLoading, setPredictionLoading] = createSignal<boolean>(false);
   const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+  console.log(import.meta.env)
 
   let intervalId: NodeJS.Timeout;
 
