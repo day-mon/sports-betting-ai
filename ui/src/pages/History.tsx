@@ -1,6 +1,3 @@
 export const History = () => {
-  return (
-    <>
-    </>
-  )
-}
+  return <></>;
+};

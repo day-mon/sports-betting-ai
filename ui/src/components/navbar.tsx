@@ -1,5 +1,5 @@
 import { Link } from "./link";
-import { Component, createSignal, For } from 'solid-js';
+import { Component, createSignal, For } from "solid-js";
 import {
   Select,
   SelectContent,
@@ -28,19 +28,18 @@ export const Navbar: Component<Props> = (props: Props) => {
 
   const routes = [
     {
-      path: '/',
-      display: 'Home'
+      path: "/",
+      display: "Home"
     },
     {
-      path: '/games',
-      display: 'Games'
+      path: "/games",
+      display: "Games"
     },
     {
-      path: '/history',
-      display: 'History'
+      path: "/history",
+      display: "History"
     }
-
-  ] as Route[]
+  ] as Route[];
 
   return (
     <header class="flex items-center justify-between px-6 py-4 bg-primary text-white light:text-black">
@@ -59,7 +58,6 @@ export const Navbar: Component<Props> = (props: Props) => {
           <SelectContent />
         </Select>
         <For each={routes}>{route => <Link href={route.path}>{route.display}</Link>}</For>
-
       </nav>
     </header>
   );

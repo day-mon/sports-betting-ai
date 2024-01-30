@@ -16,7 +16,7 @@ render(
     <Router root={App}>
       <Route path="/" component={Home} />
       <Route path="/games" component={Games} />
-      <Route path='/history' component={History} />
+      <Route path="/history" component={History} />
     </Router>
   ),
   root!
