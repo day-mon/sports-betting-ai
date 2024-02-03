@@ -19,7 +19,6 @@ redis = {extras = ["hiredis"], version = "^5.0.1"}
 openai = "^1.6.1"
 server-thread = "^0.2.0"
 
-
 [tool.poetry.dev-dependencies]
 poethepoet = "^0.24.4"
 black = "^23.12.1"

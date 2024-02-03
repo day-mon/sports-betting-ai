@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  ui:
+    image: accuribet-ui
+    container_name: accuribet-ui
+    build:
+      context: ./ui
+      dockerfile: Dockerfile.dev
+    ports:
+        - "3000:3000"
+    develop:
+      watch:
+        - action: sync
+          path: ./ui
+          target: /usr/src/app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./ui/package.json
+        - action: rebuild
+          path: ./ui/package-lock.json
+  api:
+    image: accuribet-api
+    container_name: accuribet-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    ports:
+        - "8000:8000"
+    develop:
+      watch:
+        - action: sync
+          path: ./api
+          target: /app
+          ignore:
+            - .venv/
+            - .idea/
+        - action: rebuild
+          path: ./app/poetry.lock
+        - action: rebuild
+          path: ./api/pyproject.toml

@@ -33,7 +33,6 @@ async def lifespan(_app: FastAPI):
     print("shutdown")
 
 
-
 BASE_PATH = "/api/v1"
 
 app = FastAPI(
@@ -157,11 +156,5 @@ routers = [games.router, model.router, ping.router]
 for router in routers:
     app.include_router(router, prefix=BASE_PATH, dependencies=[Depends(log_body)])
 
-
-
-
-if __name__ == '__main__':
-
-
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False)
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, access_log=False, reload=True)
