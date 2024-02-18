@@ -48,3 +48,7 @@ Contributions are what make the open source community such an amazing place to l
 [issues-url]: https://github.com/day-mon/sports-betting-ai/issues
 [stars-shield]: https://img.shields.io/github/stars/day-mon/sports-betting-ai.svg?style=for-the-badge
 [stars-url]: https://github.com/day-mon/sports-betting-ai/stargazers
+
+                        
+## Stargazers over time
+[![Stargazers over time](https://starchart.cc/day-mon/sports-betting-ai.svg?variant=adaptive)](https://starchart.cc/day-mon/sports-betting-ai)
