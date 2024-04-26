@@ -1,4 +1,6 @@
 import { Link } from "~/components/link.tsx";
+import { Motion } from "solid-motionone";
+import { Button } from "~/components/ui/button.tsx";
 
 export const Home = () => {
   return (
@@ -8,7 +10,11 @@ export const Home = () => {
           <section class="w-full py-12 md:py-24 lg:py-32">
             <div class="container px-4 md:px-6">
               <div class="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-                <div class="flex flex-col justify-center space-y-4">
+                <Motion.div
+                  class="flex flex-col justify-center space-y-4"
+                  animate={{ x: [-200, 0], opacity: [0, 1] }}
+                  transition={{ duration: 1, easing: "ease-in-out" }}
+                >
                   <div class="space-y-2">
                     <h1 class="text-3xl text-100 light:text-white font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
                       Predict NBA Game Outcomes with Accuribet
@@ -19,14 +25,19 @@ export const Home = () => {
                       predict the outcome.
                     </p>
                   </div>
-                </div>
-                <img
-                  alt="Hero"
-                  class="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
-                  height="550"
-                  src="https://placeholder.pics/svg/300/F97EFF-8589FF/Placedholder"
-                  width="550"
-                />
+                </Motion.div>
+                <Motion.div
+                  animate={{ y: [-200, 0], opacity: [0, 1] }}
+                  transition={{ duration: 1, easing: "ease-in-out" }}
+                >
+                  <img
+                    alt="Hero"
+                    class="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
+                    height="550"
+                    src="https://placeholder.pics/svg/300/F97EFF-8589FF/Placedholder"
+                    width="550"
+                  />
+                </Motion.div>
               </div>
             </div>
           </section>
@@ -41,9 +52,8 @@ export const Home = () => {
                     Unparalleled Prediction Accuracy
                   </h2>
                   <p class="max-w-[900px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-secondary light:text-100">
-                    Accuribet's machine learning models have been trained on years of historical NBA
-                    data, giving you the most accurate predictions in the industry. Our users report
-                    an average accuracy of over 80% on their bets.
+                    Accuribet's machine learning models have been trained on over 10 years of
+                    historical NBA data, ensuring accuracy in our predictions.
                   </p>
                 </div>
               </div>
@@ -83,8 +93,8 @@ export const Home = () => {
                       <div class="grid gap-1">
                         <h3 class="text-xl font-bold text-primary light:text-black">Easy to Use</h3>
                         <p class="text-secondary light:text-100">
-                          Our intuitive interface makes it simple to access the information you need
-                          to make informed bets.
+                          Our intuitive interface makes it simple to access the information you
+                          need.
                         </p>
                       </div>
                     </li>
@@ -101,9 +111,11 @@ export const Home = () => {
                     Get Started with Accuribet
                   </h2>
                   <p class="mx-auto max-w-[600px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-secondary">
-                    Sign up today to start using our powerful NBA prediction platform and start
-                    winning big.
+                    Check out our live games page to see the latest predictions and updates.
                   </p>
+                  <Button class="w-full md:w-auto" color="secondary" size="lg">
+                    <Link href={"/games"}>Live Games</Link>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -111,7 +123,7 @@ export const Home = () => {
         </main>
         <footer class="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
           <p class="text-xs text-gray-500 dark:text-gray-400">
-            © 2024 Accuribet. All rights reserved.
+            ©&nbsp;{new Date().getFullYear()}&nbsp;Accuribet. All rights reserved.
           </p>
           <nav class="sm:ml-auto flex gap-4 sm:gap-6">
             <Link class="text-xs hover:underline underline-offset-4" href="#">

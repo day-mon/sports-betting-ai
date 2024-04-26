@@ -1,5 +1,5 @@
 import { AccuribetAPI } from '~/client/api.ts';
-import { createResource, createSignal, Match, Switch } from 'solid-js';
+import { createResource, Match, Switch } from 'solid-js';
 import { AnimationDiv } from '~/components/animated-div.tsx';
 import { Loading } from '~/components/loading.tsx';
 
