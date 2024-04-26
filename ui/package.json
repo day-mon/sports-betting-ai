@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Web UI for Accuribet",
   "dependencies": {
-    "@kobalte/core": "^0.12.1",
+    "@kobalte/core": "^0.12.6",
     "@solidjs/router": "^0.10.9",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
@@ -30,6 +30,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:prod": "vite build --mode production",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "ui:add": "npx solidui-cli@latest add"
   }
 }
