@@ -37,7 +37,7 @@ async function fetchPredictions(model: string) {
 }
 
 export const Games = () => {
-  const [games, { refetch  }] = createResource(fetchGames);
+  const [games, { refetch }] = createResource(fetchGames);
   const [models] = createResource(fetchModels);
   const [selectedModel, setSelectedModel] = createSignal<string | undefined>();
   const [predictions] = createResource(selectedModel, fetchPredictions);

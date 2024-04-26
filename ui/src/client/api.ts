@@ -22,6 +22,9 @@ export class AccuribetAPI {
  private constructor() {
   this.client = axios.create({
    baseURL: import.meta.env.VITE_API_BASE_URL as string,
+    validateStatus: (status: number) => {
+      return status < 500;
+    }
   })
 
  }

@@ -5,7 +5,7 @@ import { render } from "solid-js/web";
 import App from "~/App";
 import { Games } from "~/pages/Games";
 import { History } from "~/pages/History";
-import { Error } from "~/pages/Error";
+import { Notfound } from "~/pages/Notfound.tsx";
 
 import "./index.css";
 
@@ -17,7 +17,7 @@ render(
       {/*<Route path="/" component={Home} />*/}
       <Route path="/games" component={Games} />
       <Route path="/history" component={History} />
-      <Route path="*" component={Error} />
+      <Route path="*" component={Notfound} />
     </Router>
   ),
   root!
