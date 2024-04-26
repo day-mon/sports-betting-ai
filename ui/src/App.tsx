@@ -12,7 +12,7 @@ const App: Component = (props: any) => {
 
   return (
     <>
-      <div class={`flex flex-col min-h-screen ${theme()}`}>
+      <div class={`flex flex-col min-h-screen bg-primary ${theme()}`}>
         <Navbar theme={theme()} callback={changeThemeCallback} />
         {props.children}
       </div>

@@ -50,7 +50,7 @@ export class AccuribetAPI {
  }
 
  async modelAccuracy(
-    modelName: "v1" | "v2" | "ou"
+    modelName: string
   ): Promise<number> {
       const res = await this.client.get<number>(`/model/accuracy/${modelName}`);
       return res.data;
