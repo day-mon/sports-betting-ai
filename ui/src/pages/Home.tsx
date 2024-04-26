@@ -6,7 +6,7 @@ export const Home = () => {
   return (
     <>
       <div class="flex flex-col min-h-[100dvh] bg-primary light:bg-primary text-100 light:text-black">
-        <main class="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+        <main class="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blackout:from-700 blackout:via-800 blackout:to-900 blue:from-700 blue:via-800 blue:to-900 logan:from-700 logan:via-800 logan:to-900 lavender:from-700 lavender:via-800 lavender:to-900">
           <section class="w-full py-12 md:py-24 lg:py-32">
             <div class="container px-4 md:px-6">
               <div class="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
