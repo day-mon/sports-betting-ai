@@ -26,7 +26,6 @@ class Prediction(BaseModel):
     game_id: str
     confidence: Optional[float] = None
 
-
 class PredictionModel(ABC):
     model_name: str
     model_dir: str

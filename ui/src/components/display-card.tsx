@@ -241,7 +241,7 @@ export const AdvancedGameCard: Component<ITeamProps> = (props: ITeamProps) => {
 export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   const [injuryReportOpen, setInjuryReportOpen] = createSignal(false);
   return (
-    <>
+    <div>
       <Card
         class="w-full max-w-4xl mx-auto bg-secondary rounded-lg shadow-md overflow-hidden p-4 text-white light:text-black border-4 border-700"
         id={`game-card-${props.game.id}`}
@@ -410,6 +410,6 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           </div>
         </CardFooter>
       </Card>
-    </>
+    </div>
   );
 };

@@ -28,10 +28,6 @@ export const Navbar: Component<Props> = (props: Props) => {
 
   const routes = [
     {
-      path: "/",
-      display: "Home"
-    },
-    {
       path: "/games",
       display: "Games"
     },

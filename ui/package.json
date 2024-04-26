@@ -7,6 +7,7 @@
   "dependencies": {
     "@kobalte/core": "^0.12.1",
     "@solidjs/router": "^0.10.9",
+    "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "solid-icons": "^1.1.0",

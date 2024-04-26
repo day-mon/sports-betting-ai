@@ -15,7 +15,7 @@ class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=os.getenv(
             "ENV_FILE_OVERRIDE",
-            f"./api/resources/env/{os.getenv('ENVIRONMENT', 'development')}.env",
+            f'{os.path.dirname(__file__)}/../env/{os.getenv("ENVIRONMENT", "development")}.env',
         ),
         extra="ignore",
     )
