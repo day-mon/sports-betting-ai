@@ -1,3 +1,5 @@
+from typing import Optional
+
 from asyncpg import Record
 from pydantic import ConfigDict, BaseModel
 
@@ -7,8 +9,10 @@ from api.business.model import PredictionModel
 
 class AccuracyModel(BaseModel):
     model_name: str
-    accuracy: float
-    model_config = ConfigDict(protected_namespaces=())
+    win_rate: float
+    total_games: Optional[int] = None
+    total_correct: Optional[int] = None
+    model_config = ConfigDict(protected_namespaces=(), extra="allow")
 
     @staticmethod
     async def from_db(model: PredictionModel, db: Database) -> "AccuracyModel":
@@ -16,5 +20,5 @@ class AccuracyModel(BaseModel):
             model.accuracy_statement(), values=[model.model_name]
         )
         return AccuracyModel(
-            model_name=query_dates[0]["model_name"], accuracy=query_dates[0]["win_rate"]
+            **query_dates[0],
         )

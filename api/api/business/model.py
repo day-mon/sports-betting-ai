@@ -172,7 +172,9 @@ class TFPredictionModel(PredictionModel):
         return f"""
         SELECT
             model_name,
-            (COUNT(winner) FILTER (WHERE (winner = home_team_name AND prediction = home_team_name) OR (winner = away_team_name AND prediction = away_team_name))) * 100.0 / COUNT(winner) AS win_rate
+            (COUNT(winner) FILTER (WHERE (winner = home_team_name AND prediction = home_team_name) OR (winner = away_team_name AND prediction = away_team_name))) * 100.0 / COUNT(winner) AS win_rate,
+            COUNT(winner) AS total_games,
+            COUNT(winner) FILTER (WHERE (winner = home_team_name AND prediction = home_team_name) OR (winner = away_team_name AND prediction = away_team_name)) AS total_correct
         FROM
             saved_games
         WHERE
@@ -263,7 +265,7 @@ class OUPredictionModel(FortyEightDPModel):
 FROM
     saved_games
 WHERE
-    prediction ~ '^\d+$'
+    prediction ~ '^\\d+$'
     AND model_name = $1
 GROUP BY
     model_name"""

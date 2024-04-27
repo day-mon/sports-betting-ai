@@ -12,6 +12,7 @@ from api.business.database import DatabaseFactory, Database
 from api.business.model import PredictionModelFactory, PredictionModel, Prediction
 from api.model.model.accuracy import AccuracyModel
 from api.model.model.date_model import DateModel
+from api.model.model.saved_game import SavedGame
 from api.utils.daily_game import get_cache_key
 from resources.config.application import AppSettings, get_settings
 from resources.config.cache import CacheSettings, get_cache_settings
@@ -41,9 +42,9 @@ async def list_models() -> list[str]:
     },
 )
 async def predict(
-    name: str,
-    app_settings: AppSettings = Depends(get_settings),
-    cache_setting: CacheSettings = Depends(get_cache_settings),
+        name: str,
+        app_settings: AppSettings = Depends(get_settings),
+        cache_setting: CacheSettings = Depends(get_cache_settings),
 ) -> list[Prediction]:
     if name not in PredictionModelFactory.keys():
         logger.debug(f"Requested {app_settings.MODEL_DIR}/{name}")
@@ -98,9 +99,9 @@ async def predict(
 
 @router.get("/accuracy/{name}")
 async def history(
-    name: str,
-    app_settings: AppSettings = Depends(get_settings),
-    db_settings: DatabaseSettings = Depends(get_database_settings),
+        name: str,
+        app_settings: AppSettings = Depends(get_settings),
+        db_settings: DatabaseSettings = Depends(get_database_settings),
 ) -> AccuracyModel:
     model_names: list[str] = PredictionModelFactory.keys()
     if name not in model_names:
@@ -124,7 +125,7 @@ async def history(
 
 @router.get("/history/dates")
 async def history_dates(
-    db_settings: DatabaseSettings = Depends(get_database_settings),
+        db_settings: DatabaseSettings = Depends(get_database_settings),
 ) -> list[DateModel]:
     db: Database = DatabaseFactory.compute_or_get(
         name=db_settings.DATABASE_TYPE,
@@ -132,9 +133,41 @@ async def history_dates(
 
     model_names: list[str] = PredictionModelFactory.keys()
 
-    dates = await DateModel.from_db(
+    return await DateModel.from_db(
         models=model_names,
         db=db,
     )
 
-    return dates
+
+@router.get("/history")
+async def history_by_date(
+        date: str,
+        model_name: str,
+        db_settings: DatabaseSettings = Depends(get_database_settings),
+) -> list[SavedGame]:
+    db: Database = DatabaseFactory.compute_or_get(
+        name=db_settings.DATABASE_TYPE,
+    )
+    return await SavedGame.from_db(
+        db=db,
+        date=date,
+        model_name=model_name,
+    )
+
+
+@router.get("/history/{date}")
+async def history_date(
+        date: str,
+        db_settings: DatabaseSettings = Depends(get_database_settings),
+) -> list[AccuracyModel]:
+    db: Database = DatabaseFactory.compute_or_get(
+        name=db_settings.DATABASE_TYPE,
+    )
+
+    model_names: list[str] = PredictionModelFactory.keys()
+
+    return await AccuracyModel.from_db_date(
+        date=date,
+        models=model_names,
+        db=db,
+    )
