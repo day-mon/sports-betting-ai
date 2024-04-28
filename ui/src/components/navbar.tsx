@@ -1,27 +1,15 @@
 import { Link } from "./link";
-import { Component, createSignal, For } from "solid-js";
+import { For } from "solid-js";
 import { Settings } from "~/components/settings.tsx";
-import { useLocation } from '@solidjs/router';
-
-interface Props {
-  theme: string;
-  callback: (theme: string) => void;
-}
+import { useLocation } from "@solidjs/router";
 
 interface Route {
   path: string;
   display: string;
 }
 
-export const Navbar: Component<Props> = (props: Props) => {
-  // let storedPreference = localStorage.getItem('theme');
-  const [theme, setTheme] = createSignal(props.theme);
+export function Navbar() {
   const location = useLocation();
-
-  const changeTheme = (theme: string) => {
-    setTheme(theme);
-    props.callback(theme);
-  };
 
   const routes = [
     {
@@ -45,15 +33,15 @@ export const Navbar: Component<Props> = (props: Props) => {
             {route => (
               <Link
                 href={route.path}
-                class={`font-medium hover:underline underline-offset-4 ${location.pathname === route.path ? 'font-extrabold' : ''}`}
+                class={`font-medium hover:underline underline-offset-4 ${location.pathname === route.path ? "font-extrabold" : ""}`}
               >
                 {route.display}
               </Link>
             )}
           </For>
-          <Settings theme={theme()} callback={changeTheme} />
+          <Settings />
         </nav>
       </header>
     </>
   );
-};
+}

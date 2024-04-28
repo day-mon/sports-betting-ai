@@ -1,4 +1,4 @@
-import { ComponentProps } from "solid-js";
+import { ComponentProps, useContext } from "solid-js";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -14,14 +14,11 @@ import {
   SelectValue
 } from "~/components/ui/select.tsx";
 import { OcGear3 } from "solid-icons/oc";
+import { IThemeContext, ThemeContext } from "~/context/ThemeContext.tsx";
 
-export interface SettingsProps extends ComponentProps<"div"> {
-  theme: string;
-  callback: (theme: string) => void;
-}
-
-export function Settings(props: SettingsProps) {
+export function Settings() {
   const availableThemes = ["blackout", "logan", "lavender", "light", "blue"];
+  const themeContext: IThemeContext = useContext(ThemeContext);
 
   return (
     <AlertDialog>
@@ -29,7 +26,7 @@ export function Settings(props: SettingsProps) {
         <OcGear3 class="w-6 h-6" />
       </AlertDialogTrigger>
       <AlertDialogContent
-        class={`bg-primary dark:bg-blackout text-100 dark:text-white ${props.theme}`}
+        class={`bg-primary dark:bg-blackout text-100 dark:text-white ${themeContext.theme}`}
       >
         <AlertDialogTitle class="font-bold text-100 light:text-black underline underline-offset-2">
           Settings
@@ -37,8 +34,8 @@ export function Settings(props: SettingsProps) {
         <AlertDialogDescription>
           <label class="block text-sm font-medium mb-2 text-100 light:text-black">Theme</label>
           <Select
-            value={props.theme}
-            onChange={props.callback}
+            value={themeContext.theme}
+            onChange={themeContext.setTheme}
             options={availableThemes}
             placeholder="Select a theme"
             itemComponent={props => (
@@ -51,7 +48,7 @@ export function Settings(props: SettingsProps) {
             <SelectTrigger aria-label="Theme" class="w-[180px] bg-secondary">
               <SelectValue<string>>{state => state.selectedOption()}</SelectValue>
             </SelectTrigger>
-            <SelectContent class={`bg-secondary text-100 light:text-black ${props.theme}`} />
+            <SelectContent class={`bg-secondary text-100 light:text-black ${themeContext.theme}`} />
           </Select>
         </AlertDialogDescription>
       </AlertDialogContent>

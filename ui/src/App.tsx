@@ -1,19 +1,14 @@
-import { Component, createSignal } from "solid-js";
+import { Component, useContext } from "solid-js";
 import { Navbar } from "~/components/navbar";
+import { IThemeContext, ThemeContext } from "~/context/ThemeContext.tsx";
 
 const App: Component = (props: any) => {
-  let preferredTheme = localStorage.getItem("theme");
-  const [theme, setTheme] = createSignal(preferredTheme ? preferredTheme : "blackout");
-
-  const changeThemeCallback = (theme: string) => {
-    setTheme(theme);
-    localStorage.setItem("theme", theme);
-  };
+  const themeContext: IThemeContext = useContext(ThemeContext);
 
   return (
     <>
-      <div class={`flex flex-col min-h-screen bg-primary ${theme()}`}>
-        <Navbar theme={theme()} callback={changeThemeCallback} />
+      <div class={`flex flex-col min-h-screen bg-primary ${themeContext.theme}`}>
+        <Navbar />
         {props.children}
       </div>
     </>
