@@ -28,23 +28,30 @@ export function Settings(props: SettingsProps) {
       <AlertDialogTrigger>
         <OcGear3 class="w-6 h-6" />
       </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogTitle>Settings</AlertDialogTitle>
+      <AlertDialogContent
+        class={`bg-primary dark:bg-blackout text-100 dark:text-white ${props.theme}`}
+      >
+        <AlertDialogTitle class="font-bold text-100 light:text-black underline underline-offset-2">
+          Settings
+        </AlertDialogTitle>
         <AlertDialogDescription>
-          <label class="block text-sm font-medium mb-2">Theme</label>
+          <label class="block text-sm font-medium mb-2 text-100 light:text-black">Theme</label>
           <Select
             value={props.theme}
             onChange={props.callback}
             options={availableThemes}
             placeholder="Select a theme"
             itemComponent={props => (
-              <SelectItem item={props.item}>{props.item.rawValue}</SelectItem>
+              <SelectItem item={props.item} class="focus:bg-400 focus:font-bold light:focus:bg-800">
+                {props.item.rawValue}
+              </SelectItem>
             )}
+            class="text-100 light:text-black"
           >
-            <SelectTrigger aria-label="Theme" class="w-[180px]">
+            <SelectTrigger aria-label="Theme" class="w-[180px] bg-secondary">
               <SelectValue<string>>{state => state.selectedOption()}</SelectValue>
             </SelectTrigger>
-            <SelectContent />
+            <SelectContent class={`bg-secondary text-100 light:text-black ${props.theme}`} />
           </Select>
         </AlertDialogDescription>
       </AlertDialogContent>

@@ -2,6 +2,7 @@ import { Link } from "~/components/link.tsx";
 import { Motion } from "solid-motionone";
 import { Button } from "~/components/ui/button.tsx";
 import { AiFillGithub } from 'solid-icons/ai';
+import { AnimationDiv } from '~/components/animated-div.tsx';
 
 export const Home = () => {
   return (
@@ -11,10 +12,11 @@ export const Home = () => {
           <section class="w-full py-12 md:py-24 lg:py-32">
             <div class="container px-4 md:px-6">
               <div class="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-                <Motion.div
+                <AnimationDiv
                   class="flex flex-col justify-center space-y-4"
                   animate={{ x: [-200, 0], opacity: [0, 1] }}
-                  transition={{ duration: 1, easing: "ease-in-out" }}
+                  duration={1}
+                  easing={"ease-in-out"}
                 >
                   <div class="space-y-2">
                     <h1 class="text-3xl text-100 light:text-white font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -26,10 +28,11 @@ export const Home = () => {
                       predict the outcome.
                     </p>
                   </div>
-                </Motion.div>
-                <Motion.div
+                </AnimationDiv>
+                <AnimationDiv
                   animate={{ y: [-200, 0], opacity: [0, 1] }}
-                  transition={{ duration: 1, easing: "ease-in-out" }}
+                  duration={1}
+                  easing={"ease-in-out"}
                 >
                   <img
                     alt="Hero"
@@ -38,7 +41,7 @@ export const Home = () => {
                     src="https://placeholder.pics/svg/300/F97EFF-8589FF/Placedholder"
                     width="550"
                   />
-                </Motion.div>
+                </AnimationDiv>
               </div>
             </div>
           </section>
