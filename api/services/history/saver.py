@@ -41,9 +41,9 @@ class GameSaver(ABC):
 
     @abstractmethod
     async def unsaved(self,
-                       games: list[DailyGameResponse],
-                       model_name: str
-        ) -> list[DailyGameResponse]:
+                      games: list[DailyGameResponse],
+                      model_name: str
+                      ) -> list[DailyGameResponse]:
         """
         Checks if a game is already saved
         :param list[DailyGameResponse] games: DailyGame object
@@ -95,7 +95,6 @@ class DiskBasedGameSaver(GameSaver):
         return [game for game in games if game.id not in saved_game_ids]
 
 
-
 class PostgresBasedGameSaver(GameSaver):
     db: Postgres
 
@@ -141,7 +140,7 @@ class PostgresBasedGameSaver(GameSaver):
         return len(saved_games)
 
     async def unsaved(self, games: list[DailyGameResponse], model_name: str
-                       ) -> list[DailyGameResponse]:
+                      ) -> list[DailyGameResponse]:
         """
         Checks if a game is already saved
 

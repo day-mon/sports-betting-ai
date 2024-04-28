@@ -22,7 +22,8 @@ from resources.config.database import get_database_settings
 
 BASE_PATH = "/api/v1"
 
-with open("pyproject.toml", "rb") as f:
+# with open("pyproject.toml", "rb") as f:
+with open(f"{os.path.dirname(os.path.realpath(__file__))}/../pyproject.toml", "rb") as f:
     _META = tomli.load(f)
 
 app = FastAPI(
