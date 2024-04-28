@@ -47,8 +47,7 @@ export function History() {
 
   const oldestDateForModel = () => {
     if (!dates.error && dates()) {
-      // @ts-ignore
-      const datesForModel = dates().find(date => date.model_name === selectedModel());
+      const datesForModel = dates()?.find(date => date.model_name === selectedModel());
       if (datesForModel) {
         return datesForModel.dates[datesForModel.dates.length - 1];
       }
