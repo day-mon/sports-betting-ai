@@ -2,13 +2,14 @@ import { Link } from "~/components/link.tsx";
 import { Button } from "~/components/ui/button.tsx";
 import { AiFillGithub } from "solid-icons/ai";
 import { AnimationDiv } from "~/components/animated-div.tsx";
+import { FaSolidBasketball } from "solid-icons/fa";
 
 export const Home = () => {
   return (
     <>
       <div class="flex flex-col min-h-[100dvh] bg-primary light:bg-primary text-100 light:text-black">
         <main class="flex-1 bg-primary">
-          <section class="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r light:from-indigo-500 light:via-purple-500 light:to-pink-500 from-700 via-800 to-900">
+          <section class="flex items-center w-full min-h-[50vh] py-12 md:py-24 lg:py-32 bg-gradient-to-r light:from-indigo-500 light:via-purple-500 light:to-pink-500 from-700 via-800 to-900">
             <div class="container px-4 md:px-6">
               <div class="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
                 <AnimationDiv
@@ -29,17 +30,16 @@ export const Home = () => {
                   </div>
                 </AnimationDiv>
                 <AnimationDiv
-                  animate={{ y: [-200, 0], opacity: [0, 1] }}
-                  duration={1}
+                  animate={{
+                    y: [-200, 0, -50, -75, -100, -120, -125, -120, -100, -75, -50, 0],
+                    opacity: [0, 1]
+                  }}
+                  duration={1.2}
                   easing={"ease-in-out"}
                 >
-                  <img
-                    alt="Hero"
-                    class="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
-                    height="550"
-                    src="https://placeholder.pics/svg/300/F97EFF-8589FF/Placedholder"
-                    width="550"
-                  />
+                  <AnimationDiv animate={{ rotate: [0, 360] }} duration={1.2} easing={"linear"}>
+                    <FaSolidBasketball class="mx-auto w-48 h-48 overflow-hidden rounded-xl object-cover sm:w-full lg:order-last light:fill-white" />
+                  </AnimationDiv>
                 </AnimationDiv>
               </div>
             </div>
