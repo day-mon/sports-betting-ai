@@ -1,8 +1,7 @@
 import { Link } from "~/components/link.tsx";
-import { Motion } from "solid-motionone";
 import { Button } from "~/components/ui/button.tsx";
-import { AiFillGithub } from 'solid-icons/ai';
-import { AnimationDiv } from '~/components/animated-div.tsx';
+import { AiFillGithub } from "solid-icons/ai";
+import { AnimationDiv } from "~/components/animated-div.tsx";
 
 export const Home = () => {
   return (
@@ -130,10 +129,14 @@ export const Home = () => {
             ©&nbsp;{new Date().getFullYear()}&nbsp;Accuribet. All rights reserved.
           </p>
           <nav class="sm:ml-auto flex gap-4 sm:gap-6">
-            <Link class="text-xs flex flex-row hover:underline underline-offset-4" href="https://github.com/day-mon/sports-betting-ai">
+            <a
+              class="text-xs flex flex-row hover:underline underline-offset-4"
+              href="https://github.com/day-mon/sports-betting-ai"
+              target="_blank"
+            >
               <AiFillGithub class="w-4 h-4 mx-2" />
               Github
-            </Link>
+            </a>
           </nav>
         </footer>
       </div>
