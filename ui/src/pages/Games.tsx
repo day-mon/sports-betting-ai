@@ -19,17 +19,22 @@ import { Prediction } from '~/model/prediction.ts';
 import { AccuribetAPI } from '~/client/api.ts';
 import { AnimationDiv } from '~/components/animated-div.tsx';
 import { SimpleTooltip } from '~/components/tooltip.tsx';
-import { cache } from '@solidjs/router';
 
 async function fetchGames() {
   const instance = AccuribetAPI.getInstance();
   return await instance.dailyGames();
 }
 
-const fetchModels = cache(async () => {
+
+async function fetchModels() {
+  if (sessionStorage.getItem('models')) {
+    return JSON.parse(sessionStorage.getItem('models') as string);
+  }
   const instance = AccuribetAPI.getInstance();
-  return await instance.listModels();
-}, 'models');
+  const response =  await instance.listModels();
+  sessionStorage.setItem('models', JSON.stringify(response));
+  return response;
+}
 
 async function fetchPredictions(model: string) {
   const instance = AccuribetAPI.getInstance();

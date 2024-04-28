@@ -3,6 +3,8 @@ import { Button } from "~/components/ui/button.tsx";
 import { AiFillGithub } from "solid-icons/ai";
 import { AnimationDiv } from "~/components/animated-div.tsx";
 import { FaSolidBasketball } from "solid-icons/fa";
+import { BsCloudRain } from 'solid-icons/bs';
+import { TbBrain } from 'solid-icons/tb';
 
 export const Home = () => {
   return (
@@ -38,7 +40,7 @@ export const Home = () => {
                   easing={"ease-in-out"}
                 >
                   <AnimationDiv animate={{ rotate: [0, 360] }} duration={1.2} easing={"linear"}>
-                    <FaSolidBasketball class="mx-auto w-48 h-48 overflow-hidden rounded-xl object-cover sm:w-full lg:order-last light:fill-white" />
+                    <FaSolidBasketball class="mx-auto w-48 h-48 overflow-hidden rounded-xl object-cover sm:w-full lg:order-last light:fill-white transition-all duration-500 ease-in-out transform hover:scale-125 hover:rotate-45 cursor-pointer" />
                   </AnimationDiv>
                 </AnimationDiv>
               </div>
@@ -61,13 +63,7 @@ export const Home = () => {
                 </div>
               </div>
               <div class="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-                <img
-                  alt="Accuracy Chart"
-                  class="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last"
-                  height="310"
-                  src="https://placeholder.pics/svg/300x200/F97EFF-8589FF/Placedholder"
-                  width="550"
-                />
+                <TbBrain class="mx-auto w-48 h-48 overflow-hidden rounded-xl object-cover sm:w-full lg:order-last text-secondary"/>
                 <div class="flex flex-col justify-center space-y-4">
                   <ul class="grid gap-6">
                     <li>
