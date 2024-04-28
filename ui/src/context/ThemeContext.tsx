@@ -12,12 +12,14 @@ export interface IThemeContext {
 
 export const ThemeContext = createContext({} as IThemeContext);
 
+const ACCURIBET_THEME_KEY: string = "accuribet-theme";
+
 export function ThemeContextProvider(props: ThemeContextProviderProps) {
-  let preferredTheme = localStorage.getItem("accuribet-theme");
+  let preferredTheme = localStorage.getItem(ACCURIBET_THEME_KEY);
   const [themeStore, setThemeStore] = createStore<IThemeContext>({
     theme: preferredTheme ? preferredTheme : "blackout",
     setTheme(theme: string) {
-      localStorage.setItem("accuribet-theme", theme);
+      localStorage.setItem(ACCURIBET_THEME_KEY, theme);
       setThemeStore("theme", theme);
     }
   });

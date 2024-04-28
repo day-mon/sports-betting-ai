@@ -3,7 +3,6 @@ import { Button } from "~/components/ui/button.tsx";
 import { AiFillGithub } from "solid-icons/ai";
 import { AnimationDiv } from "~/components/animated-div.tsx";
 import { FaSolidBasketball } from "solid-icons/fa";
-import { BsCloudRain } from 'solid-icons/bs';
 import { TbBrain } from 'solid-icons/tb';
 
 export const Home = () => {
