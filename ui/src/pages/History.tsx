@@ -9,45 +9,30 @@ async function fetchHistory() {
   return await instance.getDates();
 }
 
-async function fetchHistoryForModelOnDate(model: string, date: string) {
-  const instance = AccuribetAPI.getInstance();
-  return await instance.getPredictedGames(date, model);
+interface IHistory {
+  model: string;
+  date: string;
 }
+
+async function fetchHistoryForModelOnDate(
+  value: IHistory
+): Promise<HistoryGame[] | undefined> {
+  if (value.date === "" || value.model === "") return undefined;
+  const instance = AccuribetAPI.getInstance();
+  return await instance.getPredictedGames(value.date, value.model);
+}
+
+
 
 export function History() {
   const [dates] = createResource<HistoryDate[]>(fetchHistory);
-  const [selectedModel, setSelectedModel] = createSignal("");
-  const [selectedDate, setSelectedDate] = createSignal("");
-  const [history, setHistory] = createSignal<HistoryGame[]>([]);
-  const [error, setError] = createSignal("");
+  const [currentData, setCurrentData] = createSignal<IHistory>({ model: "", date: "" } as IHistory);
+  const [historyResource] = createResource(currentData, fetchHistoryForModelOnDate);
 
-  const handleDateChange = (e: Event) => {
-    let target = e.target as HTMLInputElement;
-    setSelectedDate(target.value);
-    setHistory([]);
-
-    updateHistory().then(() => {
-      setError("");
-    });
-  };
-
-  const updateHistory = async () => {
-    const data = await fetchHistoryForModelOnDate(selectedModel(), selectedDate());
-
-    console.log("oldest date", oldestDateForModel());
-
-    if (data) {
-      setHistory(data as HistoryGame[]);
-      console.log(history());
-    } else {
-      setHistory([]);
-      setError("No data found for this model on this date");
-    }
-  };
 
   const oldestDateForModel = () => {
     if (!dates.error && dates()) {
-      const datesForModel = dates()?.find(date => date.model_name === selectedModel());
+      const datesForModel = dates()?.find(date => date.model_name === currentData().model);
       if (datesForModel) {
         return datesForModel.dates[datesForModel.dates.length - 1];
       }
@@ -69,7 +54,7 @@ export function History() {
               I would like to see the history of the
               <select
                 class={"mx-3 bg-primary border-b appearance-none border-white text-100"}
-                onChange={e => setSelectedModel(e.currentTarget.value)}
+                onChange={e => setCurrentData({ ...currentData(), model: e.target.value })}
                 disabled={dates.loading}
               >
                 <option disabled selected>
@@ -82,30 +67,33 @@ export function History() {
               model
             </span>
 
-            <Show when={error()}>
+            <Show when={historyResource.error}>
               <span class={"text-red-500 bg-gray-200 rounded-full font-bold px-3 py-1 mt-2"}>
-                Error! {error()}
+                Error! {historyResource.error.message}
               </span>
             </Show>
 
-            <Show when={selectedModel()}>
+            <Show when={currentData().model}>
               <input
                 type={"date"}
                 class={
                   "appearance-none mb-2 block bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                 }
-                onChange={handleDateChange}
+                onChange={(event) => {
+                  setCurrentData({ ...currentData(), date: event.target.value });
+                }}
                 max={new Date().toISOString().split("T")[0]}
                 min={oldestDateForModel()}
               />
             </Show>
 
-            <Show when={history()}>
-              <For each={history()}>
+            <Show when={historyResource()}>
+              <AnimationDiv class={"flex flex-col justify-between items-center h-fit w-1/2"}>
+              <For each={historyResource()}>
                 {game => (
-                  <div
+                  <AnimationDiv
                     id={game.game_id}
-                    class="flex flex-col mt-2 text-100 font-bold bg-secondary rounded-lg p-4"
+                    class="flex flex-col items-center mx-100 mt-2 text-100 w-full font-bold bg-secondary rounded-lg p-4"
                   >
                     <span>
                       {game.home_team_name} vs {game.away_team_name}
@@ -114,9 +102,10 @@ export function History() {
                       {game.home_team_score} - {game.away_team_score}
                     </span>
                     <span>{game.date}</span>
-                  </div>
+                  </AnimationDiv>
                 )}
               </For>
+              </AnimationDiv>
             </Show>
           </AnimationDiv>
         </Match>

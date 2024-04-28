@@ -1,6 +1,5 @@
 import { Component, createSignal, For, Show } from "solid-js";
 import { Game, GameWithPrediction, Period, Team } from "~/interface";
-
 import { FiClock } from "solid-icons/fi";
 import { IoLocationOutline } from "solid-icons/io";
 import { OcDotfill3 } from "solid-icons/oc";
