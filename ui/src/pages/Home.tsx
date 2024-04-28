@@ -7,8 +7,8 @@ export const Home = () => {
   return (
     <>
       <div class="flex flex-col min-h-[100dvh] bg-primary light:bg-primary text-100 light:text-black">
-        <main class="flex-1 bg-gradient-to-r light:from-indigo-500 light:via-purple-500 light:to-pink-500 from-700 via-800 to-900">
-          <section class="w-full py-12 md:py-24 lg:py-32">
+        <main class="flex-1 bg-primary">
+          <section class="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r light:from-indigo-500 light:via-purple-500 light:to-pink-500 from-700 via-800 to-900">
             <div class="container px-4 md:px-6">
               <div class="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
                 <AnimationDiv
@@ -106,14 +106,14 @@ export const Home = () => {
               </div>
             </div>
           </section>
-          <section class="w-full py-12 md:py-24 lg:py-32 bg-500">
+          <section class="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-l light:from-indigo-500 light:via-purple-500 light:to-pink-500 from-400 via-600 to-800">
             <div class="container px-4 md:px-6">
               <div class="grid items-center justify-center gap-4 text-center">
                 <div class="space-y-3">
-                  <h2 class="text-3xl font-bold tracking-tighter md:text-4xl/tight text-primary">
+                  <h2 class="text-3xl font-bold tracking-tighter md:text-4xl/tight text-100 light:text-white">
                     Get Started with Accuribet
                   </h2>
-                  <p class="mx-auto max-w-[600px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-secondary">
+                  <p class="mx-auto max-w-[600px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-200 light:text-800">
                     Check out our live games page to see the latest predictions and updates.
                   </p>
                   <Button class="w-full md:w-auto" color="secondary" size="lg">
@@ -124,8 +124,8 @@ export const Home = () => {
             </div>
           </section>
         </main>
-        <footer class="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-          <p class="text-xs text-gray-500 dark:text-gray-400">
+        <footer class="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6">
+          <p class="text-xs text-100 light:text-black">
             ©&nbsp;{new Date().getFullYear()}&nbsp;Accuribet. All rights reserved.
           </p>
           <nav class="sm:ml-auto flex gap-4 sm:gap-6">
