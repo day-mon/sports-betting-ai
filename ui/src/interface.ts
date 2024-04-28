@@ -11,6 +11,25 @@ export interface Game {
   odds: Odds[];
 }
 
+export interface HistoryGame {
+  game_id: string;
+  date: string;
+  home_team_name: string;
+  home_team_score: number;
+  away_team_name: string;
+  away_team_score: number;
+  model_name: string;
+  prediction: string;
+  winner: string;
+  confidence: number;
+  prediction_was_correct: boolean;
+}
+
+export interface HistoryDate {
+  model_name: string;
+  dates: string[];
+}
+
 export interface GameWithPrediction extends Game {
   prediction?: Prediction;
 }
