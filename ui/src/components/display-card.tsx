@@ -32,6 +32,7 @@ import {
 } from "~/components/ui/table";
 import { isLive, timeUntilGame } from "~/lib/utils.ts";
 import { Prediction } from "~/model/prediction.ts";
+import { AnimationDiv } from '~/components/animated-div.tsx';
 
 const logos = import.meta.glob("../assets/teams/*.svg", { eager: true });
 
@@ -167,6 +168,7 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
               props.prediction.prediction === `${props.team.city} ${props.team.name}`
             }
           >
+            <AnimationDiv animate={{ x: [0, 0], opacity: [0, 1] }}>
             <Badge
               class={`ml-2 ${getColorFromStatusAndOutcome(
                 props.game.status,
@@ -175,6 +177,7 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
             >
               Projected Winner
             </Badge>
+            </AnimationDiv>
           </Show>
         </span>
       </CardDescription>
@@ -316,6 +319,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                       <span class="text-white light:text-black">{props.game.home_team.name}</span>
                       <span class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
                         {props.game.home_team.score.points}
+
                       </span>
                     </div>
                     <span class="text-sm text-gray-400"> - </span>
@@ -370,7 +374,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 onOpenChange={setInjuryReportOpen}
                 preventScroll={true}
               >
-                <AlertDialogContent class="bg-900 p-4 rounded-lg">
+                <AlertDialogContent class="bg-primary opacity-100  p-4 rounded-lg">
                   <AlertDialogTitle class="flex flex-row justify-center items-center text-2xl font-bold mb-2">
                     Injury Report
                   </AlertDialogTitle>

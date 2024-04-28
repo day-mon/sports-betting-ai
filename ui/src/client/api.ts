@@ -30,6 +30,21 @@ export class AccuribetAPI {
  }
 
 
+ async getPredictedGames(
+   date: string,
+   model: string
+ ) {
+   const res = await this.client.get('/model/history', {
+      params: {
+        date,
+        model
+      }
+   })
+   return res.data;
+
+ }
+
+
  async predict(
    model: string
  ) {
