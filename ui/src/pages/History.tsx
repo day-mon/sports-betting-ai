@@ -68,7 +68,7 @@ export function History() {
             <span class={"text-100 text-2xl"}>
               I would like to see the history of the
               <select
-                class={"mx-3 bg-primary border-b-100  border-opacity-50 text-100"}
+                class={"mx-3 bg-primary border-b appearance-none border-white text-100"}
                 onChange={e => setSelectedModel(e.currentTarget.value)}
                 disabled={dates.loading}
               >
