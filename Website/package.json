@@ -23,7 +23,6 @@
     "solid-headless": "^0.13.0",
     "solid-js": "^1.5.1",
     "solid-tippy": "^0.2.0",
-    "solid-tooltip": "^0.1.14",
     "solid-transition-group": "^0.0.12",
     "tippy.js": "^6.3.7"
   }
