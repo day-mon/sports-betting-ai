@@ -6,19 +6,23 @@ export interface ThemeContextProviderProps {
 }
 
 export interface IThemeContext {
-  theme: string;
-  setTheme: (theme: string) => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 }
+
+export type Theme = "blackout" | "logan" | "lavender" | "light" | "blue";
+export const themeOptions: Theme[] = ["blackout", "logan", "lavender", "light", "blue"];
 
 export const ThemeContext = createContext({} as IThemeContext);
 
 const ACCURIBET_THEME_KEY: string = "accuribet-theme";
 
 export function ThemeContextProvider(props: ThemeContextProviderProps) {
-  let preferredTheme = localStorage.getItem(ACCURIBET_THEME_KEY);
+  let storedTheme: Theme | undefined = localStorage.getItem(ACCURIBET_THEME_KEY) as Theme;
+  let preferredTheme: Theme = themeOptions.includes(storedTheme) ? storedTheme : "blackout";
   const [themeStore, setThemeStore] = createStore<IThemeContext>({
-    theme: preferredTheme ? preferredTheme : "blackout",
-    setTheme(theme: string) {
+    theme: preferredTheme,
+    setTheme(theme: Theme) {
       localStorage.setItem(ACCURIBET_THEME_KEY, theme);
       setThemeStore("theme", theme);
     }

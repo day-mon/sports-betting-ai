@@ -1,15 +1,9 @@
-import { Component, createSignal, For, Show } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { Game, GameWithPrediction, Period, Team } from "~/interface";
 import { FiClock } from "solid-icons/fi";
 import { IoLocationOutline } from "solid-icons/io";
 import { OcDotfill3 } from "solid-icons/oc";
 import { Motion } from "solid-motionone";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogTitle
-} from "~/components/ui/alert-dialog.tsx";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -31,7 +25,8 @@ import {
 } from "~/components/ui/table";
 import { isLive, timeUntilGame } from "~/lib/utils.ts";
 import { Prediction } from "~/model/prediction.ts";
-import { AnimationDiv } from '~/components/animated-div.tsx';
+import { AnimationDiv } from "~/components/animated-div.tsx";
+import { DialogModal } from "~/components/dialog-modal.tsx";
 
 const logos = import.meta.glob("../assets/teams/*.svg", { eager: true });
 
@@ -168,14 +163,14 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
             }
           >
             <AnimationDiv animate={{ x: [0, 0], opacity: [0, 1] }}>
-            <Badge
-              class={`ml-2 ${getColorFromStatusAndOutcome(
-                props.game.status,
-                props.winner === props.team.id
-              )} text-white`}
-            >
-              Projected Winner
-            </Badge>
+              <Badge
+                class={`ml-2 ${getColorFromStatusAndOutcome(
+                  props.game.status,
+                  props.winner === props.team.id
+                )} text-white`}
+              >
+                Projected Winner
+              </Badge>
             </AnimationDiv>
           </Show>
         </span>
@@ -241,7 +236,6 @@ export const AdvancedGameCard: Component<ITeamProps> = (props: ITeamProps) => {
 };
 
 export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
-  const [injuryReportOpen, setInjuryReportOpen] = createSignal(false);
   return (
     <div>
       <Card
@@ -318,7 +312,6 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                       <span class="text-white light:text-black">{props.game.home_team.name}</span>
                       <span class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
                         {props.game.home_team.score.points}
-
                       </span>
                     </div>
                     <span class="text-sm text-gray-400"> - </span>
@@ -361,54 +354,39 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 team => team.injuries.length > 0
               )}
             >
-              <Button
-                class="bg-700 text-white light:text-black"
-                variant="default"
-                onClick={() => setInjuryReportOpen(true)}
+              <DialogModal
+                title="Injury Report"
+                trigger={
+                  <Button class="bg-700 text-white light:text-black" variant="default">
+                    View Injury Report
+                  </Button>
+                }
               >
-                View Injury Report
-              </Button>
-              <AlertDialog
-                open={injuryReportOpen()}
-                onOpenChange={setInjuryReportOpen}
-                preventScroll={true}
-              >
-                <AlertDialogContent class="bg-primary opacity-100  p-4 rounded-lg">
-                  <AlertDialogTitle class="flex flex-row justify-center items-center text-2xl font-bold mb-2">
-                    Injury Report
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    <Table class="mt-2">
-                      <TableHeader>
-                        <TableRow class="bg-700 text-300">
-                          <TableHead class="text-center font-semibold">Team</TableHead>
-                          <TableHead class="text-center font-semibold">Player</TableHead>
-                          <TableHead class="text-center font-semibold">Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <For each={[props.game.home_team, props.game.away_team]}>
-                          {(team, _) => (
-                            <For each={team.injuries}>
-                              {(injury, _) => (
-                                <TableRow>
-                                  <TableCell class="text-center text-100">{team.name}</TableCell>
-                                  <TableCell class="text-center text-100">
-                                    {injury.player}
-                                  </TableCell>
-                                  <TableCell class="text-center text-100">
-                                    {injury.status}
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </For>
+                <Table class="mt-2">
+                  <TableHeader>
+                    <TableRow class="bg-700 text-100 hover:bg-600">
+                      <TableHead class="text-center text-200 font-semibold">Team</TableHead>
+                      <TableHead class="text-center text-200 font-semibold">Player</TableHead>
+                      <TableHead class="text-center text-200 font-semibold">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <For each={[props.game.home_team, props.game.away_team]}>
+                      {(team, _) => (
+                        <For each={team.injuries}>
+                          {(injury, _) => (
+                            <TableRow>
+                              <TableCell class="text-center text-100">{team.name}</TableCell>
+                              <TableCell class="text-center text-100">{injury.player}</TableCell>
+                              <TableCell class="text-center text-100">{injury.status}</TableCell>
+                            </TableRow>
                           )}
                         </For>
-                      </TableBody>
-                    </Table>
-                  </AlertDialogDescription>
-                </AlertDialogContent>
-              </AlertDialog>
+                      )}
+                    </For>
+                  </TableBody>
+                </Table>
+              </DialogModal>
             </Show>
           </div>
         </CardFooter>
