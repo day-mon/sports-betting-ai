@@ -122,6 +122,9 @@ export const Games = () => {
         <Match when={games.loading && games.state !== "refreshing"}>
           <Loading />
         </Match>
+        <Match when={games.error}>
+          <AnimationDiv class='text-white text-center'>Error fetching games</AnimationDiv>
+        </Match>
         <Match when={!games.error}>
           <AnimationDiv class='grid lg:grid-cols-4 grid-cols-1 container text-white light:text-black'>
             <div class='col-span-3'>
