@@ -14,8 +14,8 @@ export function Settings() {
   const themeContext: IThemeContext = useContext(ThemeContext);
 
   return (
-    <DialogModal title="Settings" trigger={<OcGear3 class="w-6 h-6" />}>
-      <label class="block text-sm font-medium mb-2 text-100 light:text-black">Theme</label>
+    <DialogModal title="Settings" trigger={<OcGear3 class="h-6 w-6" />}>
+      <label class="mb-2 block text-sm font-medium text-100 light:text-black">Theme</label>
       <Select
         value={themeContext.theme}
         onChange={themeContext.setTheme}

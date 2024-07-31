@@ -24,16 +24,16 @@ export function Navbar() {
 
   return (
     <>
-      <header class="px-4 lg:px-6 h-14 flex items-center bg-primary light:bg-primary text-100 light:text-black">
+      <header class="flex h-14 items-center bg-primary px-4 text-100 light:bg-primary light:text-black lg:px-6">
         <Link class="text-2xl font-bold" href="/">
           Accuribet
         </Link>
-        <nav class="ml-auto flex gap-4 sm:gap-6 items-center">
+        <nav class="ml-auto flex items-center gap-4 sm:gap-6">
           <For each={routes}>
             {route => (
               <Link
                 href={route.path}
-                class={`font-medium hover:underline underline-offset-4 ${location.pathname === route.path ? "font-extrabold" : ""}`}
+                class={`font-medium underline-offset-4 hover:underline ${location.pathname === route.path ? "font-extrabold" : ""}`}
               >
                 {route.display}
               </Link>

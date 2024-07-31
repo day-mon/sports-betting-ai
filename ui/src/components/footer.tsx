@@ -3,17 +3,17 @@ import { AiFillGithub } from "solid-icons/ai";
 export function Footer() {
   return (
     <>
-      <footer class="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 bg-primary light:bg-primary text-100 light:text-black font-monserrat">
-        <p class="mt-2 sm:mt-auto text-xs text-100 light:text-black order-last sm:order-first">
+      <footer class="flex w-full shrink-0 flex-col items-center gap-2 bg-primary px-4 py-6 font-monserrat text-100 light:bg-primary light:text-black sm:flex-row md:px-6">
+        <p class="order-last mt-2 text-xs text-100 light:text-black sm:order-first sm:mt-auto">
           &copy;&nbsp;{new Date().getFullYear()}&nbsp;Accuribet. All rights reserved.
         </p>
-        <nav class="sm:ml-auto flex flex-col items-center sm:items-end gap-4 sm:gap-6">
+        <nav class="flex flex-col items-center gap-4 sm:ml-auto sm:items-end sm:gap-6">
           <a
             href="https://github.com/day-mon/sports-betting-ai"
-            class="text-xs flex flex-row hover:underline underline-offset-4"
+            class="flex flex-row text-xs underline-offset-4 hover:underline"
             target="_blank"
           >
-            <AiFillGithub class="w-4 h-4 mx-2" />
+            <AiFillGithub class="mx-2 h-4 w-4" />
             Github
           </a>
           <p class="text-xs">

@@ -21,6 +21,7 @@
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.33",
     "prettier": "3.2.2",
+    "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.1",
     "tw-colors": "^3.3.1",
     "vite": "^5.0.11",

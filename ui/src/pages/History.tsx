@@ -35,7 +35,7 @@ export function History() {
   };
 
   return (
-    <main class="pt-4 min-h-screen bg-primary">
+    <main class="flex-grow bg-primary pt-4">
       <AnimationDiv>
         <Switch>
           <Match when={dates.loading}>
@@ -46,10 +46,10 @@ export function History() {
           </Match>
           <Match when={dates()}>
             <AnimationDiv class={"flex flex-col items-center"}>
-              <span class={"text-100 text-2xl"}>
+              <span class={"text-2xl text-100"}>
                 I would like to see the history of the
                 <select
-                  class={"mx-3 bg-primary border-b appearance-none border-white text-100"}
+                  class={"mx-3 appearance-none border-b border-white bg-primary text-100"}
                   onChange={e => setCurrentData({ ...currentData(), model: e.target.value })}
                   disabled={dates.loading}
                 >
@@ -64,7 +64,7 @@ export function History() {
               </span>
 
               <Show when={historyResource.error}>
-                <span class={"text-red-500 bg-gray-200 rounded-full font-bold px-3 py-1 mt-2"}>
+                <span class={"mt-2 rounded-full bg-gray-200 px-3 py-1 font-bold text-red-500"}>
                   Error! {historyResource.error.message}
                 </span>
               </Show>
@@ -73,7 +73,7 @@ export function History() {
                 <input
                   type={"date"}
                   class={
-                    "appearance-none mb-2 block bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                    "mb-2 block appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   }
                   onChange={event => {
                     setCurrentData({ ...currentData(), date: event.target.value });
@@ -84,12 +84,12 @@ export function History() {
               </Show>
 
               <Show when={historyResource()}>
-                <AnimationDiv class={"flex flex-col justify-between items-center h-fit w-1/2"}>
+                <AnimationDiv class={"flex h-fit w-1/2 flex-col items-center justify-between"}>
                   <For each={historyResource()}>
                     {game => (
                       <AnimationDiv
                         id={game.game_id}
-                        class="flex flex-col items-center mx-100 mt-2 text-100 w-full font-bold bg-secondary rounded-lg p-4"
+                        class="mx-100 mt-2 flex w-full flex-col items-center rounded-lg bg-secondary p-4 font-bold text-100"
                       >
                         <span>
                           {game.home_team_name} vs {game.away_team_name}

@@ -22,10 +22,10 @@ export function DialogModal(props: DialogModalProps) {
     <AlertDialog>
       <AlertDialogTrigger>{props.trigger || <Button>Open Dialog</Button>}</AlertDialogTrigger>
       <AlertDialogContent
-        class={`bg-primary dark:bg-blackout text-100 dark:text-white ${themeContext.theme}`}
+        class={`dark:bg-blackout bg-primary text-100 dark:text-white ${themeContext.theme}`}
       >
         <AlertDialogTitle
-          class={`font-bold text-100 light:text-black underline underline-offset-2`}
+          class={`font-bold text-100 underline underline-offset-2 light:text-black`}
         >
           {props.title}
         </AlertDialogTitle>

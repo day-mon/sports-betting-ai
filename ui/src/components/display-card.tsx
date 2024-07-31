@@ -129,7 +129,7 @@ export const ScoreTable: Component<ITeamProps> = (props: ITeamProps) => {
 
 export const KeyPlayer: Component<ITeamProps> = (props: ITeamProps) => {
   return (
-    <div class="bg-700 p-4 rounded mt-4">
+    <div class="mt-4 rounded bg-700 p-4">
       <h4 class="font-semibold">Key Player - {props.team.name}</h4>
       <p>{props.team.leader.name}</p>
       <p class="text-sm text-gray-200 light:text-100">Points: {props.team.leader.points}</p>
@@ -148,12 +148,12 @@ export const TeamInfo: Component<ITeamInfoProps> = (props: ITeamInfoProps) => {
           src={getLogo(props.team.abbreviation.toLowerCase())}
         />
       </Avatar>
-      <CardTitle class="text-lg font-bold text-center">{`${props.team.city} ${props.team.name}`}</CardTitle>
-      <CardDescription class="text-sm text-center flex flex-col items-center">
+      <CardTitle class="text-center text-lg font-bold">{`${props.team.city} ${props.team.name}`}</CardTitle>
+      <CardDescription class="flex flex-col items-center text-center text-sm">
         <span>{`${props.team.wins} - ${props.team.losses}`}</span>
-        <span class="flex flex-row items-center mt-1">
+        <span class="mt-1 flex flex-row items-center">
           <Show when={props.winner === props.team.id}>
-            <Badge class="bg-yellow-600 hover:bg-yellow-600 text-black">Winner</Badge>
+            <Badge class="bg-yellow-600 text-black hover:bg-yellow-600">Winner</Badge>
           </Show>
           <Show
             when={
@@ -195,7 +195,7 @@ export const QuickDisplay: Component<IQuickDisplayProps> = (props: IQuickDisplay
 
   return (
     <Motion.div
-      class="flex flex-row items-center justify-between w-full p-2 mb-2 bg-700 hover:bg-500 rounded-lg hover:shadow-lg cursor-pointer"
+      class="mb-2 flex w-full cursor-pointer flex-row items-center justify-between rounded-lg bg-700 p-2 hover:bg-500 hover:shadow-lg"
       initial={false}
       hover={{ y: [-3, -5, -3], scale: [1, 1.01, 1] }}
       transition={{ duration: 1, easing: "ease-in-out", repeat: Infinity }}
@@ -239,7 +239,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
   return (
     <div>
       <Card
-        class="w-full max-w-4xl mx-auto bg-secondary rounded-lg shadow-md overflow-hidden p-4 text-white light:text-black border-4 border-700"
+        class="mx-auto w-full max-w-4xl overflow-hidden rounded-lg border-4 border-700 bg-secondary p-4 text-white shadow-md light:text-black"
         id={`game-card-${props.game.id}`}
       >
         <CardHeader>
@@ -250,7 +250,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               prediction={props.game.prediction}
               game={props.game}
             />
-            <span class="uppercase leading-3 font-boldtext-sm text-400">vs</span>
+            <span class="font-boldtext-sm uppercase leading-3 text-400">vs</span>
             <TeamInfo
               team={props.game.away_team}
               winner={winningTeam(props.game)}
@@ -260,16 +260,16 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
           </div>
         </CardHeader>
         <CardContent class="">
-          <div class="flex justify-evenly mt-4 items-center pb-4">
+          <div class="mt-4 flex items-center justify-evenly pb-4">
             <Show when={props.game.location}>
               <div class="flex items-center text-sm">
-                <IoLocationOutline class="mr-1 h-4 w-4 inline-block" />
+                <IoLocationOutline class="mr-1 inline-block h-4 w-4" />
                 <span class="ml-2">{`${props.game.location.name}, ${props.game.location.city}, ${props.game.location.state}`}</span>
               </div>
             </Show>
             <Show when={!isLive(props.game)}>
               <div class="flex items-center justify-center text-sm">
-                <FiClock class="mr-1 h-4 w-4 inline-block" />
+                <FiClock class="mr-1 inline-block h-4 w-4" />
                 <span class="ml-2">
                   <Show when={props.game.status === "PPD"}>
                     <p class="text-xs text-gray-400">Postponed</p>
@@ -280,7 +280,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                   </span>
 
                   <Show when={!isLive(props.game) && props.game.status !== "PPD"}>
-                    <p class={`text-xs text-gray-400 text-center font-bold`}>
+                    <p class={`text-center text-xs font-bold text-gray-400`}>
                       {timeUntilGame(props.game)}
                     </p>
                   </Show>
@@ -298,26 +298,26 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
             </For>
             <Show when={isLive(props.game)}>
               <div class="col-span-2" id={`${props.game.id}-live-score`}>
-                <div class="text-center bg-800 p-4 rounded-lg">
-                  <div class="flex items-center justify-center mb-2">
+                <div class="rounded-lg bg-800 p-4 text-center">
+                  <div class="mb-2 flex items-center justify-center">
                     <Show when={!props.game.status.toLowerCase().includes("final")}>
-                      <span class="text-red-500 animate-pulse mr-2">
+                      <span class="mr-2 animate-pulse text-red-500">
                         <OcDotfill3 />
                       </span>
-                      <span class="text-white light:text-black font-bold">Live</span>
+                      <span class="font-bold text-white light:text-black">Live</span>
                     </Show>
                   </div>
-                  <div class="grid grid-cols-3 items-center justify-items-center text-2xl font-bold mb-2 px-2">
+                  <div class="mb-2 grid grid-cols-3 items-center justify-items-center px-2 text-2xl font-bold">
                     <div class="flex flex-col items-center">
                       <span class="text-white light:text-black">{props.game.home_team.name}</span>
-                      <span class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
+                      <span class="inline-block rounded bg-700 px-4 py-2 text-white light:text-200">
                         {props.game.home_team.score.points}
                       </span>
                     </div>
                     <span class="text-sm text-gray-400"> - </span>
                     <div class="flex flex-col items-center">
                       <span class="text-white light:text-black">{props.game.away_team.name}</span>
-                      <span class="text-white light:text-200 bg-700 py-2 px-4 rounded inline-block">
+                      <span class="inline-block rounded bg-700 px-4 py-2 text-white light:text-200">
                         {props.game.away_team.score.points}
                       </span>
                     </div>
@@ -339,7 +339,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               when={props.game.prediction && props.game.prediction.prediction_type == "win-loss"}
             >
               <h3 class="font-bold">Prediction Confidence</h3>
-              <div class="bg-600 p-4 rounded mt-4">
+              <div class="mt-4 rounded bg-600 p-4">
                 <p class="text-sm">
                   The prediction model has a confidence of{" "}
                   {((props.game.prediction?.confidence ?? 0) * 100).toFixed(1)}% for the{" "}
@@ -348,7 +348,7 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
               </div>
             </Show>
           </div>
-          <div class="flex flex-row items-center justify-center mt-4">
+          <div class="mt-4 flex flex-row items-center justify-center">
             <Show
               when={[props.game.home_team, props.game.away_team].every(
                 team => team.injuries.length > 0
@@ -365,9 +365,9 @@ export const DemoCard: Component<IDisplayCard> = (props: IDisplayCard) => {
                 <Table class="mt-2">
                   <TableHeader>
                     <TableRow class="bg-700 text-100 hover:bg-600">
-                      <TableHead class="text-center text-200 font-semibold">Team</TableHead>
-                      <TableHead class="text-center text-200 font-semibold">Player</TableHead>
-                      <TableHead class="text-center text-200 font-semibold">Status</TableHead>
+                      <TableHead class="text-center font-semibold text-200">Team</TableHead>
+                      <TableHead class="text-center font-semibold text-200">Player</TableHead>
+                      <TableHead class="text-center font-semibold text-200">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

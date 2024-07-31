@@ -1,5 +1,5 @@
-import { JSX } from 'solid-js';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip.tsx';
+import { JSX } from "solid-js";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip.tsx";
 
 export interface SimpleTooltipProps {
   children: JSX.Element;
@@ -7,19 +7,13 @@ export interface SimpleTooltipProps {
   className?: string;
 }
 
-export function SimpleTooltip(
-  props: SimpleTooltipProps
-) {
+export function SimpleTooltip(props: SimpleTooltipProps) {
   return (
     <Tooltip>
-      <TooltipTrigger class={props.className} onClick={(e) => e.stopPropagation()}>
+      <TooltipTrigger class={props.className} onClick={e => e.stopPropagation()}>
         {props.trigger}
       </TooltipTrigger>
-      <TooltipContent>
-        {props.children}
-      </TooltipContent>
+      <TooltipContent>{props.children}</TooltipContent>
     </Tooltip>
-  )
-
-
+  );
 }

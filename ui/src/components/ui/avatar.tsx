@@ -25,7 +25,7 @@ const AvatarFallback: Component<ImagePrimitive.ImageFallbackProps> = props => {
   return (
     <ImagePrimitive.Fallback
       class={cn(
-        "bg-muted flex h-full w-full items-center justify-center rounded-full",
+        "flex h-full w-full items-center justify-center rounded-full bg-muted",
         props.class
       )}
       {...rest}
