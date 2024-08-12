@@ -30,7 +30,10 @@ import { DialogModal } from "~/components/dialog-modal.tsx";
 
 const logos = import.meta.glob("../assets/teams/*.svg", { eager: true });
 
-const getLogo = (team: string) => {
+export const getLogo = (team: string) => {
+  // if team is not all lower make it lower
+    if (team !== team.toLowerCase()) team = team.toLowerCase()
+
   let strIndex = `../assets/teams/${team}.svg`;
   // @ts-ignore
   return logos[strIndex].default;
