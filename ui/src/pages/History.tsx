@@ -1,5 +1,5 @@
 import { AccuribetAPI } from "~/client/api.ts";
-import { createResource, createSignal, For, Show, Suspense } from "solid-js";
+import {createEffect, createResource, For, Show, Suspense} from "solid-js";
 import { AnimationDiv } from "~/components/animated-div.tsx";
 import { Loading } from "~/components/loading.tsx";
 import { HistoryDate,} from "~/interface.ts";
@@ -9,6 +9,7 @@ import {FiCalendar, FiAlertCircle, FiXCircle, FiCheckCircle, FiMapPin} from 'sol
 import { ErrorBoundary } from "solid-js";
 import {getLogo} from "~/components/display-card.tsx";
 import {LOCATION_DATA, TEAM_NAME_ABBRV_MAP} from "~/constants.ts";
+import {useSearchParams} from "@solidjs/router";
 
 async function fetchHistory() {
   const instance = AccuribetAPI.getInstance();
@@ -56,7 +57,6 @@ function ModelSelector(props: { dates: HistoryDate[], onSelect: (model: string) 
       </div>
   );
 }
-
 function DateSelector(props: { date: string, onChange: (date: string) => void, minDate?: string, maxDate: string }) {
   return (
       <div class="space-y-2 text-center">
@@ -101,20 +101,19 @@ function HistoryList(props: { games: any[] }) {
           </Card>
           <For each={props.games}>
             {game => {
-              const homeWon = game.home_team_score > game.away_team_score;
 
               const abbrv = TEAM_NAME_ABBRV_MAP[game.home_team_name];
               const location = LOCATION_DATA[abbrv] || { name: "", city: "", state: "" }
 
               return (
-                  <Card class={`overflow-hidden ${homeWon ? 'bg-blue-100' : 'bg-red-100'}`}>
+                  <Card class={`overflow-hidden ${game.prediction_was_correct ? 'bg-blue-100' : 'bg-red-100'}`}>
                     <CardContent class="p-6">
                       <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4">
                           <img src={getLogo(TEAM_NAME_ABBRV_MAP[game.home_team_name])} alt={game.home_team_name} class="w-12 h-12" />
                           <div>
-                            <p class={`text-lg font-semibold ${homeWon ? 'text-blue-800' : 'text-800'}`}>{game.home_team_name}</p>
-                            <p class="text-2xl font-bold text-primary">{game.home_team_score}</p>
+                            <p class={`text-lg font-semibold ${game.prediction_was_correct ? 'text-blue-800' : 'text-800'}`}>{game.home_team_name}</p>
+                            <p class="text-2xl font-bold text-800">{game.home_team_score}</p>
                           </div>
                         </div>
                         <div class="text-center">
@@ -123,8 +122,8 @@ function HistoryList(props: { games: any[] }) {
                         </div>
                         <div class="flex items-center space-x-4">
                           <div class="text-right">
-                            <p class={`text-lg font-semibold ${!homeWon ? 'text-red-800' : 'text-800'}`}>{game.away_team_name}</p>
-                            <p class="text-2xl font-bold text-primary">{game.away_team_score}</p>
+                            <p class={`text-lg font-semibold ${!game.prediction_was_correct ? 'text-red-800' : 'text-800'}`}>{game.away_team_name}</p>
+                            <p class="text-2xl font-bold text-800">{game.away_team_score}</p>
                           </div>
                           <img src={getLogo(TEAM_NAME_ABBRV_MAP[game.away_team_name])} alt={game.away_team_name} class="w-12 h-12" />
                         </div>
@@ -152,58 +151,76 @@ function HistoryList(props: { games: any[] }) {
 }
 
 export function History() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [dates] = createResource<HistoryDate[]>(fetchHistory);
-  const [currentData, setCurrentData] = createSignal<IHistory>({ model: "", date: "" });
-  const [historyResource] = createResource(currentData, fetchHistoryForModelOnDate);
+  const [historyResource] = createResource(
+      () => ({ model: searchParams.model || "", date: searchParams.date || "" }),
+      fetchHistoryForModelOnDate
+  );
 
   const oldestDateForModel = () => {
-    if (dates() && currentData().model) {
-      const datesForModel = dates()?.find(date => date.model_name === currentData().model)?.dates;
+    if (dates() && searchParams.model) {
+      const datesForModel = dates()?.find(date => date.model_name === searchParams.model)?.dates;
       return datesForModel ? datesForModel[datesForModel.length - 1] : undefined;
     }
   };
 
   const handleModelChange = (modelName: string) => {
-    setCurrentData({ model: modelName, date: "" });
+    setSearchParams({ model: modelName, date: searchParams.date || "" });
   };
+
+  const handleDateChange = (date: string) => {
+    setSearchParams({ model: searchParams.model || "", date });
+  };
+
+  createEffect(() => {
+
+    if (!(dates() && !searchParams.model && dates()?.length > 0)) {
+      return;
+    }
+    setSearchParams({model: dates()[0]?.model_name, date: searchParams.date || ""});
+  });
 
   return (
       <main class="flex-grow bg-primary pt-8 font-monserrat">
         <AnimationDiv class="container mx-auto px-4">
           <Card class="bg-secondary text-800 shadow-lg">
             <CardHeader class="text-center">
-              <CardTitle class="text-3xl font-bold text-300">Prediction History</CardTitle>
+              <CardTitle class="text-3xl font-bold text-100">Prediction History</CardTitle>
             </CardHeader>
             <CardContent>
-              <ErrorBoundary fallback={(err: Error) => {
-                  console.log(`Name: ${err.name}, Message: ${err.message}, Stack ${err.stack}`); // `Name: Error, Message: An error occurred
-                  return (
+              <ErrorBoundary fallback={(err) => (
                   <div class="rounded-md bg-100 p-4 text-center text-800">
                     <FiAlertCircle class="mx-auto mb-2 h-6 w-6 text-600" />
                     <p class="font-semibold">An error occurred</p>
                     <p class="text-sm text-600">{err.message}</p>
                   </div>
-
-              )}}>
+              )}>
                 <Suspense fallback={<Loading />}>
                   <div class="space-y-6">
                     <div class="space-y-4">
-                      <Label class="text-center block text-300 font-semibold">Select a model</Label>
+                      <Label class="text-center block text-100 font-semibold">Select a model</Label>
                       <ModelSelector
                           dates={dates() || []}
                           onSelect={handleModelChange}
-                          selectedModel={currentData().model}
+                          selectedModel={searchParams.model || ""}
                       />
 
-                      <Show when={currentData().model}>
+                      <Show when={searchParams.model}>
                         <DateSelector
-                            date={currentData().date}
-                            onChange={(date) => setCurrentData({ ...currentData(), date })}
+                            date={searchParams.date || ""}
+                            onChange={handleDateChange}
                             maxDate={new Date().toISOString().split("T")[0]}
                             minDate={oldestDateForModel()}
                         />
                       </Show>
                     </div>
+
+                    <Show when={searchParams.model && searchParams.date}>
+                      <div class="text-center text-lg font-semibold text-100">
+                        Showing results for model: {searchParams.model} on {new Date(searchParams.date).toLocaleDateString()}
+                      </div>
+                    </Show>
 
                     <Suspense fallback={<Loading />}>
                       <Show when={historyResource()}>
