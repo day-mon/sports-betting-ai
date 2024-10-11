@@ -106,7 +106,7 @@ export const Games = () => {
         <Match when={games.error}>
           <AnimationDiv class="text-center text-white">Error fetching games</AnimationDiv>
         </Match>
-        <Match when={games.length === 0 && games.state !== "refreshing"}>
+        <Match when={games.length === 0 && (games.state !== "refreshing"  && games.state !== "ready")}>
           <AnimationDiv class="flex flex-grow items-center justify-center">
             <div class="text-center">
               <div class="text-lg font-semibold text-white light:text-black">No games found</div>
