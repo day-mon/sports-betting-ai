@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   api:
-    build: ./api
+    build: accuribet-service
     ports:
       - "5000:5000"
     volumes:

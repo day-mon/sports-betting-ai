@@ -1,0 +1,20 @@
+[project]
+name = "accuribet"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+]
+
+[tool.uv.workspace]
+members = ["accuribet-service", "accuribet-ml"]
+
+[tool.uv.sources]
+accuribet-service = { workspace = true }
+accuribet-ml = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.9",
+]
