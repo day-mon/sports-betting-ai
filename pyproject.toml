@@ -4,7 +4,52 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "commitizen>=3.29.0",
+  "pre-commit>=3.8.0",
+  "pyrefly>=0.60.2",
+  "ruff>=0.15.9",
+]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "scm"
+tag_format = "v$version"
+update_changelog_on_bump = true
+
+[tool.pyrefly]
+project-includes = ["accuribet-ml", "accuribet-service"]
+project-excludes = ["accuribet-ml/src/accuribet_ml/legacy/convert.py"]
+python_interpreter = ".venv/bin/python"
+
+[tool.ruff]
+preview = true
+fix = true
+unsafe-fixes = true
+extend-exclude = [
+  "accuribet-ml/src/accuribet_ml/legacy/convert.py",
+]
+
+[tool.ruff.lint]
+select = [
+  "TC",
+  "A",
+  "AIR",
+  "RUF",
+  "COM",
+  "ANN",
+  "FIX",
+  "SLOT",
+  "PERF",
+  "E",
+  "W",
+  "PTH",
+]
+ignore = [
+  "COM812",
 ]
 
 [tool.uv.workspace]
@@ -13,8 +58,3 @@ members = ["accuribet-service", "accuribet-ml"]
 [tool.uv.sources]
 accuribet-service = { workspace = true }
 accuribet-ml = { workspace = true }
-
-[dependency-groups]
-dev = [
-    "ruff>=0.15.9",
-]

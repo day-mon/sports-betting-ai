@@ -1,11 +1,13 @@
 import typing
+
 import pydantic
 import pydantic_settings
+
 from . import base
 
 
 class RedisSettings(pydantic.BaseModel):
-    type: typing.Literal['redis'] = 'redis'
+    type: typing.Literal["redis"] = "redis"
     host: str
     port: int = 6379
     password: str | None = None
@@ -18,19 +20,22 @@ class RedisSettings(pydantic.BaseModel):
 
 
 class MemorySettings(pydantic.BaseModel):
-    type: typing.Literal['memory'] = 'memory'
+    type: typing.Literal["memory"] = "memory"
 
     @property
     def connection_url(self) -> str:
-        return "memory://"
+        return "mem://"
 
 
 class CacheSettings(pydantic_settings.BaseSettings):
     cache: typing.Annotated[
         RedisSettings | MemorySettings,
-        pydantic.Field(discriminator='type')
+        pydantic.Field(discriminator="type"),
     ] = MemorySettings()
 
     model_config = pydantic_settings.SettingsConfigDict(
         **base.settings.model_config,
     )
+
+
+settings = CacheSettings()

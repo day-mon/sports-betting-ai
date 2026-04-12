@@ -4,7 +4,6 @@ router = fastapi.APIRouter(
     prefix="/predict",
 )
 
-@router.get("")
-async def predict():
-    ...
 
+@router.get("")
+async def predict() -> None: ...
