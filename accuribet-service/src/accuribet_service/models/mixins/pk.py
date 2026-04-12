@@ -13,5 +13,5 @@ class IDMixin:
 class UUIDPKMixin:
     id: sqlalchemy.orm.Mapped[uuid.UUID] = sqlalchemy.orm.mapped_column(
         primary_key=True,
-        default=uuid.uuid7(),
+        default=uuid.uuid7,
     )
