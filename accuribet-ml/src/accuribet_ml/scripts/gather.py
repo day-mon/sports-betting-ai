@@ -76,10 +76,9 @@ async def fetch_one(
         return None
 
 
-async def fetch_all(args: dict[str, typing.Any]) -> pd.DataFrame:
+async def fetch_all(args: argparse.Namespace) -> pd.DataFrame:
     data_dir = trio.Path(args.out)
-    await data_dir.mkdir(parents=True, exist_ok=True)
-
+    await data_dir.mkdir(0o777, parents=True, exist_ok=True)
     season_types = SEASON_TYPES if not args.no_playoffs else SEASON_TYPES[:1]
     seasons = [year_to_season(y) for y in range(args.start, args.end + 1)]
     total = len(seasons) * len(season_types)

@@ -1,7 +1,6 @@
 import typing
 
 import pydantic
-import pydantic_settings
 
 from . import base
 
@@ -27,15 +26,11 @@ class MemorySettings(pydantic.BaseModel):
         return "mem://"
 
 
-class CacheSettings(pydantic_settings.BaseSettings):
+class CacheSettings(base.Settings):
     cache: typing.Annotated[
         RedisSettings | MemorySettings,
         pydantic.Field(discriminator="type"),
     ] = MemorySettings()
-
-    model_config = pydantic_settings.SettingsConfigDict(
-        **base.settings.model_config,
-    )
 
 
 settings = CacheSettings()

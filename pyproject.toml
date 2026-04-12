@@ -20,11 +20,6 @@ version_provider = "scm"
 tag_format = "v$version"
 update_changelog_on_bump = true
 
-[tool.pyrefly]
-project-includes = ["accuribet-ml", "accuribet-service"]
-project-excludes = ["accuribet-ml/src/accuribet_ml/legacy/convert.py"]
-python_interpreter = ".venv/bin/python"
-
 [tool.ruff]
 preview = true
 fix = true
@@ -38,12 +33,14 @@ select = [
   "TC",
   "A",
   "AIR",
+  "B",
   "RUF",
   "COM",
   "ANN",
   "FIX",
   "SLOT",
   "PERF",
+  "F",
   "E",
   "W",
   "PTH",
@@ -51,6 +48,9 @@ select = [
 ignore = [
   "COM812",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"**/api/**/__init__.py" = ["RUF067"]
 
 [tool.uv.workspace]
 members = ["accuribet-service", "accuribet-ml"]

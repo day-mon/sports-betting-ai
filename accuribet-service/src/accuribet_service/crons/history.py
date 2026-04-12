@@ -3,7 +3,7 @@ import fastapi_utils.tasks
 TWENTY_FOUR_HOURS_IN_SECONDS = 60 * 60 * 24
 
 
-async def task_definition() -> ...: ...
+async def task_definition() -> None: ...
 
 
 @fastapi_utils.tasks.repeat_every(seconds=TWENTY_FOUR_HOURS_IN_SECONDS)

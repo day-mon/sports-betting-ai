@@ -1,13 +1,13 @@
 import typing
 
 import fastapi
-from accuribet_service.config import cache
+from accuribet_service.config.cache import settings
 from cashews import Cache
 
 
 def create() -> Cache:
     instance = Cache()
-    instance.setup(cache.settings.cache.connection_url)
+    instance.setup(settings.cache.connection_url)
     return instance
 
 

@@ -1,24 +1,23 @@
 import typing
 
 import pydantic
-import pydantic_settings
 
 from . import base
 
 
-class SqliteSettings(pydantic_settings.BaseSettings):
+class SqliteSettings(pydantic.BaseModel):
     type: typing.Literal["sqlite"] = "sqlite"
-    database: str
+    database: str = "db.sqlite3"
 
     @property
     def connection_url(self) -> str:
         return f"sqlite+aiosqlite:///{self.database}"
 
 
-class PostgresSettings(pydantic_settings.BaseSettings):
+class PostgresSettings(pydantic.BaseModel):
     type: typing.Literal["postgres"] = "postgres"
     host: str
-    port: int
+    port: int = 5432
     database: str
     username: str
     password: str
@@ -32,14 +31,10 @@ class Settings(base.Settings):
     db: typing.Annotated[
         SqliteSettings | PostgresSettings,
         pydantic.Field(discriminator="type"),
-    ] = SqliteSettings(database="db.sqlite3")
+    ] = pydantic.Field(default_factory=SqliteSettings)
 
     echo: bool = False
     expire_on_commit: bool = False
-
-    model_config = pydantic_settings.SettingsConfigDict(
-        **base.settings.model_config,
-    )
 
 
 settings = Settings()

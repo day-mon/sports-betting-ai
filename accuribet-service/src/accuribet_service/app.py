@@ -1,15 +1,32 @@
-import importlib
+import typing
+from importlib import metadata
 
 import fastapi
+from accuribet_service.api.v1 import router as v1_router
+from accuribet_service.config.app import settings
 from accuribet_service.core.lifecycle import lifecycle
+from accuribet_service.core.logging import configure_logging
+from accuribet_service.core.middleware import LoggingMiddleware, TimingMiddleware
+from asgi_correlation_id import CorrelationIdMiddleware
+
+if typing.TYPE_CHECKING:
+    from fastapi.applications import FastAPI
 
 
-def create_app() -> fastapi.FastAPI:
+def create_app() -> "FastAPI":
+    configure_logging(json_logs=settings.is_json_logs, log_level=settings.log_level)
+
     app = fastapi.FastAPI(
         title="Accuribet Service",
-        version=importlib.metadata.version("accuribet_service"),
+        version=metadata.version("accuribet_service"),
         lifespan=lifecycle,
     )
+
+    app.add_middleware(TimingMiddleware)
+    app.add_middleware(LoggingMiddleware)
+    app.add_middleware(CorrelationIdMiddleware)
+
+    app.include_router(v1_router)
 
     return app
 

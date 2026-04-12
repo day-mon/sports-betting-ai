@@ -6,6 +6,7 @@ requires-python = ">=3.14"
 dependencies = [
   "aiohttp>=3.13.5",
   "aiosqlite>=0.21.0",
+  "asgi-correlation-id>=4.3.4",
   "asyncpg>=0.30.0",
   "cashews>=7.5.0",
   "fastapi>=0.135.3",
@@ -13,6 +14,7 @@ dependencies = [
   "hypercorn>=0.17.3",
   "pydantic-settings>=2.13.1",
   "sqlalchemy>=2.0.49",
+  "structlog>=25.0.0",
 ]
 dynamic = ["version"]
 
@@ -29,3 +31,6 @@ fallback-version = "0.0.0"
 
 [tool.hatch.version.raw-options]
 root = ".."
+
+[tool.pyrefly]
+project-includes = ["src/**/*.py"]

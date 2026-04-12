@@ -4,13 +4,14 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
 from accuribet_service.core.dependencies import cache, database
+from typing_extensions import AsyncGenerator
 
 if TYPE_CHECKING:
     import fastapi
 
 
 @asynccontextmanager
-async def lifecycle(app: fastapi.FastAPI) -> None:
+async def lifecycle(app: fastapi.FastAPI) -> AsyncGenerator[None, None]:
     app.state.cache = cache.create()
     app.state.db = database.create()
 

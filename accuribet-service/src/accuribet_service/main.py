@@ -1,15 +1,20 @@
+from typing import TYPE_CHECKING, cast
+
 import trio
+from accuribet_service.app import app
+from accuribet_service.config.app import settings
 from hypercorn.config import Config
 from hypercorn.trio import serve
 
-from accuribet_service.app import app
-from accuribet_service.config.base import settings
+if TYPE_CHECKING:
+    from hypercorn.typing import Framework
 
 
 def main() -> None:
     config = Config()
     config.bind = [f"{settings.host}:{settings.port}"]
-    trio.run(serve, app, config)
+    config.use_reloader = settings.reload
+    trio.run(serve, cast("Framework", app), config)
 
 
 if __name__ == "__main__":
