@@ -24,14 +24,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             client=request.client.host if request.client else "unknown",
         )
 
-        await logger.ainfo(
+        logger.info(
             "request_received",
             user_agent=request.headers.get("user-agent", "-"),
         )
 
         response = await call_next(request)
 
-        await logger.ainfo(
+        logger.info(
             "request_completed",
             status_code=response.status_code,
         )

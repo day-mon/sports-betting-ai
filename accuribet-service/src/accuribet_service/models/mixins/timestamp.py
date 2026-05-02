@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import datetime
+
 import sqlalchemy.orm
 
 
@@ -12,6 +15,7 @@ class LastUpdatedTimestampMixin:
         updated_at: Timestamp of the last update (UTC).
     """
 
-    updated_at = sqlalchemy.orm.mapped_column(
+    updated_at: sqlalchemy.orm.Mapped[datetime.datetime] = sqlalchemy.orm.mapped_column(
+        index=True,
         onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )

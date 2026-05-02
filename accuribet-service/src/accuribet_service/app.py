@@ -20,7 +20,13 @@ def create_app() -> "FastAPI":
         title="Accuribet Service",
         version=metadata.version("accuribet_service"),
         lifespan=lifecycle,
+        docs_url="/api/docs",
+        openapi_url="/api/openapi.json",
     )
+
+    @app.get("/")
+    async def docs_redirect() -> fastapi.responses.RedirectResponse:
+        return fastapi.responses.RedirectResponse(url="/api/docs")
 
     app.add_middleware(TimingMiddleware)
     app.add_middleware(LoggingMiddleware)

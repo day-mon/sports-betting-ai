@@ -9,6 +9,8 @@ from ..models import Base, mixins
 class Prediction(
     Base, mixins.IDMixin, mixins.LastUpdatedTimestampMixin, mixins.CRUDMixin
 ):
+    __tablename__ = "predictions"
+
     type: sqlalchemy.orm.Mapped[typing.Literal["win-loss"]] = (
         sqlalchemy.orm.mapped_column()
     )
