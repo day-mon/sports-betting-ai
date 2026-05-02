@@ -5,6 +5,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
   "aiohttp>=3.13.5",
+  "aiohttp-retry>=2.9.1",
   "aiosqlite>=0.21.0",
   "asgi-correlation-id>=4.3.4",
   "asyncpg>=0.30.0",
@@ -45,3 +46,11 @@ dev = [{ "cmd" = "alembic upgrade head" }, { "cmd" = "accuribet-service" }]
 
 [tool.pyrefly]
 project-includes = ["src/**/*.py"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false

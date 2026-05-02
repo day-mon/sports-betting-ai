@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import typing
 
 import sqlalchemy
@@ -10,13 +11,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from accuribet_service.models import Base, mixins
 
 if typing.TYPE_CHECKING:
-    import datetime
     from accuribet_service.models.ml_model import MLModel
 
 
-class GameResult(
-    Base, mixins.IDMixin, mixins.LastUpdatedTimestampMixin, mixins.CRUDMixin
-):
+class GameResult(Base, mixins.IDMixin, mixins.LastUpdatedTimestampMixin, mixins.CRUDMixin):
     """Stores the outcome of a predicted game for historical accuracy tracking.
 
     Each row represents one game + model combination. The unique constraint
@@ -40,24 +38,18 @@ class GameResult(
 
     __table_args__ = (
         sqlalchemy.Index("ix_game_results_date_model", "date", "model_id"),
-        sqlalchemy.UniqueConstraint(
-            "game_id", "model_id", name="uq_game_results_game_model"
-        ),
+        sqlalchemy.UniqueConstraint("game_id", "model_id", name="uq_game_results_game_model"),
     )
 
     game_id: sqlalchemy.orm.Mapped[str] = sqlalchemy.orm.mapped_column(index=True)
-    date: sqlalchemy.orm.Mapped[datetime.date] = sqlalchemy.orm.mapped_column(
-        index=True
-    )
+    date: sqlalchemy.orm.Mapped[datetime.date] = sqlalchemy.orm.mapped_column(index=True)
     home_team_name: sqlalchemy.orm.Mapped[str] = sqlalchemy.orm.mapped_column()
     home_team_score: sqlalchemy.orm.Mapped[int] = sqlalchemy.orm.mapped_column()
     away_team_name: sqlalchemy.orm.Mapped[str] = sqlalchemy.orm.mapped_column()
     away_team_score: sqlalchemy.orm.Mapped[int] = sqlalchemy.orm.mapped_column()
     winner: sqlalchemy.orm.Mapped[str] = sqlalchemy.orm.mapped_column()
     prediction: sqlalchemy.orm.Mapped[str] = sqlalchemy.orm.mapped_column()
-    confidence: sqlalchemy.orm.Mapped[float | None] = sqlalchemy.orm.mapped_column(
-        nullable=True
-    )
+    confidence: sqlalchemy.orm.Mapped[float | None] = sqlalchemy.orm.mapped_column(nullable=True)
     model_id: sqlalchemy.orm.Mapped[int] = sqlalchemy.orm.mapped_column(
         sqlalchemy.ForeignKey("ml_models.id"),
         index=True,

@@ -28,9 +28,9 @@ Use this when adding new endpoints, routers, or FastAPI modules to `accuribet-se
 Each domain lives under `accuribet_service/api/v1/<domain>/`:
 
 ```
-routes.py     - APIRouter and endpoint functions
+routes.py     - APIRouter and endpoint functions (HTTP layer / controller)
 schemas.py    - pydantic request/response models
-controller.py - business logic orchestration (if heavy)
+service.py    - business logic orchestration (service layer)
 __init__.py   - exports `router`
 ```
 
@@ -218,7 +218,7 @@ __all__ = ["router"]
 - Do not use `...` as a default for required fields or parameters
 - Prefer `def` over `async def` when calling blocking code or when uncertain
 - Do not use `ORJSONResponse`, `UJSONResponse`, or `RootModel`
-- Keep route functions thin; delegate to controllers or CRUD mixins
+- Keep route functions thin; delegate to services or CRUD mixins
 - Do NOT use relative imports in `api/**/__init__.py`
 
 ## References

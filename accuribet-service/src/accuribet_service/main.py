@@ -1,12 +1,11 @@
 import uvicorn
 
-from accuribet_service.app import app
 from accuribet_service.config.app import settings
 
 
 def main() -> None:
     uvicorn.run(
-        app,
+        "accuribet_service.app:app",
         host=settings.host,
         port=settings.port,
         reload=settings.reload,

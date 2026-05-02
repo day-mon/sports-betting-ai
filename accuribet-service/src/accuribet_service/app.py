@@ -4,6 +4,7 @@ from importlib import metadata
 import fastapi
 from accuribet_service.api.v1 import router as v1_router
 from accuribet_service.config.app import settings
+from accuribet_service.core import error_handlers
 from accuribet_service.core.lifecycle import lifecycle
 from accuribet_service.core.logging import configure_logging
 from accuribet_service.core.middleware import LoggingMiddleware, TimingMiddleware
@@ -31,6 +32,8 @@ def create_app() -> "FastAPI":
     app.add_middleware(TimingMiddleware)
     app.add_middleware(LoggingMiddleware)
     app.add_middleware(CorrelationIdMiddleware)
+
+    error_handlers.register(app)
 
     app.include_router(v1_router)
 
