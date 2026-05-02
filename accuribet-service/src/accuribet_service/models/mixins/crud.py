@@ -15,6 +15,30 @@ type OrderByClause = list[ColumnElement[object] | InstrumentedAttribute[object]]
 
 
 class CRUDMixin:
+    """Mixin providing async CRUD operations for SQLAlchemy models.
+
+    Supplies create, read, update, delete, search, filter, and
+    bulk-operation helpers that work with an ``AsyncSession``.
+
+    methods:
+        create: Insert a new row and return the persisted instance.
+        get_or_create: Fetch existing or insert new; returns (instance, created).
+        get: Fetch by primary key, returning None if not found.
+        get_or_raise: Fetch by primary key, raising ``NoResultFound`` on miss.
+        filter_one: Return the first row matching keyword filters, or None.
+        list: Return all rows with optional limit, offset, and ordering.
+        filter: Flexible AND/OR filtering with pagination support.
+        search: LIKE/ILIKE text search on a single column.
+        update: Update fields by primary key, returning the refreshed instance.
+        update_or_raise: Like update but raises ``NoResultFound`` on miss.
+        upsert: Merge by primary key — insert or update as needed.
+        delete: Delete by primary key, returning True if a row was removed.
+        delete_or_raise: Like delete but raises ``NoResultFound`` on miss.
+        bulk_delete: Delete all rows matching filters; returns count deleted.
+        count: Return row count, optionally narrowed by filters.
+        exists: Return True if at least one row matches the filters.
+    """
+
     @classmethod
     async def create(cls, session: AsyncSession, **kwargs: object) -> Self:
         obj = cls(**kwargs)

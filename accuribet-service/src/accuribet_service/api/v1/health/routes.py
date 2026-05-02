@@ -12,7 +12,7 @@ router = fastapi.APIRouter()
     status_code=fastapi.status.HTTP_200_OK,
     response_model=HealthResponse,
 )
-async def health_check() -> HealthResponse:
+async def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
         version=metadata.version("accuribet_service"),

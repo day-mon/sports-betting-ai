@@ -7,9 +7,7 @@ from ..models import Base, mixins
 
 
 class Prediction(
-    Base,
-    mixins.IDMixin,
-    mixins.LastUpdatedTimestampMixin,
+    Base, mixins.IDMixin, mixins.LastUpdatedTimestampMixin, mixins.CRUDMixin
 ):
     type: sqlalchemy.orm.Mapped[typing.Literal["win-loss"]] = (
         sqlalchemy.orm.mapped_column()
