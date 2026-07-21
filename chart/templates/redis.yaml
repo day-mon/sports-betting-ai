@@ -1,0 +1,44 @@
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sports-betting.fullname" . }}-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: redis
+    {{- include "sports-betting.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: redis
+      {{- include "sports-betting.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: redis
+        {{- include "sports-betting.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sports-betting.fullname" . }}-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: redis
+    {{- include "sports-betting.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}
+  selector:
+    app.kubernetes.io/component: redis
+    {{- include "sports-betting.selectorLabels" . | nindent 4 }}
+{{- end }}

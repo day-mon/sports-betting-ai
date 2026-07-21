@@ -1,0 +1,59 @@
+api:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/day-mon/sports-betting-ai/api
+    tag: main
+    pullPolicy: Always
+  port: 8080
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  data:
+    size: 5Gi
+
+website:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/day-mon/sports-betting-ai/website
+    tag: main
+    pullPolicy: Always
+  port: 80
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+  port: 6379
+
+postgresql:
+  enabled: true
+  image: postgres:14-alpine
+  auth:
+    username: sports-betting-api
+    database: betting-api
+    password: ""
+  persistence:
+    size: 10Gi
+  port: 5432
+
+secrets:
+  enabled: true
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  api:
+    host: api.accuribet.win
+  website:
+    host: accuribet.win
+  tls:
+    - secretName: accuribet-tls
+      hosts:
+        - api.accuribet.win
+        - accuribet.win

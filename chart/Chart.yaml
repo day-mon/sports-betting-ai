@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sports-betting
+description: accuribet.win sports betting AI
+type: application
+version: 0.1.0
+appVersion: "main"
