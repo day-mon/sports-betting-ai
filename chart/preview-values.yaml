@@ -1,0 +1,12 @@
+# preview environment overrides
+# loaded after values.yaml by the argocd-previews ApplicationSet
+# image tags, image.pullPolicy, and ingress hosts are injected via valuesObject
+
+secrets:
+  enabled: false
+postgresql:
+  enabled: false
+redis:
+  enabled: false
+ingress:
+  tls: []
