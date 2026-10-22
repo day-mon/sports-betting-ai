@@ -25,12 +25,12 @@ website:
 
 redis:
   enabled: true
-  image: redis:7-alpine
+  image: redis:7.4.11-alpine
   port: 6379
 
 postgresql:
   enabled: true
-  image: postgres:14-alpine
+  image: postgres:14.24-alpine
   auth:
     username: sports-betting-api
     database: betting-api

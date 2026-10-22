@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "America/New_York",
+  "labels": ["dependencies"],
+  "github-actions": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "description": "require approval for major versions",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}
