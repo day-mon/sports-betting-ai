@@ -9,17 +9,14 @@ dependencies:
     specifier: ^0.5.0
     version: 0.5.0(solid-js@1.5.1)
   solid-headless:
-    specifier: ^0.13.0
-    version: 0.13.0(solid-js@1.5.1)
+    specifier: ^0.13.1
+    version: 0.13.1(solid-js@1.5.1)
   solid-js:
     specifier: ^1.5.1
     version: 1.5.1
   solid-tippy:
     specifier: ^0.2.0
     version: 0.2.0(solid-js@1.5.1)(tippy.js@6.3.7)
-  solid-tooltip:
-    specifier: ^0.1.14
-    version: 0.1.14
   solid-transition-group:
     specifier: ^0.0.12
     version: 0.0.12(solid-js@1.5.1)
@@ -579,7 +576,7 @@ packages:
       normalize-path: 3.0.0
       readdirp: 3.6.0
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /color-convert@1.9.3:
@@ -900,8 +897,8 @@ packages:
     resolution: {integrity: sha512-MhLuK+2gUcnZe8ZHlaaINnQLl0xRIGRfcGk2yl8xoQAfHrSsL3rYu6FCmBdkdbhc9EPlwyGHewaRsvwRMJtAlA==}
     dev: true
 
-  /fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  /fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -1195,7 +1192,7 @@ packages:
     engines: {node: '>=10.0.0'}
     hasBin: true
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /run-parallel@1.2.0:
@@ -1213,14 +1210,15 @@ packages:
     hasBin: true
     dev: true
 
-  /solid-headless@0.13.0(solid-js@1.5.1):
-    resolution: {integrity: sha512-N118iPl7W5lyug4K+4c0cwM8YR2yEVJ/3H4wq6tVijATHfXfLnB1ACFI5GGHSXlwu70PUzaGSKwcVqLlloUMyA==}
+  /solid-headless@0.13.1(solid-js@1.5.1):
+    resolution: {integrity: sha512-FZJai49YmdBu6oEo8aJGPMQ1Qn8xiW0cnD6vNFDIQWMKJdXEUtDEwz0hTR9aZ7Epq3IkrZs+98E0vNiv1+pZpA==}
     engines: {node: '>=10'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       solid-js: ^1.2
     dependencies:
       solid-js: 1.5.1
-      solid-use: 0.5.0(solid-js@1.5.1)
+      solid-use: 0.6.2(solid-js@1.5.1)
     dev: false
 
   /solid-js@1.5.1:
@@ -1250,10 +1248,6 @@ packages:
       tippy.js: 6.3.7
     dev: false
 
-  /solid-tooltip@0.1.14:
-    resolution: {integrity: sha512-2yEwuW2DevIosO1WnEvztu1qH3e6Mjg8H2EmRPbMC+9NhJccQ/gsX3NkO/Kmd4mD517w88GTvqPNADcJw92Mhg==}
-    dev: false
-
   /solid-transition-group@0.0.12(solid-js@1.5.1):
     resolution: {integrity: sha512-Eu4MfNZSSxM67C+4EXaoDiWr4BFbDLg3j30JQJgQEIH9UDOfgNPfZlsFDhT/PxwJqhe6sn85W+dbmYJzBmjpAA==}
     peerDependencies:
@@ -1262,11 +1256,11 @@ packages:
       solid-js: 1.5.1
     dev: false
 
-  /solid-use@0.5.0(solid-js@1.5.1):
-    resolution: {integrity: sha512-z1AaS99SL3gNP70K4+XIVKGXDRI56m3Q6Q4X63bfgw0kaN6cwT4SAyFZAmIRjHcvf5rOMRQfNgUV4YVDha+LcQ==}
+  /solid-use@0.6.2(solid-js@1.5.1):
+    resolution: {integrity: sha512-0ShJ5s+4PIN0pJB/BtsQucsZB+xnUeeTGaxErQDu6USn5jygZWXicAtOEvFbI8gv40xE751uY1Tz7Aib9lxL/Q==}
     engines: {node: '>=10'}
     peerDependencies:
-      solid-js: ^1.2
+      solid-js: ^1.5
     dependencies:
       solid-js: 1.5.1
     dev: false
@@ -1417,7 +1411,7 @@ packages:
       resolve: 1.22.1
       rollup: 2.77.3
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /xtend@4.0.2:
