@@ -15,11 +15,8 @@ dependencies:
     specifier: ^1.5.1
     version: 1.5.1
   solid-tippy:
-    specifier: ^0.2.0
-    version: 0.2.0(solid-js@1.5.1)(tippy.js@6.3.7)
-  solid-tooltip:
-    specifier: ^0.1.14
-    version: 0.1.14
+    specifier: ^0.2.1
+    version: 0.2.1(solid-js@1.5.1)(tippy.js@6.3.7)
   solid-transition-group:
     specifier: ^0.0.12
     version: 0.0.12(solid-js@1.5.1)
@@ -579,7 +576,7 @@ packages:
       normalize-path: 3.0.0
       readdirp: 3.6.0
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /color-convert@1.9.3:
@@ -900,8 +897,8 @@ packages:
     resolution: {integrity: sha512-MhLuK+2gUcnZe8ZHlaaINnQLl0xRIGRfcGk2yl8xoQAfHrSsL3rYu6FCmBdkdbhc9EPlwyGHewaRsvwRMJtAlA==}
     dev: true
 
-  /fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  /fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -1195,7 +1192,7 @@ packages:
     engines: {node: '>=10.0.0'}
     hasBin: true
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /run-parallel@1.2.0:
@@ -1239,8 +1236,8 @@ packages:
       solid-js: 1.5.1
     dev: true
 
-  /solid-tippy@0.2.0(solid-js@1.5.1)(tippy.js@6.3.7):
-    resolution: {integrity: sha512-mhWhBQs0oWF1F3T4JDLxMzW5DfocLJ4pdD93qHUY7OjG/DxC1IGH/M63tZnD8KQ62aMTuoQaUCVZGnkiyc4fJw==}
+  /solid-tippy@0.2.1(solid-js@1.5.1)(tippy.js@6.3.7):
+    resolution: {integrity: sha512-8qB6X1iMn7nBd5BX+x7tS+5mDVragw5vCaXLOxEQFWUsyRRGKAY8JmbmmyVFIMIvF+pgkIIVIArhNfAGGtYVLA==}
     engines: {node: '>=10'}
     peerDependencies:
       solid-js: ^1.2
@@ -1248,10 +1245,6 @@ packages:
     dependencies:
       solid-js: 1.5.1
       tippy.js: 6.3.7
-    dev: false
-
-  /solid-tooltip@0.1.14:
-    resolution: {integrity: sha512-2yEwuW2DevIosO1WnEvztu1qH3e6Mjg8H2EmRPbMC+9NhJccQ/gsX3NkO/Kmd4mD517w88GTvqPNADcJw92Mhg==}
     dev: false
 
   /solid-transition-group@0.0.12(solid-js@1.5.1):
@@ -1417,7 +1410,7 @@ packages:
       resolve: 1.22.1
       rollup: 2.77.3
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /xtend@4.0.2:
