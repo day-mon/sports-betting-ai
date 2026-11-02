@@ -25,7 +25,7 @@ website:
 
 redis:
   enabled: true
-  image: redis:7.4.11-alpine
+  image: redis:7.4.12-alpine
   port: 6379
 
 postgresql:
